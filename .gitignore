@@ -1,0 +1,9 @@
+.mypy_cache/
+.pytest_cache/
+.venv/
+.vscode/
+__pycache__/
+dist/
+nbs/
+
+*.lock
