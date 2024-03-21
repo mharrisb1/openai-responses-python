@@ -81,27 +81,28 @@ def test_create_completion_with_multiple_choices():
 
 ✅ = Fully supported
 
-| Endpoint    | Supported | Streaming Supported | Mock Type     |
-| ----------- | :-------: | :-----------------: | ------------- |
-| Audio       |     ❌     |          -          | Stateless     |
-| Chat        |     ✅     |          ❌          | Stateless     |
-| Embeddings  |     ✅     |          -          | Stateless     |
-| Fine-tuning |     ❌     |          -          | Stateful      |
-| Files       |   🟡[^1]   |          -          | Stateful      |
-| Images      |     ❌     |          -          | Stateless     |
-| Models      |     ❌     |          -          | Stateless[^2] |
-| Moderations |     ❌     |          -          | Stateless     |
-| Assistants  |   🟡[^3]   |          -          | Stateful      |
-| Threads     |     ✅     |          -          | Stateful      |
-| Messages    |   🟡[^3]   |          -          | Stateful      |
-| Runs        | 🟡[^4][^5] |          ❌          | Stateful      |
-| Completions |     ❌     |          ❌          | Stateless     |
+| Endpoint    |   Supported   | Streaming Supported | Mock Type     |
+| ----------- | :-----------: | :-----------------: | ------------- |
+| Audio       |       ❌       |          -          | Stateless     |
+| Chat        |       ✅       |          ❌          | Stateless     |
+| Embeddings  |       ✅       |          -          | Stateless     |
+| Fine-tuning |       ❌       |          -          | Stateful      |
+| Files       |     🟡[^1]     |          -          | Stateful      |
+| Images      |       ❌       |          -          | Stateless     |
+| Models      |       ❌       |          -          | Stateless[^2] |
+| Moderations |       ❌       |          -          | Stateless     |
+| Assistants  |     🟡[^3]     |          -          | Stateful      |
+| Threads     |       ✅       |          -          | Stateful      |
+| Messages    |     🟡[^3]     |          -          | Stateful      |
+| Runs        | 🟡[^4][^5][^6] |          ❌          | Stateful      |
+| Completions |       ❌       |          ❌          | Stateless     |
 
 [^1]: Need to add support for retrieving file content
 [^2]: Stateless until fine-tuning is supported then it will need to be stateful
 [^3]: Need to add support for attached files
 [^4]: Need to add support for create thread and run
 [^5]: Fragile API for run steps
+[^6]: No state changes on submit tool call
 
 ## Mocks
 
