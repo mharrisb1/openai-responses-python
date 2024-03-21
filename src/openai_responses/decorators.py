@@ -22,3 +22,22 @@ def side_effect(fn: Callable[..., httpx.Response], *args: Any, **kwargs: Any):
         warnings.warn("Could not find route in side effect call")
 
     return fn(*args, **kwargs)
+
+
+def unwrap(wrapped: Callable[..., Any]) -> Callable[..., Any]:
+    """
+    https://stackoverflow.com/a/77694433
+    """
+    closure = wrapped.__closure__
+    if closure:
+        for cell in closure:
+            if hasattr(cell.cell_contents, "__module__"):
+                if cell.cell_contents.__module__.split(".")[0] == "openai_responses":
+                    continue
+            if hasattr(cell.cell_contents, "__closure__"):
+                return (
+                    cell.cell_contents
+                    if cell.cell_contents.__closure__ is None
+                    else unwrap(cell.cell_contents)
+                )
+    return wrapped
