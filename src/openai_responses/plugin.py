@@ -8,6 +8,7 @@ from openai_responses import (
     ThreadsMock,
     MessagesMock,
     RunsMock,
+    RunStepsMock,
 )
 
 
@@ -47,6 +48,11 @@ def pytest_configure(config: pytest.Config):
         "runs_mock: OpenAI runs API mocker",
     )
 
+    config.addinivalue_line(
+        "markers",
+        "run_steps_mock: OpenAI runs steps API mocker",
+    )
+
 
 @pytest.fixture()
 def assistants_mock() -> AssistantsMock:
@@ -81,3 +87,8 @@ def messages_mock() -> MessagesMock:
 @pytest.fixture()
 def runs_mock() -> RunsMock:
     return RunsMock()
+
+
+@pytest.fixture()
+def runn_steps_mock() -> RunStepsMock:
+    return RunStepsMock()

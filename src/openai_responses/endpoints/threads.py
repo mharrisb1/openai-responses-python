@@ -7,7 +7,6 @@ import respx
 
 from openai.pagination import SyncCursorPage
 from openai.types.beta.assistant import Assistant
-from openai.types.beta.assistant_tool_param import AssistantToolParam
 
 from openai.types.beta.thread import Thread
 from openai.types.beta.thread_deleted import ThreadDeleted
@@ -25,11 +24,20 @@ from openai.types.beta.threads.message_create_params import MessageCreateParams
 from openai.types.beta.threads.message_update_params import MessageUpdateParams
 
 from openai.types.beta.threads.run import Run, LastError, RequiredAction, Usage
-from openai.types.beta.threads.run_status import RunStatus
 from openai.types.beta.threads.run_create_params import RunCreateParams
 from openai.types.beta.threads.run_update_params import RunUpdateParams
 
+from openai.types.beta.threads.runs.run_step import (
+    RunStep,
+    LastError as RunStepLastError,
+)
+from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStepDetails
+from openai.types.beta.threads.runs.message_creation_step_details import (
+    MessageCreationStepDetails,
+)
+
 from ._base import StatefulMock, CallContainer
+from ._partial_schemas import PartialRun, PartialRunStep
 from .assistants import AssistantsMock
 from ..decorators import side_effect
 from ..state import StateStore
@@ -362,46 +370,6 @@ class MessagesMock(StatefulMock):
         )
 
 
-class PartialFunction(TypedDict):
-    name: str
-    arguments: str
-
-
-class PartialRequiredActionFunctionToolCall(TypedDict):
-    id: str
-    function: PartialFunction
-    type: Literal["function"]
-
-
-class PartialRequiredActionSubmitToolOutputs(TypedDict):
-    tool_calls: List[PartialRequiredActionFunctionToolCall]
-
-
-class PartialRequiredAction(TypedDict):
-    submit_tool_outputs: PartialRequiredActionSubmitToolOutputs
-    type: Literal["submit_tool_outputs"]
-
-
-class PartialLastError(TypedDict, total=False):
-    code: Literal["server_error", "rate_limit_exceeded", "invalid_prompt"]
-    message: str
-
-
-class PartialRun(TypedDict, total=False):
-    status: RunStatus
-    required_action: PartialRequiredAction
-    last_error: PartialLastError
-    expires_at: int
-    started_at: int
-    cancelled_at: int
-    failed_at: int
-    completed_at: int
-    model: str
-    instructions: str
-    tools: List[AssistantToolParam]
-    file_ids: List[str]
-
-
 class MultiMethodSequence(TypedDict, total=False):
     create: Sequence[PartialRun]
     retrieve: Sequence[PartialRun]
@@ -416,6 +384,8 @@ class RunsMock(StatefulMock):
         self.retrieve = CallContainer()
         self.update = CallContainer()
         self.cancel = CallContainer()
+
+        self.steps = RunStepsMock()
 
     def _register_routes(self, **common: Any) -> None:
         self.cancel.route = respx.post(
@@ -710,6 +680,8 @@ class RunsMock(StatefulMock):
 
         return httpx.Response(status_code=200, json=model_dict(run))
 
+    # TODO: _submit_tool_outputs
+
     @staticmethod
     def _next_partial_run(
         sequence: MultiMethodSequence,
@@ -742,3 +714,181 @@ class RunsMock(StatefulMock):
                 "model": run.get("model", asst.model),
                 "tools": run.get("tools", model_dict(asst.tools)),  # type: ignore
             }
+
+
+class RunStepsMock(StatefulMock):
+    def __init__(self) -> None:
+        super().__init__()
+        self.url = (
+            self.BASE_URL + r"/threads/(?P<thread_id>\w+)/runs/(?P<run_id>\w+)/steps"
+        )
+        self.list = CallContainer()
+        self.retrieve = CallContainer()
+
+    def _register_routes(self, **common: Any) -> None:
+        self.retrieve.route = respx.get(url__regex=self.url + r"/(?P<id>\w+)").mock(
+            side_effect=partial(self._retrieve, **common)
+        )
+        self.list.route = respx.get(url__regex=self.url).mock(
+            side_effect=partial(self._list, **common)
+        )
+
+    def __call__(
+        self,
+        *,
+        steps: Optional[List[PartialRunStep]] = None,
+        latency: Optional[float] = None,
+        failures: Optional[int] = None,
+        state_store: Optional[StateStore] = None,
+        validate_thread_exists: Optional[bool] = None,
+        validate_run_exists: Optional[bool] = None,
+    ):
+        def getter(*args: Any, **kwargs: Any):
+            return dict(
+                steps=steps or [],
+                latency=latency or 0,
+                failures=failures or 0,
+                state_store=kwargs["used_state"],
+                validate_thread_exists=validate_thread_exists or False,
+                validate_run_exists=validate_run_exists or False,
+            )
+
+        return self._make_decorator("runs_mock", getter, state_store or StateStore())
+
+    def _list(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        thread_id: str,
+        run_id: str,
+        steps: List[PartialRunStep],
+        state_store: StateStore,
+        validate_thread_exists: bool,
+        validate_run_exists: bool,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self.list.route = route
+
+        if validate_thread_exists:
+            thread = state_store.beta.threads.get(thread_id)
+
+            if not thread:
+                return httpx.Response(status_code=404)
+
+        assistant_id = ""
+        if validate_run_exists:
+            run = state_store.beta.threads.runs.get(run_id)
+
+            if not run:
+                return httpx.Response(status_code=404)
+
+            assistant_id = run.assistant_id
+
+        self._put_steps_in_store(thread_id, run_id, assistant_id, steps, state_store)
+
+        limit = request.url.params.get("limit")
+        order = request.url.params.get("order")
+        after = request.url.params.get("after")
+        before = request.url.params.get("before")
+
+        return httpx.Response(
+            status_code=200,
+            json=model_dict(
+                SyncCursorPage[RunStep](
+                    data=state_store.beta.threads.runs.steps.list(
+                        thread_id,
+                        run_id,
+                        limit,
+                        order,
+                        after,
+                        before,
+                    )
+                )
+            ),
+        )
+
+    def _retrieve(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        thread_id: str,
+        run_id: str,
+        id: str,
+        steps: List[PartialRunStep],
+        state_store: StateStore,
+        validate_thread_exists: bool,
+        validate_run_exists: bool,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self.list.route = route
+
+        if validate_thread_exists:
+            thread = state_store.beta.threads.get(thread_id)
+
+            if not thread:
+                return httpx.Response(status_code=404)
+
+        assistant_id = ""
+        if validate_run_exists:
+            run = state_store.beta.threads.runs.get(run_id)
+
+            if not run:
+                return httpx.Response(status_code=404)
+
+            assistant_id = run.assistant_id
+
+        self._put_steps_in_store(thread_id, run_id, assistant_id, steps, state_store)
+
+        *_, id = request.url.path.split("/")
+        step = state_store.beta.threads.runs.steps.get(id)
+
+        if not step:
+            return httpx.Response(status_code=404)
+
+        return httpx.Response(status_code=200, json=model_dict(step))
+
+    def _put_steps_in_store(
+        self,
+        thread_id: str,
+        run_id: str,
+        assistant_id: str,
+        steps: List[PartialRunStep],
+        state_store: StateStore,
+    ) -> None:
+        for step in steps:
+            step_details = step.get("step_details")
+            if not step_details:
+                continue
+
+            step_details_model: Any = None
+            if step_details["type"] == "message_creation":
+                step_details_model = model_parse(
+                    MessageCreationStepDetails, step_details
+                )
+            elif step_details["type"] == "tool_calls":
+                step_details_model = model_parse(ToolCallsStepDetails, step_details)
+
+            if not step_details_model:
+                continue
+
+            state_store.beta.threads.runs.steps.put(
+                RunStep(
+                    id=step.get("id", self._faker.beta.thread.run.step.id()),
+                    assistant_id=step.get("assistant_id", assistant_id),
+                    cancelled_at=step.get("cancelled_at"),
+                    completed_at=step.get("completed_at"),
+                    created_at=utcnow_unix_timestamp_s(),
+                    expired_at=step.get("expired_at"),
+                    failed_at=step.get("failed_at"),
+                    last_error=model_parse(
+                        RunStepLastError,
+                        step.get("last_error"),
+                    ),
+                    object="thread.run.step",
+                    run_id=run_id,
+                    status=step.get("status", "in_progress"),
+                    thread_id=thread_id,
+                    type=step_details["type"],
+                    step_details=step_details_model,
+                )
+            )

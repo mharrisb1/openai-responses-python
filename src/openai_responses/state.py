@@ -5,6 +5,7 @@ from openai.types.beta.assistant import Assistant
 from openai.types.beta.thread import Thread
 from openai.types.beta.threads.message import Message
 from openai.types.beta.threads.run import Run
+from openai.types.beta.threads.runs.run_step import RunStep
 
 
 __all__ = ["StateStore"]
@@ -17,6 +18,7 @@ M = TypeVar(
         Thread,
         Message,
         Run,
+        RunStep,
     ],
 )
 
@@ -133,6 +135,10 @@ class MessageStore(BaseStore[Message]):
 
 
 class RunStore(BaseStore[Run]):
+    def __init__(self) -> None:
+        super().__init__()
+        self.steps = RunStepStore()
+
     def list(
         self,
         thread_id: str,
@@ -142,6 +148,39 @@ class RunStore(BaseStore[Run]):
         before: Optional[str] = None,
     ) -> List[Run]:
         objs = [m for m in list(self._data.values()) if m.thread_id == thread_id]
+        objs = list(reversed(objs)) if (order or "desc") == "desc" else objs
+
+        start_ix = 0
+        if after:
+            obj = self._data.get(after)
+            if obj:
+                start_ix = objs.index(obj) + 1
+
+        end_ix = None
+        if before:
+            obj = self._data.get(before)
+            if obj:
+                end_ix = objs.index(obj)
+
+        objs = objs[start_ix:end_ix]
+        return objs[: (limit or 20) + 1]
+
+
+class RunStepStore(BaseStore[RunStep]):
+    def list(
+        self,
+        thread_id: str,
+        run_id: str,
+        limit: Optional[int] = None,
+        order: Optional[str] = None,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+    ) -> List[RunStep]:
+        objs = [
+            m
+            for m in list(self._data.values())
+            if m.thread_id == thread_id and m.run_id == run_id
+        ]
         objs = list(reversed(objs)) if (order or "desc") == "desc" else objs
 
         start_ix = 0

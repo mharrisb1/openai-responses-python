@@ -2,7 +2,12 @@ from openai_responses.endpoints.assistants import AssistantsMock
 from openai_responses.endpoints.chat import ChatMock, ChatCompletionMock
 from openai_responses.endpoints.embeddings import EmbeddingsMock
 from openai_responses.endpoints.files import FilesMock
-from openai_responses.endpoints.threads import ThreadsMock, MessagesMock, RunsMock
+from openai_responses.endpoints.threads import (
+    ThreadsMock,
+    MessagesMock,
+    RunsMock,
+    RunStepsMock,
+)
 
 __all__ = [
     # main API
@@ -15,6 +20,7 @@ __all__ = [
     "ThreadsMock",
     "MessagesMock",
     "RunsMock",
+    "RunStepsMock",
 ]
 
 
