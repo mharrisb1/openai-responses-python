@@ -1,12 +1,13 @@
 import inspect
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Optional, Protocol
+from typing import Any, Callable, Dict, List, Optional, Protocol
 
 import httpx
 import respx
 from faker import Faker
 from faker_openai_api_provider import OpenAiApiProvider
 
+from ..decorators import unwrap
 from ..state import StateStore
 
 
@@ -26,8 +27,12 @@ class Mock(ABC):
     def _register_routes(self, **common: Any) -> None: ...
 
 
+def sort_routes(routes: List[respx.Route]) -> None:
+    routes.sort(key=lambda r: len(repr(r._pattern)), reverse=True)  # type: ignore
+
+
 class StatelessMock(Mock):
-    def __innercall__(
+    def _make_decorator(
         self,
         mocker_class: str,
         common_kwargs_getter: KwargsGetterProtocol,
@@ -43,6 +48,7 @@ class StatelessMock(Mock):
                 common_kwargs = common_kwargs_getter(*args, **kwargs)
                 with respx.mock:
                     self._register_routes(**common_kwargs)
+                    sort_routes(respx.mock.routes._routes)
                     return await fn(*args, **kwargs)
 
             def wrapper(*args: Any, **kwargs: Any):
@@ -51,6 +57,7 @@ class StatelessMock(Mock):
                 common_kwargs = common_kwargs_getter(*args, **kwargs)
                 with respx.mock:
                     self._register_routes(**common_kwargs)
+                    sort_routes(respx.mock.routes._routes)
                     return fn(*args, **kwargs)
 
             return wrapper if not is_async else async_wrapper
@@ -60,7 +67,7 @@ class StatelessMock(Mock):
 
 class StatefulMock(Mock):
 
-    def __innercall__(
+    def _make_decorator(
         self,
         mocker_class: str,
         common_kwargs_getter: KwargsGetterProtocol,
@@ -68,7 +75,7 @@ class StatefulMock(Mock):
     ):
         def decorator(fn: Callable[..., Any]):
             is_async = inspect.iscoroutinefunction(fn)
-            argspec = inspect.getfullargspec(fn)
+            argspec = inspect.getfullargspec(unwrap(fn))
             needs_ref = mocker_class in argspec.args
 
             async def async_wrapper(*args: Any, **kwargs: Any):
@@ -78,6 +85,7 @@ class StatefulMock(Mock):
                 common_kwargs = common_kwargs_getter(used_state=state, *args, **kwargs)
                 with respx.mock:
                     self._register_routes(**common_kwargs)
+                    sort_routes(respx.mock.routes._routes)
                     return await fn(*args, **kwargs)
 
             def wrapper(*args: Any, **kwargs: Any):
@@ -87,6 +95,7 @@ class StatefulMock(Mock):
                 common_kwargs = common_kwargs_getter(used_state=state, *args, **kwargs)
                 with respx.mock:
                     self._register_routes(**common_kwargs)
+                    sort_routes(respx.mock.routes._routes)
                     return fn(*args, **kwargs)
 
             return wrapper if not is_async else async_wrapper
