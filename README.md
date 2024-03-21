@@ -24,8 +24,6 @@ Automatically mock OpenAI requests
   - [Mocker Classes](#mocker-classes)
     - [Example Access](#example-access)
   - [State](#state)
-    - [Passing custom state to decorator](#passing-custom-state-to-decorator)
-    - [Use scoped fixture for custom state](#use-scoped-fixture-for-custom-state)
   - [Async](#async)
   - [Chaining](#chaining)
   - [Route Access](#route-access)
@@ -421,12 +419,7 @@ def test_upload_files_with_retries(files_mock: FilesMock):
 
 ## State
 
-Some mocks are stateful so a state store is used to keep track of resources. For the most part you should not have to worry about the state store unless:
-
-1. You want to establish an initial state before a test run instead of using API calls in the test to establish the desired state, or
-2. You want to persist a state store across different [scopes](https://docs.pytest.org/en/6.2.x/fixture.html#scope-sharing-fixtures-across-classes-modules-packages-or-session) other than the function scope.
-
-### Passing custom state to decorator
+If you want to establish state prior to a test run you can pass a state store instance into the decorator.
 
 ```py
 from openai import OpenAI
@@ -447,30 +440,6 @@ def test_retrieve_assistant():
     found = client.beta.assistants.retrieve("asst_abc123")
 ```
 
-### Use scoped fixture for custom state
-
-```py
-import pytest
-
-from openai import OpenAI
-from openai.types.beta.assistant import Assistant
-
-import openai_responses
-from openai_responses.state import StateStore
-
-
-@pytest.fixture(scope="session")
-def custom_state_store():
-    state_store = StateStore()
-    asst = Assistant(id="asst_abc123"...)  # create assistant
-    state_store.beta.assistants.put(asst)  # put assistant in state store
-
-
-@openai_responses.mock.assistants():
-def test_retrieve_assistant(custom_state_store: StateStore):
-    client = OpenAI(api_key="fakeKey")
-    found = client.beta.assistants.retrieve("asst_abc123")  # state_store fixture automatically used!
-```
 
 ## Async
 
