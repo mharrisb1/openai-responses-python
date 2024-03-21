@@ -680,7 +680,19 @@ class RunsMock(StatefulMock):
 
         return httpx.Response(status_code=200, json=model_dict(run))
 
-    # TODO: _submit_tool_outputs
+    def _submit_tool_outputs(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        thread_id: str,
+        id: str,
+        sequence: MultiMethodSequence,
+        state_store: StateStore,
+        validate_thread_exists: bool,
+        validate_assistant_exists: bool,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        return httpx.Response(status_code=200)
 
     @staticmethod
     def _next_partial_run(
