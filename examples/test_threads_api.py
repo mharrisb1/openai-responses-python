@@ -196,4 +196,60 @@ def test_create_thread_run(runs_mock: RunsMock):
     )
 
     assert run.id
+    assert run.status == "queued"
     assert runs_mock.create.route.calls.call_count == 1
+
+
+@openai_responses.mock.beta.threads.runs(
+    sequence={
+        "retrieve": [
+            {"status": "in_progress"},
+        ]
+    }
+)
+def test_retrieve_thread_run(runs_mock: RunsMock):
+    client = OpenAI(api_key="fakeKey")
+
+    run = client.beta.threads.runs.create(
+        thread_id="thread_abc123",
+        assistant_id="asst_abc123",
+    )
+    assert run.status == "queued"
+
+    found = client.beta.threads.runs.retrieve(run.id, thread_id="thread_abc123")
+
+    assert found.id == run.id
+    assert found.status == "in_progress"
+
+    assert runs_mock.create.route.calls.call_count == 1
+    assert runs_mock.retrieve.route.calls.call_count == 1
+
+
+@openai_responses.mock.beta.threads.runs(
+    sequence={
+        "create": [
+            {"status": "in_progress"},
+        ],
+        "retrieve": [
+            {"status": "in_progress"},
+            {"status": "in_progress"},
+            {"status": "in_progress"},
+            {"status": "in_progress"},
+            {"status": "completed"},
+        ],
+    }
+)
+def test_polled_get_status(runs_mock: RunsMock):
+    client = OpenAI(api_key="fakeKey")
+
+    run = client.beta.threads.runs.create(
+        thread_id="thread_abc123",
+        assistant_id="asst_abc123",
+    )
+
+    while run.status != "completed":
+        run = client.beta.threads.runs.retrieve(run.id, thread_id="thread_abc123")
+
+    assert run.status == "completed"
+    assert runs_mock.create.route.calls.call_count == 1
+    assert runs_mock.retrieve.route.calls.call_count == 5

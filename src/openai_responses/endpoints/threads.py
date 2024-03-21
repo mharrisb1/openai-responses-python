@@ -30,7 +30,7 @@ from openai.types.beta.threads.run_create_params import RunCreateParams
 
 from ._base import StatefulMock, CallContainer
 from .assistants import AssistantsMock
-from ..decorators import override, side_effect
+from ..decorators import side_effect
 from ..state import StateStore
 from ..utils import model_dict, model_parse, utcnow_unix_timestamp_s
 
@@ -63,7 +63,6 @@ class ThreadsMock(StatefulMock):
             side_effect=partial(self._delete, **common)
         )
 
-    @override
     def __call__(
         self,
         *,
@@ -78,7 +77,9 @@ class ThreadsMock(StatefulMock):
                 state_store=kwargs["used_state"],
             )
 
-        return super().__call__("threads_mock", getter, state_store or StateStore())
+        return super().__innercall__(
+            "threads_mock", getter, state_store or StateStore()
+        )
 
     @side_effect
     def _create(
@@ -199,7 +200,6 @@ class MessagesMock(StatefulMock):
             side_effect=partial(self._list, **common)
         )
 
-    @override
     def __call__(
         self,
         *,
@@ -216,7 +216,9 @@ class MessagesMock(StatefulMock):
                 validate_thread_exists=validate_thread_exists or False,
             )
 
-        return super().__call__("messages_mock", getter, state_store or StateStore())
+        return super().__innercall__(
+            "messages_mock", getter, state_store or StateStore()
+        )
 
     @side_effect
     def _create(
@@ -401,6 +403,11 @@ class PartialRun(TypedDict, total=False):
     file_ids: List[str]
 
 
+class MultiMethodSequence(TypedDict, total=False):
+    create: Sequence[PartialRun]
+    retrieve: Sequence[PartialRun]
+
+
 class RunsMock(StatefulMock):
     def __init__(self) -> None:
         super().__init__()
@@ -411,15 +418,17 @@ class RunsMock(StatefulMock):
         self.update = CallContainer()
 
     def _register_routes(self, **common: Any) -> None:
+        self.retrieve.route = respx.get(url__regex=self.url + r"/(?P<id>\w+)").mock(
+            side_effect=partial(self._retrieve, **common)
+        )
         self.create.route = respx.post(url__regex=self.url).mock(
             side_effect=partial(self._create, **common)
         )
 
-    @override
     def __call__(
         self,
         *,
-        sequence: Optional[Sequence[PartialRun]] = None,
+        sequence: Optional[MultiMethodSequence] = None,
         latency: Optional[float] = None,
         failures: Optional[int] = None,
         state_store: Optional[StateStore] = None,
@@ -436,7 +445,7 @@ class RunsMock(StatefulMock):
                 validate_assistant_exists=validate_assistant_exists or False,
             )
 
-        return super().__call__("runs_mock", getter, state_store or StateStore())
+        return super().__innercall__("runs_mock", getter, state_store or StateStore())
 
     @side_effect
     def _create(
@@ -444,7 +453,7 @@ class RunsMock(StatefulMock):
         request: httpx.Request,
         route: respx.Route,
         thread_id: str,
-        sequence: Sequence[PartialRun],
+        sequence: MultiMethodSequence,
         state_store: StateStore,
         validate_thread_exists: bool,
         validate_assistant_exists: bool,
@@ -462,7 +471,7 @@ class RunsMock(StatefulMock):
         content: RunCreateParams = json.loads(request.content)
 
         partial_run = (
-            self._get_indexed_partial_run(sequence, route.call_count, failures) or {}
+            self._next_partial_run(sequence, route.call_count, failures, "create") or {}
         )
         if validate_assistant_exists:
             asst = state_store.beta.assistants.get(content["assistant_id"])
@@ -478,7 +487,7 @@ class RunsMock(StatefulMock):
             created_at=utcnow_unix_timestamp_s(),
             thread_id=thread_id,
             assistant_id=content["assistant_id"],
-            status=partial_run.get("status", "in_progress"),
+            status=partial_run.get("status", "queued"),
             required_action=model_parse(
                 RequiredAction,
                 partial_run.get("required_action"),
@@ -508,15 +517,78 @@ class RunsMock(StatefulMock):
 
         return httpx.Response(status_code=201, json=model_dict(run))
 
+    def _retrieve(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        thread_id: str,
+        id: str,
+        sequence: MultiMethodSequence,
+        state_store: StateStore,
+        validate_thread_exists: bool,
+        validate_assistant_exists: bool,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self.retrieve.route = route
+        failures: int = kwargs.get("failures", 0)
+
+        if validate_thread_exists:
+            thread = state_store.beta.threads.get(thread_id)
+
+            if not thread:
+                return httpx.Response(status_code=404)
+
+        run = state_store.beta.threads.runs.get(id)
+
+        if not run:
+            return httpx.Response(status_code=404)
+
+        partial_run = (
+            self._next_partial_run(sequence, route.call_count, failures, "retrieve")
+            or {}
+        )
+
+        if validate_assistant_exists:
+            asst = state_store.beta.assistants.get(run.assistant_id)
+            if asst:
+                partial_run = self._merge_partial_run_with_assistant(partial_run, asst)
+
+        run.status = partial_run.get("status", run.status)
+        run.expires_at = partial_run.get("expires_at", run.expires_at)
+        run.started_at = partial_run.get("started_at", run.started_at)
+        run.cancelled_at = partial_run.get("cancelled_at", run.cancelled_at)
+        run.failed_at = partial_run.get("failed_at", run.failed_at)
+        run.completed_at = partial_run.get("completed_at", run.completed_at)
+        run.model = partial_run.get("model", run.model)
+        run.instructions = partial_run.get("instructions", run.instructions)
+        run.file_ids = partial_run.get("file_ids", run.file_ids)
+
+        if partial_run.get("required_action"):
+            run.required_action = model_parse(
+                RequiredAction, partial_run.get("required_action")
+            )
+
+        if partial_run.get("last_error"):
+            run.last_error = model_parse(LastError, partial_run.get("last_error"))
+
+        if partial_run.get("tools"):
+            run.tools = AssistantsMock._parse_tool_params(partial_run.get("tools", []))
+
+        state_store.beta.threads.runs.put(run)
+
+        return httpx.Response(status_code=200, json=model_dict(run))
+
     @staticmethod
-    def _get_indexed_partial_run(
-        sequence: Sequence[PartialRun],
+    def _next_partial_run(
+        sequence: MultiMethodSequence,
         call_count: int,
         failures: int,
+        method: Literal["create", "retrieve"],
     ) -> Optional[PartialRun]:
+        used_sequence = sequence.get(method, [])
         net_ix = call_count - failures
         try:
-            return sequence[net_ix]
+            return used_sequence[net_ix]
         except IndexError:
             return None
 
