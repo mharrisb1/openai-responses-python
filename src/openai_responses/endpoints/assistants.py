@@ -18,7 +18,7 @@ from openai.types.beta.assistant_create_params import AssistantCreateParams
 from openai.types.beta.assistant_update_params import AssistantUpdateParams
 
 from ._base import StatefulMock, CallContainer
-from ..decorators import override, side_effect
+from ..decorators import side_effect
 from ..state import StateStore
 from ..utils import model_dict, utcnow_unix_timestamp_s
 
@@ -50,7 +50,6 @@ class AssistantsMock(StatefulMock):
             side_effect=partial(self._delete, **common)
         )
 
-    @override
     def __call__(
         self,
         *,
@@ -65,7 +64,9 @@ class AssistantsMock(StatefulMock):
                 state_store=kwargs["used_state"],
             )
 
-        return super().__call__("assistants_mock", getter, state_store or StateStore())
+        return super().__innercall__(
+            "assistants_mock", getter, state_store or StateStore()
+        )
 
     @side_effect
     def _create(

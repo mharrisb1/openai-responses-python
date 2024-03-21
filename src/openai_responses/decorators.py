@@ -6,12 +6,6 @@ import httpx
 import respx
 from decorator import decorator
 
-__all__ = ["override", "side_effect"]
-
-
-def override(method: Callable[..., Any]):
-    return method
-
 
 @decorator
 def side_effect(fn: Callable[..., httpx.Response], *args: Any, **kwargs: Any):

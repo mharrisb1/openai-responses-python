@@ -18,7 +18,7 @@ from openai.types.chat.chat_completion_message_tool_call import (
 from openai.types.chat.completion_create_params import CompletionCreateParams
 
 from ._base import StatelessMock, CallContainer
-from ..decorators import override, side_effect
+from ..decorators import side_effect
 from ..utils import model_dict, utcnow_unix_timestamp_s
 
 
@@ -64,7 +64,6 @@ class ChatCompletionMock(StatelessMock):
             side_effect=partial(self._create, **common)
         )
 
-    @override
     def __call__(
         self,
         *,
@@ -79,7 +78,7 @@ class ChatCompletionMock(StatelessMock):
                 failures=failures or 0,
             )
 
-        return super().__call__("chat_completion_mock", getter)
+        return super().__innercall__("chat_completion_mock", getter)
 
     @side_effect
     def _create(

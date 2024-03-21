@@ -27,7 +27,7 @@ class Mock(ABC):
 
 
 class StatelessMock(Mock):
-    def __call__(
+    def __innercall__(
         self,
         mocker_class: str,
         common_kwargs_getter: KwargsGetterProtocol,
@@ -60,7 +60,7 @@ class StatelessMock(Mock):
 
 class StatefulMock(Mock):
 
-    def __call__(
+    def __innercall__(
         self,
         mocker_class: str,
         common_kwargs_getter: KwargsGetterProtocol,

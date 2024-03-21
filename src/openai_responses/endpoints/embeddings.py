@@ -10,7 +10,7 @@ from openai.types.embedding_create_params import EmbeddingCreateParams
 from openai.types.create_embedding_response import CreateEmbeddingResponse, Usage
 
 from ._base import StatelessMock, CallContainer
-from ..decorators import override, side_effect
+from ..decorators import side_effect
 from ..utils import model_dict
 
 
@@ -25,7 +25,6 @@ class EmbeddingsMock(StatelessMock):
             side_effect=partial(self._create, **common)
         )
 
-    @override
     def __call__(
         self,
         *,
@@ -40,7 +39,7 @@ class EmbeddingsMock(StatelessMock):
                 failures=failures or 0,
             )
 
-        return super().__call__("embeddings_mock", getter)
+        return super().__innercall__("embeddings_mock", getter)
 
     @side_effect
     def _create(
