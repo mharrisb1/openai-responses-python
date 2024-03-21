@@ -50,7 +50,7 @@ class ThreadsMock(StatefulMock):
         self.runs = RunsMock()
 
     def _register_routes(self, **common: Any) -> None:
-        self.create.route = respx.post(self.url).mock(
+        self.create.route = respx.post(url__regex=self.url).mock(
             side_effect=partial(self._create, **common)
         )
         self.retrieve.route = respx.get(url__regex=self.url + r"/(?P<id>\w+)").mock(
@@ -77,9 +77,7 @@ class ThreadsMock(StatefulMock):
                 state_store=kwargs["used_state"],
             )
 
-        return super().__innercall__(
-            "threads_mock", getter, state_store or StateStore()
-        )
+        return self._make_decorator("threads_mock", getter, state_store or StateStore())
 
     @side_effect
     def _create(
@@ -216,7 +214,7 @@ class MessagesMock(StatefulMock):
                 validate_thread_exists=validate_thread_exists or False,
             )
 
-        return super().__innercall__(
+        return self._make_decorator(
             "messages_mock", getter, state_store or StateStore()
         )
 
@@ -424,6 +422,9 @@ class RunsMock(StatefulMock):
         self.create.route = respx.post(url__regex=self.url).mock(
             side_effect=partial(self._create, **common)
         )
+        self.list.route = respx.get(url__regex=self.url).mock(
+            side_effect=partial(self._list, **common)
+        )
 
     def __call__(
         self,
@@ -437,7 +438,7 @@ class RunsMock(StatefulMock):
     ):
         def getter(*args: Any, **kwargs: Any):
             return dict(
-                sequence=sequence or [],
+                sequence=sequence or {},
                 latency=latency or 0,
                 failures=failures or 0,
                 state_store=kwargs["used_state"],
@@ -445,7 +446,7 @@ class RunsMock(StatefulMock):
                 validate_assistant_exists=validate_assistant_exists or False,
             )
 
-        return super().__innercall__("runs_mock", getter, state_store or StateStore())
+        return self._make_decorator("runs_mock", getter, state_store or StateStore())
 
     @side_effect
     def _create(
@@ -538,6 +539,7 @@ class RunsMock(StatefulMock):
             if not thread:
                 return httpx.Response(status_code=404)
 
+        *_, id = request.url.path.split("/")
         run = state_store.beta.threads.runs.get(id)
 
         if not run:
@@ -577,6 +579,46 @@ class RunsMock(StatefulMock):
         state_store.beta.threads.runs.put(run)
 
         return httpx.Response(status_code=200, json=model_dict(run))
+
+    def _list(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        thread_id: str,
+        sequence: MultiMethodSequence,
+        state_store: StateStore,
+        validate_thread_exists: bool,
+        validate_assistant_exists: bool,
+        **kwargs: Any,
+    ):
+        self.list.route = route
+
+        if validate_thread_exists:
+            thread = state_store.beta.threads.get(thread_id)
+
+            if not thread:
+                return httpx.Response(status_code=404)
+
+        if validate_assistant_exists:
+            # TODO: what should be done here?
+            pass
+
+        if sequence:
+            # TODO: should there be a method sequence for list?
+            pass
+
+        limit = request.url.params.get("limit")
+        order = request.url.params.get("order")
+        after = request.url.params.get("after")
+        before = request.url.params.get("before")
+
+        runs = SyncCursorPage[Run](
+            data=state_store.beta.threads.runs.list(
+                thread_id, limit, order, after, before
+            )
+        )
+
+        return httpx.Response(status_code=200, json=model_dict(runs))
 
     @staticmethod
     def _next_partial_run(
