@@ -37,11 +37,12 @@ async def test_async_create_assistant(assistants_mock: AssistantsMock):
 @openai_responses.mock.beta.assistants()
 def test_list_assistants(assistants_mock: AssistantsMock):
     client = OpenAI(api_key="fakeKey")
-    for _ in range(21):
+    for _ in range(20):
         client.beta.assistants.create(model="gpt-4")
 
     assistants = client.beta.assistants.list()
     assert len(assistants.data) == 20
+    assert assistants_mock.create.route.calls.call_count == 20
     assert assistants_mock.list.route.calls.call_count == 1
 
 
