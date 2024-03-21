@@ -14,8 +14,8 @@ openai_responses = "openai_responses.plugin"
 python = ">=3.9,<4.0"
 openai = ">=1.0"
 respx = "^0.20.2"
-faker-openai-api-provider = { path = "../faker-openai-api-provider", develop = true }
 decorator = "^5.1.1"
+faker-openai-api-provider = "^0.1.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.2.0"
