@@ -19,6 +19,8 @@ Automatically mock OpenAI requests
     - [Threads](#threads)
     - [Messages](#messages)
     - [Runs](#runs)
+      - [Sequences](#sequences)
+      - [Resource validation](#resource-validation)
   - [Mocker Classes](#mocker-classes)
     - [Example Access](#example-access)
   - [State](#state)
@@ -319,8 +321,21 @@ from openai import OpenAI
 
 import openai_responses
 
-@openai_responses.mock.beta.threads.runs()
-def test_create_thread_run():
+@openai_responses.mock.beta.threads.runs(
+    sequence={
+        "create": [
+            {"status": "in_progress"},
+        ],
+        "retrieve": [
+            {"status": "in_progress"},
+            {"status": "in_progress"},
+            {"status": "in_progress"},
+            {"status": "in_progress"},
+            {"status": "completed"},
+        ],
+    }
+)
+def test_polled_get_status():
     client = OpenAI(api_key="fakeKey")
 
     run = client.beta.threads.runs.create(
@@ -328,12 +343,19 @@ def test_create_thread_run():
         assistant_id="asst_abc123",
     )
 
-    assert run.id
+    while run.status != "completed":
+        assert run.status == "in_progress"
+        run = client.beta.threads.runs.retrieve(
+            run.id,
+            thread_id="thread_abc123"
+        )
+
+    assert run.status == "completed"
 ```
 
 **Additional Arguments**
 
-- `sequence`: Sequence of run states that the calls will exhaust. Defaults to `[]`.
+- `sequence`: Sequence of run states that the calls will exhaust. Can be list or dict. Defaults to `[]`.
 - `state_store`: Optional state store override. See [state](#state) below for more info.
 - `validate_thread_exists`: Whether to check the state store to see if the thread exists. Defaults to `False`.
 - `validate_assistant_exists`: Whether to check the state store to see if the assistant exists. Defaults to `False`.
@@ -344,6 +366,14 @@ def test_create_thread_run():
 - `GET https://api.openai.com/v1/threads/{thread_id}/runs`
 - `GET https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}`
 - `POST https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}`
+
+#### Sequences
+
+Since run states can be changed at any time on the API server, the suggested usage pattern is to [poll for updates](https://platform.openai.com/docs/assistants/how-it-works/polling-for-updates). The `sequence` argument allows you to define the sequence of states that will be returned for each corresponding call. Although you likely will not call `create` more than once during standard API usage, this sequence is available to help you set the initial state.
+
+#### Resource validation
+
+If either `validate_thread_exists` or `validate_assistant_exists` then those related values will be used in the state so you do not need to set them in the sequence. If you do, your manual sequence entry will take precedent over the other values.
 
 ## Mocker Classes
 
