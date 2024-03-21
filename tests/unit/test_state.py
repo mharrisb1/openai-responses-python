@@ -3,6 +3,7 @@ from openai.types import FileObject
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.thread import Thread
 from openai.types.beta.threads.message import Message
+from openai.types.beta.threads.run import Run
 
 from openai_responses.state import StateStore
 
@@ -162,3 +163,68 @@ def test_message_store(state_store: StateStore):
     assert len(messages) == 10
     assert messages[0].id == "msg_29"
     assert messages[-1].id == "msg_20"
+
+
+def test_run_store(state_store: StateStore):
+    obj = Run(
+        id="run_abc123",
+        assistant_id="asst_abc123",
+        created_at=0,
+        file_ids=[],
+        instructions="",
+        model="",
+        object="thread.run",
+        status="in_progress",
+        thread_id="thread_abc123",
+        tools=[],
+    )
+
+    state_store.beta.threads.runs.put(obj)
+    runs = state_store.beta.threads.runs.list(thread_id="thread_abc123")
+    assert len(runs) == 1
+    runs = state_store.beta.threads.runs.list(thread_id="invalid_id")
+    assert len(runs) == 0
+    deleted = state_store.beta.threads.runs.delete("invalid_id")
+    assert not deleted
+    deleted = state_store.beta.threads.runs.delete("run_abc123")
+    assert deleted
+
+    for i in range(100):
+        state_store.beta.threads.runs.put(
+            Run(
+                id=f"run_{i}",
+                assistant_id="asst_abc123",
+                created_at=0,
+                file_ids=[],
+                instructions="",
+                model="",
+                object="thread.run",
+                status="in_progress",
+                thread_id="thread_abc123",
+                tools=[],
+            )
+        )
+
+    runs = state_store.beta.threads.runs.list(
+        thread_id="thread_abc123",
+        limit=100,
+        order="asc",
+        after="run_19",
+        before="run_30",
+    )
+
+    assert len(runs) == 10
+    assert runs[0].id == "run_20"
+    assert runs[-1].id == "run_29"
+
+    runs = state_store.beta.threads.runs.list(
+        thread_id="thread_abc123",
+        limit=100,
+        order="desc",
+        after="run_30",
+        before="run_19",
+    )
+
+    assert len(runs) == 10
+    assert runs[0].id == "run_29"
+    assert runs[-1].id == "run_20"
