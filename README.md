@@ -94,12 +94,14 @@ def test_create_completion_with_multiple_choices():
 | Assistants  |   🟡[^3]   |          -          | Stateful      |
 | Threads     |     ✅     |          -          | Stateful      |
 | Messages    |   🟡[^3]   |          -          | Stateful      |
-| Runs        |     ✅     |          ❌          | Stateful      |
+| Runs        | 🟡[^4][^5] |          ❌          | Stateful      |
 | Completions |     ❌     |          ❌          | Stateless     |
 
 [^1]: Need to add support for retrieving file content
 [^2]: Stateless until fine-tuning is supported then it will need to be stateful
 [^3]: Need to add support for attached files
+[^4]: Need to add support for create thread and run
+[^5]: Fragile API for run steps
 
 ## Mocks
 
@@ -366,6 +368,7 @@ def test_polled_get_status():
 - `GET https://api.openai.com/v1/threads/{thread_id}/runs`
 - `GET https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}`
 - `POST https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}`
+- `POST https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}/cancel`
 
 #### Sequences
 
