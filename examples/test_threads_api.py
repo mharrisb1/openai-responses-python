@@ -272,3 +272,54 @@ def test_list_runs(threads_mock: ThreadsMock, runs_mock: RunsMock):
     assert threads_mock.create.route.calls.call_count == 1
     assert runs_mock.create.route.calls.call_count == 20
     assert runs_mock.list.route.calls.call_count == 1
+
+
+@openai_responses.mock.beta.threads.runs()
+def test_update_thread_run(runs_mock: RunsMock):
+    client = OpenAI(api_key="fakeKey")
+
+    run = client.beta.threads.runs.create(
+        thread_id="thread_abc123",
+        assistant_id="asst_abc123",
+    )
+    assert run.status == "queued"
+
+    run = client.beta.threads.runs.update(
+        run.id, thread_id="thread_abc123", metadata={"modified": "true"}
+    )
+    assert run.metadata == {"modified": "true"}
+
+    assert runs_mock.create.route.calls.call_count == 1
+    assert runs_mock.update.route.calls.call_count == 1
+
+
+@openai_responses.mock.beta.threads.runs(
+    sequence={
+        "retrieve": [
+            {"status": "in_progress"},
+            {"status": "cancelled"},
+        ],
+    }
+)
+def test_cancel_run(runs_mock: RunsMock):
+    client = OpenAI(api_key="fakeKey")
+
+    run = client.beta.threads.runs.create(
+        thread_id="thread_abc123",
+        assistant_id="asst_abc123",
+    )
+
+    assert run.status == "queued"
+
+    run = client.beta.threads.runs.retrieve(run.id, thread_id="thread_abc123")
+    assert run.status == "in_progress"
+
+    run = client.beta.threads.runs.cancel(run.id, thread_id="thread_abc123")
+    assert run.status == "cancelling"
+
+    run = client.beta.threads.runs.retrieve(run.id, thread_id="thread_abc123")
+    assert run.status == "cancelled"
+
+    assert runs_mock.create.route.calls.call_count == 1
+    assert runs_mock.cancel.route.calls.call_count == 1
+    assert runs_mock.retrieve.route.calls.call_count == 2

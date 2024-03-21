@@ -27,6 +27,7 @@ from openai.types.beta.threads.message_update_params import MessageUpdateParams
 from openai.types.beta.threads.run import Run, LastError, RequiredAction, Usage
 from openai.types.beta.threads.run_status import RunStatus
 from openai.types.beta.threads.run_create_params import RunCreateParams
+from openai.types.beta.threads.run_update_params import RunUpdateParams
 
 from ._base import StatefulMock, CallContainer
 from .assistants import AssistantsMock
@@ -414,8 +415,15 @@ class RunsMock(StatefulMock):
         self.list = CallContainer()
         self.retrieve = CallContainer()
         self.update = CallContainer()
+        self.cancel = CallContainer()
 
     def _register_routes(self, **common: Any) -> None:
+        self.cancel.route = respx.post(
+            url__regex=self.url + r"/(?P<id>\w+)/cancel"
+        ).mock(side_effect=partial(self._cancel, **common))
+        self.update.route = respx.post(url__regex=self.url + r"/(?P<id>\w+)").mock(
+            side_effect=partial(self._update, **common)
+        )
         self.retrieve.route = respx.get(url__regex=self.url + r"/(?P<id>\w+)").mock(
             side_effect=partial(self._retrieve, **common)
         )
@@ -619,6 +627,88 @@ class RunsMock(StatefulMock):
         )
 
         return httpx.Response(status_code=200, json=model_dict(runs))
+
+    def _update(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        thread_id: str,
+        id: str,
+        sequence: MultiMethodSequence,
+        state_store: StateStore,
+        validate_thread_exists: bool,
+        validate_assistant_exists: bool,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self.update.route = route
+
+        if validate_thread_exists:
+            thread = state_store.beta.threads.get(thread_id)
+
+            if not thread:
+                return httpx.Response(status_code=404)
+
+        if validate_assistant_exists:
+            # TODO: what should be done here?
+            pass
+
+        if sequence:
+            # TODO: should there be a method sequence for list?
+            pass
+
+        *_, id = request.url.path.split("/")
+        run = state_store.beta.threads.runs.get(id)
+
+        if not run:
+            return httpx.Response(status_code=404)
+
+        content: RunUpdateParams = json.loads(request.content)
+
+        run.metadata = content.get("metadata", run.metadata)
+
+        state_store.beta.threads.runs.put(run)
+
+        return httpx.Response(status_code=200, json=model_dict(run))
+
+    def _cancel(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        thread_id: str,
+        id: str,
+        sequence: MultiMethodSequence,
+        state_store: StateStore,
+        validate_thread_exists: bool,
+        validate_assistant_exists: bool,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self.cancel.route = route
+
+        if validate_thread_exists:
+            thread = state_store.beta.threads.get(thread_id)
+
+            if not thread:
+                return httpx.Response(status_code=404)
+
+        if validate_assistant_exists:
+            # TODO: what should be done here?
+            pass
+
+        if sequence:
+            # TODO: should there be a method sequence for list?
+            pass
+
+        *_, id, _ = request.url.path.split("/")
+        run = state_store.beta.threads.runs.get(id)
+
+        if not run:
+            return httpx.Response(status_code=404)
+
+        run.status = "cancelling"
+
+        state_store.beta.threads.runs.put(run)
+
+        return httpx.Response(status_code=200, json=model_dict(run))
 
     @staticmethod
     def _next_partial_run(
