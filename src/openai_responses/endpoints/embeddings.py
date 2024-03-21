@@ -21,7 +21,7 @@ class EmbeddingsMock(StatelessMock):
         self.create = CallContainer()
 
     def _register_routes(self, **common: Any) -> None:
-        self.create.route = respx.post(self.url).mock(
+        self.create.route = respx.post(url__regex=self.url).mock(
             side_effect=partial(self._create, **common)
         )
 
@@ -39,7 +39,7 @@ class EmbeddingsMock(StatelessMock):
                 failures=failures or 0,
             )
 
-        return super().__innercall__("embeddings_mock", getter)
+        return self._make_decorator("embeddings_mock", getter)
 
     @side_effect
     def _create(

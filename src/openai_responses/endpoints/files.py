@@ -25,11 +25,11 @@ class FilesMock(StatefulMock):
         self.delete = CallContainer()
 
     def _register_routes(self, **common: Any) -> None:
-        self.create.route = respx.post(self.url).mock(
+        self.create.route = respx.post(url__regex=self.url).mock(
             side_effect=partial(self._create, **common)
         )
 
-        self.list.route = respx.get(self.url).mock(
+        self.list.route = respx.get(url__regex=self.url).mock(
             side_effect=partial(self._list, **common)
         )
 
@@ -55,7 +55,7 @@ class FilesMock(StatefulMock):
                 state_store=kwargs["used_state"],
             )
 
-        return super().__innercall__("files_mock", getter, state_store or StateStore())
+        return self._make_decorator("files_mock", getter, state_store or StateStore())
 
     @side_effect
     def _create(

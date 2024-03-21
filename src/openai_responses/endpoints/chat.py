@@ -60,7 +60,7 @@ class ChatCompletionMock(StatelessMock):
         self.create = CallContainer()
 
     def _register_routes(self, **common: Any) -> None:
-        self.create.route = respx.post(self.url).mock(
+        self.create.route = respx.post(url__regex=self.url).mock(
             side_effect=partial(self._create, **common)
         )
 
@@ -78,7 +78,7 @@ class ChatCompletionMock(StatelessMock):
                 failures=failures or 0,
             )
 
-        return super().__innercall__("chat_completion_mock", getter)
+        return self._make_decorator("chat_completion_mock", getter)
 
     @side_effect
     def _create(
