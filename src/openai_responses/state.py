@@ -94,7 +94,7 @@ class AssistantStore(BaseStore[Assistant]):
                 end_ix = objs.index(obj)
 
         objs = objs[start_ix:end_ix]
-        return objs[: limit or 20]
+        return objs[: (limit or 20) + 1]
 
 
 class ThreadStore(BaseStore[Thread]):
@@ -129,7 +129,32 @@ class MessageStore(BaseStore[Message]):
                 end_ix = objs.index(obj)
 
         objs = objs[start_ix:end_ix]
-        return objs[: limit or 20]
+        return objs[: (limit or 20) + 1]
 
 
-class RunStore(BaseStore[Run]): ...
+class RunStore(BaseStore[Run]):
+    def list(
+        self,
+        thread_id: str,
+        limit: Optional[int] = None,
+        order: Optional[str] = None,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+    ) -> List[Run]:
+        objs = [m for m in list(self._data.values()) if m.thread_id == thread_id]
+        objs = list(reversed(objs)) if (order or "desc") == "desc" else objs
+
+        start_ix = 0
+        if after:
+            obj = self._data.get(after)
+            if obj:
+                start_ix = objs.index(obj) + 1
+
+        end_ix = None
+        if before:
+            obj = self._data.get(before)
+            if obj:
+                end_ix = objs.index(obj)
+
+        objs = objs[start_ix:end_ix]
+        return objs[: (limit or 20) + 1]
