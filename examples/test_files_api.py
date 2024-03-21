@@ -6,9 +6,13 @@ import openai_responses
 from openai_responses import FilesMock
 
 
+@pytest.fixture(scope="module")
+def client():
+    return OpenAI(api_key="fakeKey")
+
+
 @openai_responses.mock.files()
-def test_upload_file():
-    client = OpenAI(api_key="fakeKey")
+def test_upload_file(client: OpenAI):
     file = client.files.create(
         file=open("examples/example.json", "rb"),
         purpose="assistants",
@@ -30,8 +34,7 @@ async def test_async_upload_file():
 
 
 @openai_responses.mock.files(failures=2)
-def test_upload_files_with_retries(files_mock: FilesMock):
-    client = OpenAI(api_key="fakeKey", max_retries=2, timeout=0)
+def test_upload_files_with_retries(client: OpenAI, files_mock: FilesMock):
     file = client.files.create(
         file=open("examples/example.json", "rb"),
         purpose="assistants",
@@ -42,9 +45,7 @@ def test_upload_files_with_retries(files_mock: FilesMock):
 
 
 @openai_responses.mock.files()
-def test_list_uploaded_files():
-    client = OpenAI(api_key="fakeKey")
-
+def test_list_uploaded_files(client: OpenAI):
     files = client.files.list()
     assert len(files.data) == 0
 
@@ -65,9 +66,7 @@ def test_list_uploaded_files():
 
 
 @openai_responses.mock.files()
-def test_retrieve_file():
-    client = OpenAI(api_key="fakeKey")
-
+def test_retrieve_file(client: OpenAI):
     with pytest.raises(NotFoundError):
         client.files.retrieve("invalid-id")
 
@@ -82,9 +81,7 @@ def test_retrieve_file():
 
 
 @openai_responses.mock.files()
-def test_delete_file():
-    client = OpenAI(api_key="fakeKey")
-
+def test_delete_file(client: OpenAI):
     assert not client.files.delete("invalid").deleted
 
     file = client.files.create(

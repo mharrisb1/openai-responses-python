@@ -1,4 +1,5 @@
 import inspect
+from functools import wraps
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Protocol
 
@@ -74,10 +75,12 @@ class StatefulMock(Mock):
         state_store: StateStore,
     ):
         def decorator(fn: Callable[..., Any]):
+
             is_async = inspect.iscoroutinefunction(fn)
             argspec = inspect.getfullargspec(unwrap(fn))
             needs_ref = mocker_class in argspec.args
 
+            @wraps(fn)
             async def async_wrapper(*args: Any, **kwargs: Any):
                 if needs_ref:
                     kwargs[mocker_class] = self
@@ -88,6 +91,7 @@ class StatefulMock(Mock):
                     sort_routes(respx.mock.routes._routes)
                     return await fn(*args, **kwargs)
 
+            @wraps(fn)
             def wrapper(*args: Any, **kwargs: Any):
                 if needs_ref:
                     kwargs[mocker_class] = self
