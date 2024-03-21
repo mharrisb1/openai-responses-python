@@ -133,7 +133,7 @@ def test_create_thread_message_with_thread_exists_validation(
 def test_list_thread_messages(messages_mock: MessagesMock):
     client = OpenAI(api_key="fakeKey")
 
-    for _ in range(21):
+    for _ in range(20):
         client.beta.threads.messages.create(
             "thread_abc123",
             role="user",
@@ -142,6 +142,7 @@ def test_list_thread_messages(messages_mock: MessagesMock):
 
     messages = client.beta.threads.messages.list("thread_abc123")
     assert len(messages.data) == 20
+    assert messages_mock.create.route.calls.call_count == 20
     assert messages_mock.list.route.calls.call_count == 1
 
 
@@ -253,3 +254,21 @@ def test_polled_get_status(runs_mock: RunsMock):
     assert run.status == "completed"
     assert runs_mock.create.route.calls.call_count == 1
     assert runs_mock.retrieve.route.calls.call_count == 5
+
+
+@openai_responses.mock.beta.threads()
+@openai_responses.mock.beta.threads.runs()
+def test_list_runs(threads_mock: ThreadsMock, runs_mock: RunsMock):
+    client = OpenAI(api_key="fakeKey")
+    thread = client.beta.threads.create()
+
+    for _ in range(20):
+        client.beta.threads.runs.create(thread.id, assistant_id="asst_abc123")
+
+    runs = client.beta.threads.runs.list(thread.id)
+
+    assert len(runs.data) == 20
+
+    assert threads_mock.create.route.calls.call_count == 1
+    assert runs_mock.create.route.calls.call_count == 20
+    assert runs_mock.list.route.calls.call_count == 1
