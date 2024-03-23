@@ -384,10 +384,14 @@ class RunsMock(StatefulMock):
         self.retrieve = CallContainer()
         self.update = CallContainer()
         self.cancel = CallContainer()
+        self.submit_tool_outputs = CallContainer()
 
         self.steps = RunStepsMock()
 
     def _register_routes(self, **common: Any) -> None:
+        self.submit_tool_outputs.route = respx.post(
+            url__regex=self.url + r"/(?P<id>\w+)/submit_tool_outputs"
+        ).mock(side_effect=partial(self._submit_tool_outputs, **common))
         self.cancel.route = respx.post(
             url__regex=self.url + r"/(?P<id>\w+)/cancel"
         ).mock(side_effect=partial(self._cancel, **common))
@@ -623,7 +627,7 @@ class RunsMock(StatefulMock):
             pass
 
         if sequence:
-            # TODO: should there be a method sequence for list?
+            # TODO: should there be a method sequence for update?
             pass
 
         *_, id = request.url.path.split("/")
@@ -665,7 +669,7 @@ class RunsMock(StatefulMock):
             pass
 
         if sequence:
-            # TODO: should there be a method sequence for list?
+            # TODO: should there be a method sequence for cancel?
             pass
 
         *_, id, _ = request.url.path.split("/")
@@ -692,7 +696,29 @@ class RunsMock(StatefulMock):
         validate_assistant_exists: bool,
         **kwargs: Any,
     ) -> httpx.Response:
-        return httpx.Response(status_code=200)
+        self.submit_tool_outputs.route = route
+
+        if validate_thread_exists:
+            thread = state_store.beta.threads.get(thread_id)
+
+            if not thread:
+                return httpx.Response(status_code=404)
+
+        if validate_assistant_exists:
+            # TODO: what should be done here?
+            pass
+
+        if sequence:
+            # TODO: should there be a method sequence for submit tools?
+            pass
+
+        *_, id, _ = request.url.path.split("/")
+        run = state_store.beta.threads.runs.get(id)
+
+        if not run:
+            return httpx.Response(status_code=404)
+
+        return httpx.Response(status_code=200, json=model_dict(run))
 
     @staticmethod
     def _next_partial_run(
@@ -710,21 +736,22 @@ class RunsMock(StatefulMock):
 
     @staticmethod
     def _merge_partial_run_with_assistant(
-        run: Optional[PartialRun], asst: Assistant
+        run: Optional[PartialRun],
+        asst: Assistant,
     ) -> PartialRun:
         if not run:
             return {
                 "file_ids": asst.file_ids,
                 "instructions": asst.instructions or "",
                 "model": asst.model,
-                "tools": model_dict(asst.tools),  # type: ignore
+                "tools": [model_dict(tool) for tool in asst.tools],  # type: ignore
             }
         else:
-            return {
+            return run | {
                 "file_ids": run.get("file_ids", asst.file_ids),
                 "instructions": run.get("instructions", asst.instructions or ""),
                 "model": run.get("model", asst.model),
-                "tools": run.get("tools", model_dict(asst.tools)),  # type: ignore
+                "tools": run.get("tools", [model_dict(tool) for tool in asst.tools]),  # type: ignore
             }
 
 
@@ -765,7 +792,9 @@ class RunStepsMock(StatefulMock):
                 validate_run_exists=validate_run_exists or False,
             )
 
-        return self._make_decorator("runs_mock", getter, state_store or StateStore())
+        return self._make_decorator(
+            "run_steps_mock", getter, state_store or StateStore()
+        )
 
     def _list(
         self,
