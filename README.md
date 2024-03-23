@@ -116,7 +116,7 @@ Each mock decorator will have the following arguments:
 Some decorators will have additional arguments which are documented below.
 
 > [!TIP]
-> For more examples see [examples](./examples)
+> See [examples](./examples) for more
 
 ### Chat Completions
 
@@ -398,6 +398,7 @@ Each mock decorator also has an accompanying mocker class. These classes are pro
 - `ThreadsMock`
 - `MessagesMock`
 - `RunsMock`
+- `RunStepsMock`
 
 ### Example Access
 
