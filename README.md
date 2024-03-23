@@ -116,7 +116,7 @@ Each mock decorator will have the following arguments:
 Some decorators will have additional arguments which are documented below.
 
 > [!TIP]
-> For more examples see [tests/examples](./tests/examples)
+> For more examples see [examples](./examples)
 
 ### Chat Completions
 
