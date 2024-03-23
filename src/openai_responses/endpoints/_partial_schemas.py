@@ -86,7 +86,9 @@ class PartialRetrievalToolCall(TypedDict):
     id: str
 
 
-class PartialFunction(PartialFunctionNoOutput):
+class PartialFunction(TypedDict, total=False):
+    name: Required[str]
+    arguments: Required[str]
     output: Optional[str]
 
 
