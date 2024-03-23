@@ -90,5 +90,5 @@ def runs_mock() -> RunsMock:
 
 
 @pytest.fixture()
-def runn_steps_mock() -> RunStepsMock:
+def run_steps_mock() -> RunStepsMock:
     return RunStepsMock()
