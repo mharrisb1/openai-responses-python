@@ -5,6 +5,8 @@ description = "Automatically mock OpenAI requests"
 authors = ["Michael Harris <mharris@definite.app>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/mharrisb1/openai-responses-python"
+homepage = "https://github.com/mharrisb1/openai-responses-python"
 packages = [{ include = "openai_responses", from = "src" }]
 
 [tool.poetry.plugins.pytest11]
