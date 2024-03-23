@@ -34,6 +34,8 @@ Automatically mock OpenAI requests
 
 ## Installation
 
+Available on [PyPi](https://pypi.org/project/openai-responses/)
+
 ```sh
 pip install openai-responses
 ```
