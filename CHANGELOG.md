@@ -2,4 +2,5 @@
 
 ## 0.1.0
 
-<!-- TODO -->
+Initial release with minimally useful support for what I needed.
+
