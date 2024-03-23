@@ -368,6 +368,9 @@ def test_polled_get_status():
 - `GET https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}`
 - `POST https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}`
 - `POST https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}/cancel`
+- `GET https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}/steps`
+- `GET https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}/steps/{step_id}`
+- `POST https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}/submit_tool_outputs`
 
 #### Sequences
 
@@ -376,6 +379,9 @@ Since run states can be changed at any time on the API server, the suggested usa
 #### Resource validation
 
 If either `validate_thread_exists` or `validate_assistant_exists` then those related values will be used in the state so you do not need to set them in the sequence. If you do, your manual sequence entry will take precedent over the other values.
+
+> [!WARNING]
+> Run step routes are mocked but API is volatile right now so it is not documented or included in the [examples](./examples/test_threads_api.py).
 
 ## Mocker Classes
 
