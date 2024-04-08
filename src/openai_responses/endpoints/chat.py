@@ -134,6 +134,7 @@ class ChatCompletionMock(StatelessMock):
                             type="function",
                         )
                     )
+                return calls
 
         message = ChatCompletionMessage(
             content=p.get("message", {}).get("content"),
