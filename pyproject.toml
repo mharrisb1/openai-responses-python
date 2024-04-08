@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openai-responses"
-version = "0.1.0"
+version = "0.1.1"
 description = "Automatically mock OpenAI requests"
 authors = ["Michael Harris <mharris@definite.app>"]
 license = "MIT"
