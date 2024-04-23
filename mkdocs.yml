@@ -38,7 +38,7 @@ markdown_extensions:
   - pymdownx.superfences
   - footnotes
   - toc:
-      # permalink: true
+      permalink: true
       title: On this page
   - tables
   - pymdownx.highlight:
@@ -56,15 +56,17 @@ markdown_extensions:
 
 nav:
   - index.md
-  - quickstart.md
+  - User Guide:
+      - user_guide/index.md
+      - user_guide/mockers.md
+      - user_guide/chaining.md
+      - user_guide/state.md
   - Endpoints:
       - endpoints/index.md
       - endpoints/chat.md
       - endpoints/embeddings.md
       - endpoints/files.md
-  - Reference:
-      - reference/mockers.md
-      - reference/async.md
-      - reference/chaining.md
-      - reference/state.md
-      
+      - endpoints/assistants.md
+      - endpoints/threads.md
+      - endpoints/messages.md
+      - endpoints/runs.md
