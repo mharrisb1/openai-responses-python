@@ -2,7 +2,8 @@
 
 ??? warning "Streaming Support"
 
-    Currently, there is no support for streaming. This is a top feature request so once I have time to tackle it I will. Subscribe to [#3: feat: streaming support](https://github.com/mharrisb1/openai-responses-python/issues/3) to be notified when it is added.
+    Currently, there is no support for streaming. This is a top feature request so once I have time to tackle it I will.
+    Subscribe to [#3: feat: streaming support](https://github.com/mharrisb1/openai-responses-python/issues/3) to be notified when it is added.
 
 Table is assembled according to APIs listed in the [OpenAI API Reference](https://platform.openai.com/docs/api-reference)
 
@@ -12,15 +13,15 @@ Table is assembled according to APIs listed in the [OpenAI API Reference](https:
 | [Chat](chat.md)             |     :material-check-all:     |  :material-close:   | Stateless     |
 | [Embeddings](embeddings.md) |     :material-check-all:     |          -          | Stateless     |
 | Fine-tuning                 |       :material-close:       |          -          | Stateful      |
-| Files                       |     :material-check:[^1]     |          -          | Stateful      |
+| [Files](files.md)           |     :material-check:[^1]     |          -          | Stateful      |
 | Images                      |       :material-close:       |          -          | Stateless     |
 | Models                      |       :material-close:       |          -          | Stateless[^2] |
 | Moderations                 |       :material-close:       |          -          | Stateless     |
-| Assistants                  |     :material-check:[^3]     |          -          | Stateful      |
-| Threads                     |     :material-check-all:     |          -          | Stateful      |
-| Messages                    |     :material-check:[^3]     |          -          | Stateful      |
-| Runs                        | :material-check:[^4][^5][^6] |  :material-close:   | Stateful      |
-| Completions                 |       :material-close:       |  :material-close:   | Stateless     |
+| [Assistants](assistants.md) |     :material-check:[^3]     |          -          | Stateful      |
+| [Threads](threads.md)       |     :material-check-all:     |          -          | Stateful      |
+| [Messages](messages.md)     |     :material-check:[^3]     |          -          | Stateful      |
+| [Runs](runs.md)             | :material-check:[^4][^5][^6] |  :material-close:   | Stateful      |
+| Completions (Legacy)        |       :material-close:       |  :material-close:   | Stateless     |
 
 :material-close: = Not supported
 
