@@ -9,7 +9,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
-        testenv: ["static", "unit", "examples"]
     steps:
       - name: Checkout branch
         uses: actions/checkout@v3
@@ -33,6 +32,6 @@ jobs:
           poetry config virtualenvs.in-project true
           poetry install --with dev
           
-      - name: Tox testenv ${{ matrix.testenv }}
+      - name: Tox run
         shell: bash
-        run: poetry run tox -e ${{ matrix.testenv }}
+        run: poetry run tox run
