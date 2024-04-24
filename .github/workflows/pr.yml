@@ -1,0 +1,38 @@
+name: Tox
+
+on:
+  pull_request
+
+jobs:
+  tox:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        testenv: ["static", "unit", "examples"]
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Setup Poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: 1.8.2
+
+      - name: Install dependencies
+        shell: bash
+        run: >
+          poetry config virtualenvs.in-project true
+          poetry install --with dev
+          
+      - name: Tox testenv ${{ matrix.testenv }}
+        shell: bash
+        run: poetry run tox -e ${{ matrix.testenv }}
