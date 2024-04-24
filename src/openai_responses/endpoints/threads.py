@@ -412,7 +412,7 @@ class MessagesMock(StatefulMock):
                         {
                             "file_id": attachment.get("file_id"),
                             "tools": [
-                                model_parse(m[t["type"]], t)
+                                model_parse(m[t["type"]], t)  # type: ignore
                                 for t in attachment.get("tools", [])
                             ],
                         },

@@ -30,7 +30,6 @@ def test_create_thread_with_messages(threads_mock: ThreadsMock):
             {
                 "role": "user",
                 "content": "Hello, what is AI?",
-                "file_ids": ["file-abc123"],
             },
             {
                 "role": "user",

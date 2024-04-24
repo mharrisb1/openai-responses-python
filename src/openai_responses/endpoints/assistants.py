@@ -224,7 +224,7 @@ class AssistantsMock(StatefulMock):
             "function": FunctionTool,
         }
         return (
-            remove_none([model_parse(m[tool["type"]], tool) for tool in params])
+            remove_none([model_parse(m[tool["type"]], tool) for tool in params])  # type: ignore
             if params
             else None
         )
