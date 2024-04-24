@@ -3,6 +3,12 @@ from functools import partial
 from typing import Any, Iterable, List, Literal, Optional, Sequence, TypedDict, Union
 
 import httpx
+
+from openai.types.beta.assistant_tool_choice import AssistantToolChoice
+from openai.types.beta.assistant_tool_choice_option import AssistantToolChoiceOption
+from openai.types.beta.assistant_tool_choice_option_param import (
+    AssistantToolChoiceOptionParam,
+)
 from openai.types.beta.code_interpreter_tool import CodeInterpreterTool
 from openai.types.beta.file_search_tool import FileSearchTool
 import respx
@@ -29,7 +35,14 @@ from openai.types.beta.threads.message_create_params import (
 )
 from openai.types.beta.threads.message_update_params import MessageUpdateParams
 
-from openai.types.beta.threads.run import Run, LastError, RequiredAction, Usage
+from openai.types.beta.threads.run import (
+    IncompleteDetails,
+    Run,
+    LastError,
+    RequiredAction,
+    TruncationStrategy,
+    Usage,
+)
 from openai.types.beta.threads.run_create_params import RunCreateParams
 from openai.types.beta.threads.run_update_params import RunUpdateParams
 
@@ -506,36 +519,57 @@ class RunsMock(StatefulMock):
 
             partial_run = self._merge_partial_run_with_assistant(partial_run, asst)
 
+        # TODO: create additional messages
+
         run = Run(
             id=self._faker.beta.thread.run.id(),
-            object="thread.run",
-            created_at=utcnow_unix_timestamp_s(),
-            thread_id=thread_id,
             assistant_id=content["assistant_id"],
-            status=partial_run.get("status", "queued"),
-            required_action=model_parse(
-                RequiredAction,
-                partial_run.get("required_action"),
+            cancelled_at=partial_run.get("cancelled_at"),
+            completed_at=partial_run.get("completed_at"),
+            created_at=utcnow_unix_timestamp_s(),
+            expires_at=partial_run.get("expires_at"),
+            failed_at=partial_run.get("failed_at"),
+            incomplete_details=model_parse(
+                IncompleteDetails,
+                partial_run.get("incomplete_details"),
+            ),
+            instructions="\n".join(
+                [
+                    partial_run.get("instructions", ""),
+                    content.get("additional_instructions", "") or "",
+                ]
             ),
             last_error=model_parse(
                 LastError,
                 partial_run.get("last_error"),
             ),
-            expires_at=partial_run.get("expires_at"),
-            started_at=partial_run.get("started_at"),
-            cancelled_at=partial_run.get("cancelled_at"),
-            failed_at=partial_run.get("failed_at"),
-            completed_at=partial_run.get("completed_at"),
-            model=partial_run.get("model", "gpt-3.5-turbo"),
-            instructions=partial_run.get("instructions", ""),
-            tools=AssistantsMock._parse_tool_params(partial_run.get("tools", [])),
-            file_ids=partial_run.get("file_ids", []),
+            max_completion_tokens=content.get("max_completion_tokens"),
+            max_prompt_tokens=content.get("max_prompt_tokens"),
             metadata=content.get("metadata"),
+            model=partial_run.get("model", "gpt-3.5-turbo"),
+            object="thread.run",
+            required_action=model_parse(
+                RequiredAction,
+                partial_run.get("required_action"),
+            ),
+            response_format=AssistantsMock._parse_response_format_params(
+                content.get("response_format")
+            ),
+            started_at=partial_run.get("started_at"),
+            status=partial_run.get("status", "queued"),
+            thread_id=thread_id,
+            tool_choice=self._parse_tool_choice_params(content.get("tool_choice")),
+            tools=AssistantsMock._parse_tool_params(partial_run.get("tools")) or [],
+            truncation_strategy=model_parse(
+                TruncationStrategy, content.get("truncation_strategy")
+            ),
             usage=Usage(
                 completion_tokens=0,
                 prompt_tokens=0,
                 total_tokens=0,
             ),
+            temperature=content.get("temperature"),
+            top_p=content.get("top_p"),
         )
 
         state_store.beta.threads.runs.put(run)
@@ -579,26 +613,31 @@ class RunsMock(StatefulMock):
             if asst:
                 partial_run = self._merge_partial_run_with_assistant(partial_run, asst)
 
-        run.status = partial_run.get("status", run.status)
-        run.expires_at = partial_run.get("expires_at", run.expires_at)
-        run.started_at = partial_run.get("started_at", run.started_at)
         run.cancelled_at = partial_run.get("cancelled_at", run.cancelled_at)
-        run.failed_at = partial_run.get("failed_at", run.failed_at)
         run.completed_at = partial_run.get("completed_at", run.completed_at)
-        run.model = partial_run.get("model", run.model)
-        run.instructions = partial_run.get("instructions", run.instructions)
-        run.file_ids = partial_run.get("file_ids", run.file_ids)
-
-        if partial_run.get("required_action"):
-            run.required_action = model_parse(
-                RequiredAction, partial_run.get("required_action")
+        run.expires_at = partial_run.get("expires_at", run.expires_at)
+        run.failed_at = partial_run.get("failed_at", run.failed_at)
+        run.incomplete_details = (
+            model_parse(
+                IncompleteDetails,
+                partial_run.get("incomplete_details"),
             )
-
-        if partial_run.get("last_error"):
-            run.last_error = model_parse(LastError, partial_run.get("last_error"))
-
-        if partial_run.get("tools"):
-            run.tools = AssistantsMock._parse_tool_params(partial_run.get("tools", []))
+            or run.incomplete_details
+        )
+        run.instructions = partial_run.get("instructions", run.instructions)
+        run.last_error = (
+            model_parse(LastError, partial_run.get("last_error")) or run.last_error
+        )
+        run.model = partial_run.get("model", run.model)
+        run.required_action = (
+            model_parse(RequiredAction, partial_run.get("required_action"))
+            or run.required_action
+        )
+        run.started_at = partial_run.get("started_at", run.started_at)
+        run.status = partial_run.get("status", run.status)
+        run.tools = (
+            AssistantsMock._parse_tool_params(partial_run.get("tools")) or run.tools
+        )
 
         state_store.beta.threads.runs.put(run)
 
@@ -783,18 +822,26 @@ class RunsMock(StatefulMock):
     ) -> PartialRun:
         if not run:
             return {
-                "file_ids": asst.file_ids,
                 "instructions": asst.instructions or "",
                 "model": asst.model,
                 "tools": [model_dict(tool) for tool in asst.tools],  # type: ignore
             }
         else:
             return run | {
-                "file_ids": run.get("file_ids", asst.file_ids),
                 "instructions": run.get("instructions", asst.instructions or ""),
                 "model": run.get("model", asst.model),
                 "tools": run.get("tools", [model_dict(tool) for tool in asst.tools]),  # type: ignore
             }
+
+    @staticmethod
+    def _parse_tool_choice_params(
+        params: Optional[AssistantToolChoiceOptionParam],
+    ) -> Optional[AssistantToolChoiceOption]:
+        return (
+            model_parse(AssistantToolChoice, params)
+            if isinstance(params, dict)
+            else params
+        )
 
 
 class RunStepsMock(StatefulMock):

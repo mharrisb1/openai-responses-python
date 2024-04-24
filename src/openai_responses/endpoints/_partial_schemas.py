@@ -8,6 +8,10 @@ from openai.types.beta.threads.run_status import RunStatus
 __all__ = ["PartialRun", "PartialRunStep"]
 
 
+class PartialIncompleteDetails(TypedDict):
+    reason: Optional[Literal["max_completion_tokens", "max_prompt_tokens"]]
+
+
 class PartialFunctionNoOutput(TypedDict):
     name: str
     arguments: str
@@ -34,18 +38,18 @@ class PartialLastError(TypedDict, total=False):
 
 
 class PartialRun(TypedDict, total=False):
-    status: RunStatus
-    required_action: PartialRequiredAction
-    last_error: PartialLastError
-    expires_at: int
-    started_at: int
     cancelled_at: int
-    failed_at: int
     completed_at: int
-    model: str
+    expires_at: int
+    failed_at: int
+    incomplete_details: PartialIncompleteDetails
     instructions: str
+    last_error: PartialLastError
+    model: str
+    required_action: PartialRequiredAction
+    started_at: int
+    status: RunStatus
     tools: List[AssistantToolParam]
-    file_ids: List[str]
 
 
 class PartialCodeInterpreterOutputLogs(TypedDict):
