@@ -50,6 +50,7 @@ markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true
   - attr_list
+  - md_in_html
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
@@ -66,7 +67,9 @@ nav:
       - endpoints/chat.md
       - endpoints/embeddings.md
       - endpoints/files.md
-      - endpoints/assistants.md
-      - endpoints/threads.md
-      - endpoints/messages.md
-      - endpoints/runs.md
+      - Assistants:
+        - endpoints/assistants/assistants.md
+        - endpoints/assistants/threads.md
+        - endpoints/assistants/messages.md
+        - endpoints/assistants/runs.md
+        - endpoints/assistants/run_steps.md
