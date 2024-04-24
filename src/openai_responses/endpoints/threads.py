@@ -1,26 +1,32 @@
 import json
 from functools import partial
-from typing import Any, List, Literal, Optional, Sequence, TypedDict, Union
+from typing import Any, Iterable, List, Literal, Optional, Sequence, TypedDict, Union
 
 import httpx
+from openai.types.beta.code_interpreter_tool import CodeInterpreterTool
+from openai.types.beta.file_search_tool import FileSearchTool
 import respx
 
 from openai.pagination import SyncCursorPage
 from openai.types.beta.assistant import Assistant
 
-from openai.types.beta.thread import Thread
+from openai.types.beta.thread import Thread, ToolResources
 from openai.types.beta.thread_deleted import ThreadDeleted
 from openai.types.beta.thread_update_params import ThreadUpdateParams
 from openai.types.beta.thread_create_params import (
     ThreadCreateParams,
     Message as ThreadMessageCreateParams,
+    MessageAttachment as ThreadMessageCreateAttachmentParams,
 )
 
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
 
-from openai.types.beta.threads.message import Message
-from openai.types.beta.threads.message_create_params import MessageCreateParams
+from openai.types.beta.threads.message import Message, Attachment as MessageAttachment
+from openai.types.beta.threads.message_create_params import (
+    MessageCreateParams,
+    Attachment as MessageCreateAttachmentParams,
+)
 from openai.types.beta.threads.message_update_params import MessageUpdateParams
 
 from openai.types.beta.threads.run import Run, LastError, RequiredAction, Usage
@@ -41,7 +47,7 @@ from ._partial_schemas import PartialRun, PartialRunStep
 from .assistants import AssistantsMock
 from ..decorators import side_effect
 from ..state import StateStore
-from ..utils import model_dict, model_parse, utcnow_unix_timestamp_s
+from ..utils import model_dict, model_parse, remove_none, utcnow_unix_timestamp_s
 
 __all__ = ["ThreadsMock", "MessagesMock", "RunsMock"]
 
@@ -103,6 +109,7 @@ class ThreadsMock(StatefulMock):
         thread = Thread(
             id=self._faker.beta.thread.id(),
             created_at=utcnow_unix_timestamp_s(),
+            tool_resources=model_parse(ToolResources, content.get("tool_resources")),
             metadata=content.get("metadata"),
             object="thread",
         )
@@ -156,6 +163,10 @@ class ThreadsMock(StatefulMock):
         if not thread:
             return httpx.Response(status_code=404)
 
+        thread.tool_resources = (
+            model_parse(ToolResources, content.get("tool_resources"))
+            or thread.tool_resources
+        )
         thread.metadata = content.get("metadata", thread.metadata)
 
         state_store.beta.threads.put(thread)
@@ -351,22 +362,53 @@ class MessagesMock(StatefulMock):
     def _parse_message_create_params(
         self,
         thread_id: str,
-        create_message: Union[ThreadMessageCreateParams, MessageCreateParams],
+        params: Union[ThreadMessageCreateParams, MessageCreateParams],
     ) -> Message:
         return Message(
             id=self._faker.beta.thread.message.id(),
+            attachments=self._parse_attachments_params(params.get("attachments")),
             content=[
                 TextContentBlock(
-                    text=Text(annotations=[], value=create_message["content"]),
+                    text=Text(annotations=[], value=params["content"]),
                     type="text",
                 )
             ],
             created_at=utcnow_unix_timestamp_s(),
-            file_ids=create_message.get("file_ids", []),
+            metadata=params.get("metadata"),
             object="thread.message",
-            role=create_message["role"],
+            role=params["role"],
             status="completed",
             thread_id=thread_id,
+        )
+
+    @staticmethod
+    def _parse_attachments_params(
+        params: Optional[
+            Union[
+                Iterable[MessageCreateAttachmentParams],
+                Iterable[ThreadMessageCreateAttachmentParams],
+            ]
+        ],
+    ) -> Optional[List[MessageAttachment]]:
+        m = {"code_interpreter": CodeInterpreterTool, "file_search": FileSearchTool}
+        return (
+            remove_none(
+                [
+                    model_parse(
+                        MessageAttachment,
+                        {
+                            "file_id": attachment.get("file_id"),
+                            "tools": [
+                                model_parse(m[t["type"]], t)
+                                for t in attachment.get("tools", [])
+                            ],
+                        },
+                    )
+                    for attachment in params
+                ]
+            )
+            if params
+            else None
         )
 
 
