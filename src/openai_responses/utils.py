@@ -1,8 +1,9 @@
 import datetime as dt
-from typing import Any, Optional, Type, TypeVar
+from typing import Any, List, Optional, Type, TypeVar
 
 from openai import BaseModel
 
+T = TypeVar("T")
 M = TypeVar("M", bound=BaseModel)
 
 
@@ -24,3 +25,7 @@ def model_parse(m: Type[M], d: Optional[object]) -> Optional[M]:
         return getattr(m, "model_validate")(d)
     else:
         return getattr(m, "parse_obj")(d)
+
+
+def remove_none(ls: List[Optional[T]]) -> List[T]:
+    return [el for el in ls if el]
