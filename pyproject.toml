@@ -26,6 +26,7 @@ pytest = "^8.1.1"
 pytest-asyncio = "^0.23.6"
 types-decorator = "^5.1.8.20240310"
 mkdocs-material = "^9.5.18"
+tox = "^4.14.2"
 
 [build-system]
 requires = ["poetry-core"]

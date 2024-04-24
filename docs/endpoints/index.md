@@ -20,7 +20,7 @@ Table is assembled according to APIs listed in the [OpenAI API Reference](https:
 | Moderations                            |     :material-close:     |          -          | Stateless    |
 | [Assistants](assistants/assistants.md) |   :material-check:[^3]   |          -          | Stateful     |
 | [Threads](assistants/threads.md)       |   :material-check-all:   |          -          | Stateful     |
-| [Messages](assistants/messages.md)     |   :material-check:[^3]   |  :material-close:   | Stateful     |
+| [Messages](assistants/messages.md)     |   :material-check:[^3]   |          -          | Stateful     |
 | [Runs](assistants/runs.md)             | :material-check:[^4][^5] |  :material-close:   | Stateful     |
 | [Run Steps](assistants/run_steps.md)   |   :material-check:[^6]   |          -          | Stateful     |
 | Vector Stores                          |     :material-close:     |          -          | Stateful     |

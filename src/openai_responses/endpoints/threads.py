@@ -1,29 +1,48 @@
 import json
 from functools import partial
-from typing import Any, List, Literal, Optional, Sequence, TypedDict, Union
+from typing import Any, Iterable, List, Literal, Optional, Sequence, TypedDict, Union
 
 import httpx
+
+from openai.types.beta.assistant_tool_choice import AssistantToolChoice
+from openai.types.beta.assistant_tool_choice_option import AssistantToolChoiceOption
+from openai.types.beta.assistant_tool_choice_option_param import (
+    AssistantToolChoiceOptionParam,
+)
+from openai.types.beta.code_interpreter_tool import CodeInterpreterTool
+from openai.types.beta.file_search_tool import FileSearchTool
 import respx
 
 from openai.pagination import SyncCursorPage
 from openai.types.beta.assistant import Assistant
 
-from openai.types.beta.thread import Thread
+from openai.types.beta.thread import Thread, ToolResources
 from openai.types.beta.thread_deleted import ThreadDeleted
 from openai.types.beta.thread_update_params import ThreadUpdateParams
 from openai.types.beta.thread_create_params import (
     ThreadCreateParams,
     Message as ThreadMessageCreateParams,
+    MessageAttachment as ThreadMessageCreateAttachmentParams,
 )
 
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
 
-from openai.types.beta.threads.message import Message
-from openai.types.beta.threads.message_create_params import MessageCreateParams
+from openai.types.beta.threads.message import Message, Attachment as MessageAttachment
+from openai.types.beta.threads.message_create_params import (
+    MessageCreateParams,
+    Attachment as MessageCreateAttachmentParams,
+)
 from openai.types.beta.threads.message_update_params import MessageUpdateParams
 
-from openai.types.beta.threads.run import Run, LastError, RequiredAction, Usage
+from openai.types.beta.threads.run import (
+    IncompleteDetails,
+    Run,
+    LastError,
+    RequiredAction,
+    TruncationStrategy,
+    Usage,
+)
 from openai.types.beta.threads.run_create_params import RunCreateParams
 from openai.types.beta.threads.run_update_params import RunUpdateParams
 
@@ -41,7 +60,7 @@ from ._partial_schemas import PartialRun, PartialRunStep
 from .assistants import AssistantsMock
 from ..decorators import side_effect
 from ..state import StateStore
-from ..utils import model_dict, model_parse, utcnow_unix_timestamp_s
+from ..utils import model_dict, model_parse, remove_none, utcnow_unix_timestamp_s
 
 __all__ = ["ThreadsMock", "MessagesMock", "RunsMock"]
 
@@ -103,6 +122,7 @@ class ThreadsMock(StatefulMock):
         thread = Thread(
             id=self._faker.beta.thread.id(),
             created_at=utcnow_unix_timestamp_s(),
+            tool_resources=model_parse(ToolResources, content.get("tool_resources")),
             metadata=content.get("metadata"),
             object="thread",
         )
@@ -156,6 +176,10 @@ class ThreadsMock(StatefulMock):
         if not thread:
             return httpx.Response(status_code=404)
 
+        thread.tool_resources = (
+            model_parse(ToolResources, content.get("tool_resources"))
+            or thread.tool_resources
+        )
         thread.metadata = content.get("metadata", thread.metadata)
 
         state_store.beta.threads.put(thread)
@@ -351,22 +375,53 @@ class MessagesMock(StatefulMock):
     def _parse_message_create_params(
         self,
         thread_id: str,
-        create_message: Union[ThreadMessageCreateParams, MessageCreateParams],
+        params: Union[ThreadMessageCreateParams, MessageCreateParams],
     ) -> Message:
         return Message(
             id=self._faker.beta.thread.message.id(),
+            attachments=self._parse_attachments_params(params.get("attachments")),
             content=[
                 TextContentBlock(
-                    text=Text(annotations=[], value=create_message["content"]),
+                    text=Text(annotations=[], value=params["content"]),
                     type="text",
                 )
             ],
             created_at=utcnow_unix_timestamp_s(),
-            file_ids=create_message.get("file_ids", []),
+            metadata=params.get("metadata"),
             object="thread.message",
-            role=create_message["role"],
+            role=params["role"],
             status="completed",
             thread_id=thread_id,
+        )
+
+    @staticmethod
+    def _parse_attachments_params(
+        params: Optional[
+            Union[
+                Iterable[MessageCreateAttachmentParams],
+                Iterable[ThreadMessageCreateAttachmentParams],
+            ]
+        ],
+    ) -> Optional[List[MessageAttachment]]:
+        m = {"code_interpreter": CodeInterpreterTool, "file_search": FileSearchTool}
+        return (
+            remove_none(
+                [
+                    model_parse(
+                        MessageAttachment,
+                        {
+                            "file_id": attachment.get("file_id"),
+                            "tools": [
+                                model_parse(m[t["type"]], t)  # type: ignore
+                                for t in attachment.get("tools", [])
+                            ],
+                        },
+                    )
+                    for attachment in params
+                ]
+            )
+            if params
+            else None
         )
 
 
@@ -464,36 +519,57 @@ class RunsMock(StatefulMock):
 
             partial_run = self._merge_partial_run_with_assistant(partial_run, asst)
 
+        # TODO: create additional messages
+
         run = Run(
             id=self._faker.beta.thread.run.id(),
-            object="thread.run",
-            created_at=utcnow_unix_timestamp_s(),
-            thread_id=thread_id,
             assistant_id=content["assistant_id"],
-            status=partial_run.get("status", "queued"),
-            required_action=model_parse(
-                RequiredAction,
-                partial_run.get("required_action"),
+            cancelled_at=partial_run.get("cancelled_at"),
+            completed_at=partial_run.get("completed_at"),
+            created_at=utcnow_unix_timestamp_s(),
+            expires_at=partial_run.get("expires_at"),
+            failed_at=partial_run.get("failed_at"),
+            incomplete_details=model_parse(
+                IncompleteDetails,
+                partial_run.get("incomplete_details"),
+            ),
+            instructions="\n".join(
+                [
+                    partial_run.get("instructions", ""),
+                    content.get("additional_instructions", "") or "",
+                ]
             ),
             last_error=model_parse(
                 LastError,
                 partial_run.get("last_error"),
             ),
-            expires_at=partial_run.get("expires_at"),
-            started_at=partial_run.get("started_at"),
-            cancelled_at=partial_run.get("cancelled_at"),
-            failed_at=partial_run.get("failed_at"),
-            completed_at=partial_run.get("completed_at"),
-            model=partial_run.get("model", "gpt-3.5-turbo"),
-            instructions=partial_run.get("instructions", ""),
-            tools=AssistantsMock._parse_tool_params(partial_run.get("tools", [])),
-            file_ids=partial_run.get("file_ids", []),
+            max_completion_tokens=content.get("max_completion_tokens"),
+            max_prompt_tokens=content.get("max_prompt_tokens"),
             metadata=content.get("metadata"),
+            model=partial_run.get("model", "gpt-3.5-turbo"),
+            object="thread.run",
+            required_action=model_parse(
+                RequiredAction,
+                partial_run.get("required_action"),
+            ),
+            response_format=AssistantsMock._parse_response_format_params(
+                content.get("response_format")
+            ),
+            started_at=partial_run.get("started_at"),
+            status=partial_run.get("status", "queued"),
+            thread_id=thread_id,
+            tool_choice=self._parse_tool_choice_params(content.get("tool_choice")),
+            tools=AssistantsMock._parse_tool_params(partial_run.get("tools")) or [],
+            truncation_strategy=model_parse(
+                TruncationStrategy, content.get("truncation_strategy")
+            ),
             usage=Usage(
                 completion_tokens=0,
                 prompt_tokens=0,
                 total_tokens=0,
             ),
+            temperature=content.get("temperature"),
+            top_p=content.get("top_p"),
         )
 
         state_store.beta.threads.runs.put(run)
@@ -537,26 +613,31 @@ class RunsMock(StatefulMock):
             if asst:
                 partial_run = self._merge_partial_run_with_assistant(partial_run, asst)
 
-        run.status = partial_run.get("status", run.status)
-        run.expires_at = partial_run.get("expires_at", run.expires_at)
-        run.started_at = partial_run.get("started_at", run.started_at)
         run.cancelled_at = partial_run.get("cancelled_at", run.cancelled_at)
-        run.failed_at = partial_run.get("failed_at", run.failed_at)
         run.completed_at = partial_run.get("completed_at", run.completed_at)
-        run.model = partial_run.get("model", run.model)
-        run.instructions = partial_run.get("instructions", run.instructions)
-        run.file_ids = partial_run.get("file_ids", run.file_ids)
-
-        if partial_run.get("required_action"):
-            run.required_action = model_parse(
-                RequiredAction, partial_run.get("required_action")
+        run.expires_at = partial_run.get("expires_at", run.expires_at)
+        run.failed_at = partial_run.get("failed_at", run.failed_at)
+        run.incomplete_details = (
+            model_parse(
+                IncompleteDetails,
+                partial_run.get("incomplete_details"),
             )
-
-        if partial_run.get("last_error"):
-            run.last_error = model_parse(LastError, partial_run.get("last_error"))
-
-        if partial_run.get("tools"):
-            run.tools = AssistantsMock._parse_tool_params(partial_run.get("tools", []))
+            or run.incomplete_details
+        )
+        run.instructions = partial_run.get("instructions", run.instructions)
+        run.last_error = (
+            model_parse(LastError, partial_run.get("last_error")) or run.last_error
+        )
+        run.model = partial_run.get("model", run.model)
+        run.required_action = (
+            model_parse(RequiredAction, partial_run.get("required_action"))
+            or run.required_action
+        )
+        run.started_at = partial_run.get("started_at", run.started_at)
+        run.status = partial_run.get("status", run.status)
+        run.tools = (
+            AssistantsMock._parse_tool_params(partial_run.get("tools")) or run.tools
+        )
 
         state_store.beta.threads.runs.put(run)
 
@@ -741,18 +822,26 @@ class RunsMock(StatefulMock):
     ) -> PartialRun:
         if not run:
             return {
-                "file_ids": asst.file_ids,
                 "instructions": asst.instructions or "",
                 "model": asst.model,
                 "tools": [model_dict(tool) for tool in asst.tools],  # type: ignore
             }
         else:
             return run | {
-                "file_ids": run.get("file_ids", asst.file_ids),
                 "instructions": run.get("instructions", asst.instructions or ""),
                 "model": run.get("model", asst.model),
                 "tools": run.get("tools", [model_dict(tool) for tool in asst.tools]),  # type: ignore
             }
+
+    @staticmethod
+    def _parse_tool_choice_params(
+        params: Optional[AssistantToolChoiceOptionParam],
+    ) -> Optional[AssistantToolChoiceOption]:
+        return (
+            model_parse(AssistantToolChoice, params)
+            if isinstance(params, dict)
+            else params
+        )
 
 
 class RunStepsMock(StatefulMock):

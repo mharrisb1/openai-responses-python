@@ -5,22 +5,28 @@ from typing import Any, Iterable, List, Optional
 import httpx
 import respx
 
-from openai.types import FunctionDefinition
 from openai.pagination import SyncCursorPage
-from openai.types.beta.assistant import Assistant
+from openai.types.beta.assistant import Assistant, ToolResources
 from openai.types.beta.function_tool import FunctionTool
-from openai.types.beta.retrieval_tool import RetrievalTool
+from openai.types.beta.file_search_tool import FileSearchTool
 from openai.types.beta.assistant_tool import AssistantTool
 from openai.types.beta.assistant_deleted import AssistantDeleted
 from openai.types.beta.code_interpreter_tool import CodeInterpreterTool
 from openai.types.beta.assistant_tool_param import AssistantToolParam
 from openai.types.beta.assistant_create_params import AssistantCreateParams
 from openai.types.beta.assistant_update_params import AssistantUpdateParams
+from openai.types.beta.assistant_response_format import AssistantResponseFormat
+from openai.types.beta.assistant_response_format_option import (
+    AssistantResponseFormatOption,
+)
+from openai.types.beta.assistant_response_format_option_param import (
+    AssistantResponseFormatOptionParam,
+)
 
 from ._base import StatefulMock, CallContainer
 from ..decorators import side_effect
 from ..state import StateStore
-from ..utils import model_dict, utcnow_unix_timestamp_s
+from ..utils import model_dict, model_parse, utcnow_unix_timestamp_s, remove_none
 
 
 class AssistantsMock(StatefulMock):
@@ -86,13 +92,21 @@ class AssistantsMock(StatefulMock):
             id=self._faker.beta.assistant.id(),
             created_at=utcnow_unix_timestamp_s(),
             description=content.get("description"),
-            file_ids=content.get("file_ids", []),
             instructions=content.get("instructions"),
             metadata=content.get("metadata"),
             model=content["model"],
             name=content.get("name"),
             object="assistant",
-            tools=self._parse_tool_params(content_tools),
+            tools=self._parse_tool_params(content_tools) or [],
+            response_format=self._parse_response_format_params(
+                content.get("response_format")
+            ),
+            temperature=content.get("temperature"),
+            tool_resources=model_parse(
+                ToolResources,
+                content.get("tool_resources"),
+            ),
+            top_p=content.get("top_p"),
         )
         state_store.beta.assistants.put(asst)
 
@@ -159,15 +173,21 @@ class AssistantsMock(StatefulMock):
             return httpx.Response(status_code=404)
 
         asst.description = content.get("description", asst.description)
-        asst.file_ids = content.get("file_ids", asst.file_ids)
         asst.instructions = content.get("instructions", asst.instructions)
         asst.metadata = content.get("metadata", asst.metadata)
         asst.model = content.get("model", asst.model)
         asst.name = content.get("name", asst.name)
-
-        update_tools = content.get("tools")
-        if update_tools:
-            asst.tools = self._parse_tool_params(update_tools)
+        asst.response_format = (
+            self._parse_response_format_params(content.get("response_format"))
+            or asst.response_format
+        )
+        asst.temperature = content.get("temperature", asst.temperature)
+        asst.tool_resources = (
+            model_parse(ToolResources, content.get("tool_resources"))
+            or asst.tool_resources
+        )
+        asst.tools = self._parse_tool_params(content.get("tools")) or asst.tools
+        asst.top_p = content.get("top_p", asst.top_p)
 
         state_store.beta.assistants.put(asst)
 
@@ -196,25 +216,25 @@ class AssistantsMock(StatefulMock):
 
     @staticmethod
     def _parse_tool_params(
-        tool_params: Iterable[AssistantToolParam],
-    ) -> List[AssistantTool]:
-        tools: List[AssistantTool] = []
+        params: Optional[Iterable[AssistantToolParam]],
+    ) -> Optional[List[AssistantTool]]:
+        m = {
+            "code_interpreter": CodeInterpreterTool,
+            "file_search": FileSearchTool,
+            "function": FunctionTool,
+        }
+        return (
+            remove_none([model_parse(m[tool["type"]], tool) for tool in params])  # type: ignore
+            if params
+            else None
+        )
 
-        for tool in tool_params:
-            if tool["type"] == "code_interpreter":
-                tools.append(CodeInterpreterTool(type=tool["type"]))
-            elif tool["type"] == "retrieval":
-                tools.append(RetrievalTool(type=tool["type"]))
-            else:
-                tools.append(
-                    FunctionTool(
-                        type=tool["type"],
-                        function=FunctionDefinition(
-                            name=tool["function"]["name"],
-                            description=tool["function"].get("description"),
-                            parameters=tool["function"].get("parameters"),
-                        ),
-                    )
-                )
-
-        return tools
+    @staticmethod
+    def _parse_response_format_params(
+        params: Optional[AssistantResponseFormatOptionParam],
+    ) -> Optional[AssistantResponseFormatOption]:
+        return (
+            model_parse(AssistantResponseFormat, params)
+            if isinstance(params, dict)
+            else params
+        )
