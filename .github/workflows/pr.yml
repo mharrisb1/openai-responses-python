@@ -28,10 +28,10 @@ jobs:
 
       - name: Install dependencies
         shell: bash
-        run: >
-          poetry config virtualenvs.in-project true
+        run: |
+          poetry config virtualenvs.in-project true && \
           poetry install --with dev
-          
+
       - name: Tox run
         shell: bash
         run: poetry run tox run
