@@ -4,6 +4,12 @@
 
     See [examples](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_embeddings_api.py) for more
 
+## Decorator Arguments
+
+- `latency` - synthetic latency in seconds to introduce to the call(s). Defaults to `0.0`.
+- `failures` - number of failures to simulate. Defaults to `0`.
+- `embedding` - array of floats to mock a returned embedding. Default `[]`.
+
 ## Create embeddings
 
 === "Sync"

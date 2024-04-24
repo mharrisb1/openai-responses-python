@@ -1,8 +1,18 @@
 # Files
 
+!!! warning
+
+    There is currently no support for retrieving file content. Subscribe to [#4: feat: add support for retrieving file content](https://github.com/mharrisb1/openai-responses-python/issues/4) to be updated when this is available.
+
 !!! tip
 
     See [examples](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_files_api.py) for more
+
+## Decorator Arguments
+
+- `latency` - synthetic latency in seconds to introduce to the call(s). Defaults to `0.0`.
+- `failures` - number of failures to simulate. Defaults to `0`.
+- `state_store` - Optional [state store](../user_guide/state.md) override for custom and shared states.
 
 ## Upload file
 
