@@ -20,6 +20,7 @@ from openai.types.chat.completion_create_params import CompletionCreateParams
 from ._base import StatelessMock, CallContainer
 from ..decorators import side_effect
 from ..utils import model_dict, utcnow_unix_timestamp_s
+from ..tokens import count_tokens
 
 
 class ChatMock:
@@ -101,7 +102,28 @@ class ChatCompletionMock(StatelessMock):
             created=utcnow_unix_timestamp_s(),
             system_fingerprint="",
             object="chat.completion",
-            usage=CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0),
+        )
+
+        generated = ""
+        for choice in completion.choices:
+            if choice.message.content:
+                generated += choice.message.content
+            elif choice.message.tool_calls:
+                for tool_call in choice.message.tool_calls:
+                    generated += tool_call.function.arguments
+
+        prompt = ""
+        for message in content["messages"]:
+            prompt += str(message.get("content"))
+
+        completion_tokens = count_tokens(completion.model, generated)
+        prompt_tokens = count_tokens(completion.model, prompt)
+        total_tokens = completion_tokens + prompt_tokens
+
+        completion.usage = CompletionUsage(
+            completion_tokens=completion_tokens,
+            prompt_tokens=prompt_tokens,
+            total_tokens=total_tokens,
         )
 
         return httpx.Response(status_code=201, json=model_dict(completion))
