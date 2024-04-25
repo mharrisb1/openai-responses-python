@@ -1,7 +1,6 @@
 # 🧪🤖 openai-responses
 
-> [!NOTE] Info
-> A pytest plugin for automatically mocking OpenAI requests
+Pytest plugin for automatically mocking OpenAI requests
 
 ## Usage
 
