@@ -48,7 +48,7 @@ pip install openai-responses
 
 ## Documentation
 
-[![Docs](https://github.com/mharrisb1/openai-responses-python/actions/workflows/docs.yml/badge.svg)](https://github.com/mharrisb1/openai-responses-python/actions/workflows/docs.yml)
+[![Docs](https://github.com/mharrisb1/openai-responses-python/actions/workflows/docs.yml/badge.svg)](https://mharrisb1.github.io/openai-responses-python)
 
 See the [documentation site](https://mharrisb1.github.io/openai-responses-python) for more info.
 
