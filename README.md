@@ -2,6 +2,16 @@
 
 Pytest plugin for automatically mocking OpenAI requests
 
+## Supported endpoints
+
+- `/v1/chat/completions`
+- `/v1/embeddings`
+- `/v1/files`
+- `/v1/assistants`
+- `/v1/threads` (+ messages, runs, and steps)
+  
+View full support coverage [here](https://mharrisb1.github.io/openai-responses-python/endpoints/).
+
 ## Usage
 
 Simply decorate any test function that contains code that makes a call to an OpenAI endpoint. See [docs](https://mharrisb1.github.io/openai-responses-python) for more.
