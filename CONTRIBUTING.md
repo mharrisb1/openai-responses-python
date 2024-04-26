@@ -73,3 +73,33 @@ poetry install --with dev                   # install deps including development
 poetry shell                                # activate venv
 tox run                                     # run static analysis, unit tests, and examples
 ```
+
+## Design Overview
+
+### Mocks
+
+Mocks are classes that are responsible for encapsulating all request patching of a given endpoint.
+
+Endpoints are classified as either *stateless* or *stateful* mocks. Right now, the only difference between `StatelessMock` and `StatefulMock` is the injection of `used_state` (see [state store](#state-store) below for more).
+
+```mermaid
+classDiagram
+    Mock <-- StatelessMock
+    Mock <-- StatefulMock
+
+    StatelessMock <-- ChatCompletionMock
+    StatelessMock <-- EmbeddingsMock
+
+    StatefulMock <-- FilesMock
+    StatefulMock <-- AssistantsMock
+    StatefulMock <-- ThreadsMock
+    StatefulMock <-- MessagesMock
+    StatefulMock <-- RunsMock
+    StatefulMock <-- RunStepsMock
+```
+
+### State store
+
+The state store is responsible for managing the state of all mocked objects throughout the lifetime of the test scope (function, module, session).
+
+The current implementation of the state store is just a naive dictionary-based KV stores with support for common CRUD operations.
