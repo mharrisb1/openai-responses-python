@@ -10,6 +10,7 @@ from openai.types.create_embedding_response import CreateEmbeddingResponse, Usag
 
 from ._base import StatelessMock, CallContainer
 from ..decorators import side_effect
+from ..tokens import count_tokens
 from ..utils import model_dict
 
 
@@ -57,11 +58,15 @@ class EmbeddingsMock(StatelessMock):
 
         content: EmbeddingCreateParams = json.loads(request.content)
 
+        token_count = 0
+        if isinstance(content["input"], str):
+            token_count = count_tokens(content["model"], content["input"])
+
         embeddings = CreateEmbeddingResponse(
             data=[Embedding(embedding=embedding, index=0, object="embedding")],
             model=content["model"],
             object="list",
-            usage=Usage(prompt_tokens=0, total_tokens=0),
+            usage=Usage(prompt_tokens=token_count, total_tokens=token_count),
         )
 
         return httpx.Response(status_code=201, json=model_dict(embeddings))
