@@ -3,6 +3,7 @@ from openai import OpenAI, AsyncOpenAI, NotFoundError
 
 import openai_responses
 from openai_responses import ThreadsMock, MessagesMock, RunsMock
+from openai_responses.state import StateStore
 
 
 @openai_responses.mock.beta.threads()
@@ -197,6 +198,37 @@ def test_create_thread_run(runs_mock: RunsMock):
 
     assert run.id
     assert run.status == "queued"
+    assert runs_mock.create.route.calls.call_count == 1
+
+
+shared_state = StateStore()
+
+
+@openai_responses.mock.beta.threads.messages(state_store=shared_state)
+@openai_responses.mock.beta.threads.runs(state_store=shared_state)
+def test_create_thread_run_with_additional_messages(
+    messages_mock: MessagesMock,
+    runs_mock: RunsMock,
+):
+    client = OpenAI(api_key="fakeKey")
+
+    run = client.beta.threads.runs.create(
+        thread_id="thread_abc123",
+        assistant_id="asst_abc123",
+        additional_messages=[
+            {
+                "role": "user",
+                "content": "Hello, additional messages!",
+            }
+        ],
+    )
+    assert run.id
+    assert run.status == "queued"
+
+    messages = client.beta.threads.messages.list(thread_id="thread_abc123")
+    assert len(messages.data) == 1
+
+    assert messages_mock.list.route.calls.call_count == 1
     assert runs_mock.create.route.calls.call_count == 1
 
 

@@ -9,21 +9,19 @@ from openai.types.beta.file_search_tool import FileSearchTool
 import respx
 
 from openai.pagination import SyncCursorPage
-
 from openai.types.beta.thread_create_params import (
     Message as ThreadMessageCreateParams,
     MessageAttachment as ThreadMessageCreateAttachmentParams,
 )
-
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
-
 from openai.types.beta.threads.message import Message, Attachment as MessageAttachment
 from openai.types.beta.threads.message_create_params import (
     MessageCreateParams,
     Attachment as MessageCreateAttachmentParams,
 )
 from openai.types.beta.threads.message_update_params import MessageUpdateParams
+from openai.types.beta.threads.run_create_params import AdditionalMessage
 
 
 from ._base import StatefulMock, CallContainer
@@ -229,7 +227,11 @@ class MessagesMock(StatefulMock):
     def _parse_message_create_params(
         self,
         thread_id: str,
-        params: Union[ThreadMessageCreateParams, MessageCreateParams],
+        params: Union[
+            ThreadMessageCreateParams,
+            MessageCreateParams,
+            AdditionalMessage,
+        ],
     ) -> Message:
         return Message(
             id=self._faker.beta.thread.message.id(),

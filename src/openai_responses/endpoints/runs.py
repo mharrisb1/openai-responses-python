@@ -25,6 +25,8 @@ from openai.types.beta.threads.run import (
 from openai.types.beta.threads.run_create_params import RunCreateParams
 from openai.types.beta.threads.run_update_params import RunUpdateParams
 
+from openai_responses.endpoints.messages import MessagesMock
+
 
 from ._base import StatefulMock, CallContainer
 from ._partial_schemas import PartialRun
@@ -153,7 +155,12 @@ class RunsMock(StatefulMock):
 
             partial_run = self._merge_partial_run_with_assistant(partial_run, asst)
 
-        # TODO: create additional messages
+        for additional_message in content.get("additional_messages", []) or []:
+            parsed = MessagesMock()._parse_message_create_params(
+                thread_id,
+                additional_message,
+            )
+            state_store.beta.threads.messages.put(parsed)
 
         run = Run(
             id=self._faker.beta.thread.run.id(),
