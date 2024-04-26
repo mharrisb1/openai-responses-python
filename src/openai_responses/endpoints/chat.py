@@ -1,5 +1,4 @@
 import json
-from functools import partial
 from typing import Any, List, Literal, Optional, TypedDict
 
 import httpx
@@ -56,14 +55,19 @@ class PartialChoice(TypedDict, total=False):
 
 class ChatCompletionMock(StatelessMock):
     def __init__(self) -> None:
-        super().__init__()
-        self.url = self.BASE_URL + "/chat/completions"
-        self.create = CallContainer()
-
-    def _register_routes(self, **common: Any) -> None:
-        self.create.route = respx.post(url__regex=self.url).mock(
-            side_effect=partial(self._create, **common)
+        super().__init__(
+            name="chat_completion_mock",
+            endpoint="/v1/chat/completions",
+            route_registrations=[
+                {
+                    "name": "create",
+                    "method": respx.post,
+                    "pattern": None,
+                    "side_effect": self._create,
+                }
+            ],
         )
+        self.create = CallContainer()
 
     def __call__(
         self,
@@ -79,7 +83,7 @@ class ChatCompletionMock(StatelessMock):
                 failures=failures or 0,
             )
 
-        return self._make_decorator("chat_completion_mock", getter)
+        return self._make_decorator(getter)
 
     @side_effect
     def _create(
@@ -129,7 +133,6 @@ class ChatCompletionMock(StatelessMock):
         return httpx.Response(status_code=201, json=model_dict(completion))
 
     def _choice_partial_to_model(self, i: int, p: PartialChoice) -> Choice:
-
         def fn_call_partial_to_model(p: Optional[PartialFunctionCall]):
             if p is None:
                 return None

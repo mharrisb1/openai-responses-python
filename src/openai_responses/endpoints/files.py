@@ -1,5 +1,4 @@
 import re
-from functools import partial
 from typing import Any, Optional
 
 import httpx
@@ -17,29 +16,42 @@ from ..utils import model_dict, utcnow_unix_timestamp_s
 
 class FilesMock(StatefulMock):
     def __init__(self) -> None:
-        super().__init__()
-        self.url = self.BASE_URL + "/files"
+        super().__init__(
+            name="files_mock",
+            endpoint="/v1/files",
+            route_registrations=[
+                {
+                    "name": "create",
+                    "method": respx.post,
+                    "pattern": None,
+                    "side_effect": self._create,
+                },
+                {
+                    "name": "list",
+                    "method": respx.get,
+                    "pattern": None,
+                    "side_effect": self._list,
+                },
+                {
+                    "name": "retrieve",
+                    "method": respx.get,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._retrieve,
+                },
+                {
+                    "name": "delete",
+                    "method": respx.delete,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._delete,
+                },
+            ],
+        )
+
+        # NOTE: these are explicitly defined to help with autocomplete and type hints
         self.create = CallContainer()
         self.list = CallContainer()
         self.retrieve = CallContainer()
         self.delete = CallContainer()
-
-    def _register_routes(self, **common: Any) -> None:
-        self.create.route = respx.post(url__regex=self.url).mock(
-            side_effect=partial(self._create, **common)
-        )
-
-        self.list.route = respx.get(url__regex=self.url).mock(
-            side_effect=partial(self._list, **common)
-        )
-
-        self.retrieve.route = respx.get(url__regex=self.url + r"/(?P<id>\w+)").mock(
-            side_effect=partial(self._retrieve, **common)
-        )
-
-        self.delete.route = respx.delete(url__regex=self.url + r"/(?P<id>\w+)").mock(
-            side_effect=partial(self._delete, **common)
-        )
 
     def __call__(
         self,
@@ -55,7 +67,7 @@ class FilesMock(StatefulMock):
                 state_store=kwargs["used_state"],
             )
 
-        return self._make_decorator("files_mock", getter, state_store or StateStore())
+        return self._make_decorator(getter, state_store or StateStore())
 
     @side_effect
     def _create(

@@ -67,8 +67,38 @@ __all__ = ["ThreadsMock", "MessagesMock", "RunsMock"]
 
 class ThreadsMock(StatefulMock):
     def __init__(self) -> None:
-        super().__init__()
-        self.url = self.BASE_URL + "/threads"
+        super().__init__(
+            name="threads_mock",
+            endpoint="/v1/threads",
+            route_registrations=[
+                {
+                    "name": "create",
+                    "method": respx.post,
+                    "pattern": None,
+                    "side_effect": self._create,
+                },
+                {
+                    "name": "retrieve",
+                    "method": respx.get,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._retrieve,
+                },
+                {
+                    "name": "update",
+                    "method": respx.post,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._update,
+                },
+                {
+                    "name": "delete",
+                    "method": respx.delete,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._delete,
+                },
+            ],
+        )
+
+        # NOTE: these are explicitly defined to help with autocomplete and type hints
         self.create = CallContainer()
         self.retrieve = CallContainer()
         self.update = CallContainer()
@@ -76,20 +106,6 @@ class ThreadsMock(StatefulMock):
 
         self.messages = MessagesMock()
         self.runs = RunsMock()
-
-    def _register_routes(self, **common: Any) -> None:
-        self.create.route = respx.post(url__regex=self.url).mock(
-            side_effect=partial(self._create, **common)
-        )
-        self.retrieve.route = respx.get(url__regex=self.url + r"/(?P<id>\w+)").mock(
-            side_effect=partial(self._retrieve, **common)
-        )
-        self.update.route = respx.post(url__regex=self.url + r"/(?P<id>\w+)").mock(
-            side_effect=partial(self._update, **common)
-        )
-        self.delete.route = respx.delete(url__regex=self.url + r"/(?P<id>\w+)").mock(
-            side_effect=partial(self._delete, **common)
-        )
 
     def __call__(
         self,
@@ -105,7 +121,7 @@ class ThreadsMock(StatefulMock):
                 state_store=kwargs["used_state"],
             )
 
-        return self._make_decorator("threads_mock", getter, state_store or StateStore())
+        return self._make_decorator(getter, state_store or StateStore())
 
     @side_effect
     def _create(
@@ -210,8 +226,38 @@ class ThreadsMock(StatefulMock):
 
 class MessagesMock(StatefulMock):
     def __init__(self) -> None:
-        super().__init__()
-        self.url = self.BASE_URL + r"/threads/(?P<thread_id>\w+)/messages"
+        super().__init__(
+            name="messages_mock",
+            endpoint=r"/v1/threads/(?P<thread_id>\w+)/messages",
+            route_registrations=[
+                {
+                    "name": "create",
+                    "method": respx.post,
+                    "pattern": None,
+                    "side_effect": self._create,
+                },
+                {
+                    "name": "list",
+                    "method": respx.get,
+                    "pattern": None,
+                    "side_effect": self._list,
+                },
+                {
+                    "name": "retrieve",
+                    "method": respx.get,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._retrieve,
+                },
+                {
+                    "name": "update",
+                    "method": respx.post,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._update,
+                },
+            ],
+        )
+
+        # NOTE: these are explicitly defined to help with autocomplete and type hints
         self.create = CallContainer()
         self.list = CallContainer()
         self.retrieve = CallContainer()
@@ -247,9 +293,7 @@ class MessagesMock(StatefulMock):
                 validate_thread_exists=validate_thread_exists or False,
             )
 
-        return self._make_decorator(
-            "messages_mock", getter, state_store or StateStore()
-        )
+        return self._make_decorator(getter, state_store or StateStore())
 
     @side_effect
     def _create(
@@ -432,8 +476,49 @@ class MultiMethodSequence(TypedDict, total=False):
 
 class RunsMock(StatefulMock):
     def __init__(self) -> None:
-        super().__init__()
-        self.url = self.BASE_URL + r"/threads/(?P<thread_id>\w+)/runs"
+        super().__init__(
+            name="runs_mock",
+            endpoint=r"/v1/threads/(?P<thread_id>\w+)/runs",
+            route_registrations=[
+                {
+                    "name": "create",
+                    "method": respx.post,
+                    "pattern": None,
+                    "side_effect": self._create,
+                },
+                {
+                    "name": "list",
+                    "method": respx.get,
+                    "pattern": None,
+                    "side_effect": self._list,
+                },
+                {
+                    "name": "retrieve",
+                    "method": respx.get,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._retrieve,
+                },
+                {
+                    "name": "update",
+                    "method": respx.post,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._update,
+                },
+                {
+                    "name": "cancel",
+                    "method": respx.post,
+                    "pattern": r"/(?P<id>\w+)/cancel",
+                    "side_effect": self._cancel,
+                },
+                {
+                    "name": "submit_tool_outputs",
+                    "method": respx.post,
+                    "pattern": r"/(?P<id>\w+)/submit_tool_outputs",
+                    "side_effect": self._submit_tool_outputs,
+                },
+            ],
+        )
+
         self.create = CallContainer()
         self.list = CallContainer()
         self.retrieve = CallContainer()
@@ -442,26 +527,6 @@ class RunsMock(StatefulMock):
         self.submit_tool_outputs = CallContainer()
 
         self.steps = RunStepsMock()
-
-    def _register_routes(self, **common: Any) -> None:
-        self.submit_tool_outputs.route = respx.post(
-            url__regex=self.url + r"/(?P<id>\w+)/submit_tool_outputs"
-        ).mock(side_effect=partial(self._submit_tool_outputs, **common))
-        self.cancel.route = respx.post(
-            url__regex=self.url + r"/(?P<id>\w+)/cancel"
-        ).mock(side_effect=partial(self._cancel, **common))
-        self.update.route = respx.post(url__regex=self.url + r"/(?P<id>\w+)").mock(
-            side_effect=partial(self._update, **common)
-        )
-        self.retrieve.route = respx.get(url__regex=self.url + r"/(?P<id>\w+)").mock(
-            side_effect=partial(self._retrieve, **common)
-        )
-        self.create.route = respx.post(url__regex=self.url).mock(
-            side_effect=partial(self._create, **common)
-        )
-        self.list.route = respx.get(url__regex=self.url).mock(
-            side_effect=partial(self._list, **common)
-        )
 
     def __call__(
         self,
@@ -483,7 +548,7 @@ class RunsMock(StatefulMock):
                 validate_assistant_exists=validate_assistant_exists or False,
             )
 
-        return self._make_decorator("runs_mock", getter, state_store or StateStore())
+        return self._make_decorator(getter, state_store or StateStore())
 
     @side_effect
     def _create(
@@ -846,20 +911,27 @@ class RunsMock(StatefulMock):
 
 class RunStepsMock(StatefulMock):
     def __init__(self) -> None:
-        super().__init__()
-        self.url = (
-            self.BASE_URL + r"/threads/(?P<thread_id>\w+)/runs/(?P<run_id>\w+)/steps"
+        super().__init__(
+            name="assistants_mock",
+            endpoint="/v1/assistants",
+            route_registrations=[
+                {
+                    "name": "list",
+                    "method": respx.get,
+                    "pattern": None,
+                    "side_effect": self._list,
+                },
+                {
+                    "name": "retrieve",
+                    "method": respx.get,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._retrieve,
+                },
+            ],
         )
+
         self.list = CallContainer()
         self.retrieve = CallContainer()
-
-    def _register_routes(self, **common: Any) -> None:
-        self.retrieve.route = respx.get(url__regex=self.url + r"/(?P<id>\w+)").mock(
-            side_effect=partial(self._retrieve, **common)
-        )
-        self.list.route = respx.get(url__regex=self.url).mock(
-            side_effect=partial(self._list, **common)
-        )
 
     def __call__(
         self,
@@ -881,9 +953,7 @@ class RunStepsMock(StatefulMock):
                 validate_run_exists=validate_run_exists or False,
             )
 
-        return self._make_decorator(
-            "run_steps_mock", getter, state_store or StateStore()
-        )
+        return self._make_decorator(getter, state_store or StateStore())
 
     def _list(
         self,
