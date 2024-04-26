@@ -1,5 +1,4 @@
 import json
-from functools import partial
 from typing import Any, Iterable, List, Optional
 
 import httpx
@@ -31,30 +30,49 @@ from ..utils import model_dict, model_parse, utcnow_unix_timestamp_s, remove_non
 
 class AssistantsMock(StatefulMock):
     def __init__(self) -> None:
-        super().__init__()
-        self.url = self.BASE_URL + "/assistants"
+        super().__init__(
+            name="assistants_mock",
+            endpoint="/v1/assistants",
+            route_registrations=[
+                {
+                    "name": "create",
+                    "method": respx.post,
+                    "pattern": None,
+                    "side_effect": self._create,
+                },
+                {
+                    "name": "list",
+                    "method": respx.get,
+                    "pattern": None,
+                    "side_effect": self._list,
+                },
+                {
+                    "name": "retrieve",
+                    "method": respx.get,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._retrieve,
+                },
+                {
+                    "name": "update",
+                    "method": respx.post,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._update,
+                },
+                {
+                    "name": "delete",
+                    "method": respx.delete,
+                    "pattern": r"/(?P<id>\w+)",
+                    "side_effect": self._delete,
+                },
+            ],
+        )
+
+        # NOTE: these are explicitly defined to help with autocomplete and type hints
         self.create = CallContainer()
         self.list = CallContainer()
         self.retrieve = CallContainer()
         self.update = CallContainer()
         self.delete = CallContainer()
-
-    def _register_routes(self, **common: Any) -> None:
-        self.create.route = respx.post(url__regex=self.url).mock(
-            side_effect=partial(self._create, **common)
-        )
-        self.list.route = respx.get(url__regex=self.url).mock(
-            side_effect=partial(self._list, **common)
-        )
-        self.retrieve.route = respx.get(url__regex=self.url + r"/(?P<id>\w+)").mock(
-            side_effect=partial(self._retrieve, **common)
-        )
-        self.update.route = respx.post(url__regex=self.url + r"/(?P<id>\w+)").mock(
-            side_effect=partial(self._update, **common)
-        )
-        self.delete.route = respx.delete(url__regex=self.url + r"/(?P<id>\w+)").mock(
-            side_effect=partial(self._delete, **common)
-        )
 
     def __call__(
         self,
@@ -70,9 +88,7 @@ class AssistantsMock(StatefulMock):
                 state_store=kwargs["used_state"],
             )
 
-        return self._make_decorator(
-            "assistants_mock", getter, state_store or StateStore()
-        )
+        return self._make_decorator(getter, state_store or StateStore())
 
     @side_effect
     def _create(

@@ -14,7 +14,7 @@ bug: lorem ipsum
 
 ## Requesting a feature
 
-The main goal of this project is to provide automatic mocking for *all* of the OpenAI API endpoints. If an endpoint or specific feature/behavior of an endpoint is currently not supported, chances are that it's already on the [roadmap](#roadmap). If you don't find the feature you need already in the issues please add a new issue and prefix the title with `feat:` and add the <span style='background-color: blue; padding: 2px; border-radius: 5px'>enhancement</span> label.
+The main goal of this project is to provide automatic mocking for _all_ of the OpenAI API endpoints. If an endpoint or specific feature/behavior of an endpoint is currently not supported, chances are that it's already on the [roadmap](#roadmap). If you don't find the feature you need already in the issues please add a new issue and prefix the title with `feat:` and add the <span style='background-color: blue; padding: 2px; border-radius: 5px'>enhancement</span> label.
 
 Example title:
 
@@ -26,23 +26,23 @@ feat: lorem ipsum
 
 The roadmap is just a ranking of the currently open issues and no hard dates are set at this point for any fix or new feature.
 
-I (Michael) am the BDFL of the project and can and will arbitrarily rank issues according to my own needs (and those of my [employer](https://www.definite.app)) but for the most part I try to evaluate priority of issues based on a 2-dimensional system that looks at ***effort*** and ***impact***.
+I (Michael) am the BDFL of the project and can and will arbitrarily rank issues according to my own needs (and those of my [employer](https://www.definite.app)) but for the most part I try to evaluate priority of issues based on a 2-dimensional system that looks at **_effort_** and **_impact_**.
 
-- *Effort* is a rough estimate of whether something will take a lot of work, some work, or little work to implement
-- *Impact* is a rough estimate of how important something is
+- _Effort_ is a rough estimate of whether something will take a lot of work, some work, or little work to implement
+- _Impact_ is a rough estimate of how important something is
 
 Both are unscientific flawed but they allow me to try to focus on maximizing impact while minimizing effort which is important for an open source project.
 
 If you look at the [project's issues](https://github.com/mharrisb1/openai-responses-python/issues), you'll see they are labeled with some non-standard labels.
 
-| Label                                                                                | Description   |
-| ------------------------------------------------------------------------------------ | ------------- |
-| <span style='background-color: green; padding: 2px; border-radius: 5px'>e0 🌵</span>  | Low effort    |
+| Label                                                                                  | Description   |
+| -------------------------------------------------------------------------------------- | ------------- |
+| <span style='background-color: green; padding: 2px; border-radius: 5px'>e0 🌵</span>   | Low effort    |
 | <span style='background-color: yellow; padding: 2px; border-radius: 5px'>e1 ⚡️</span> | Medium effort |
-| <span style='background-color: red; padding: 2px; border-radius: 5px'>e2 🔥</span>    | High effort   |
-| <span style='background-color: green; padding: 2px; border-radius: 5px'>i0 🌵</span>  | Low impact    |
+| <span style='background-color: red; padding: 2px; border-radius: 5px'>e2 🔥</span>     | High effort   |
+| <span style='background-color: green; padding: 2px; border-radius: 5px'>i0 🌵</span>   | Low impact    |
 | <span style='background-color: yellow; padding: 2px; border-radius: 5px'>i1 ⚡️</span> | Medium impact |
-| <span style='background-color: red; padding: 2px; border-radius: 5px'>i2 🔥</span>    | High impact   |
+| <span style='background-color: red; padding: 2px; border-radius: 5px'>i2 🔥</span>     | High impact   |
 
 Ranking is evaluated according to this quadrant where the priority is ordered from top to bottom and left to right.
 
@@ -71,7 +71,7 @@ pipx install poetry==1.8                    # if not already installed
 poetry config virtualenvs.in-project true   # recommended
 poetry install --with dev                   # install deps including development deps
 poetry shell                                # activate venv
-tox run                                     # run static analysis, unit tests, and examples
+tox run                                     # run lint, static analysis, unit tests, and examples
 ```
 
 ## Design Overview
@@ -80,7 +80,7 @@ tox run                                     # run static analysis, unit tests, a
 
 Mocks are classes that are responsible for encapsulating all request patching of a given endpoint.
 
-Endpoints are classified as either *stateless* or *stateful* mocks. Right now, the only difference between `StatelessMock` and `StatefulMock` is the injection of `used_state` (see [state store](#state-store) below for more).
+Endpoints are classified as either _stateless_ or _stateful_ mocks. Right now, the only difference between `StatelessMock` and `StatefulMock` is the injection of `used_state` (see [state store](#state-store) below for more).
 
 ```mermaid
 classDiagram

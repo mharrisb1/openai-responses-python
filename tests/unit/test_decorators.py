@@ -7,7 +7,7 @@ import respx
 from openai_responses.decorators import side_effect, unwrap
 
 
-def test_side_effect_make_decorator():
+def test_side_effect():
     @side_effect
     def wrapped_side_effect(route: respx.Route, **kwargs: Any) -> httpx.Response:
         return httpx.Response(status_code=200)
