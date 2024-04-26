@@ -1,6 +1,6 @@
 # User Guide
 
-To mock API calls within a test function you must decorate the test function with a mock decorator. Each endpoint has its own decorator.
+To mock API calls within a test function just decorate the test function with a mock decorator. Each endpoint has its own decorator.
 You can [chain](chaining.md) decorators if your test calls more than one endpoint. Each decorator has the following arguments:
 
 - `latency` - synthetic latency in seconds to introduce to the call(s). Defaults to `0.0`.
@@ -89,3 +89,43 @@ View available [endpoints](../endpoints/index.md).
     1. Mocker decorators will follow the same interface as the API client
     2. This mocker has an additional argument for `choices`
     3. Common argument for `latency`
+
+## Accessing route info
+
+For each test, you can access details about the routes called by including the corresponding [mocker class](mockers.md) fixture.
+This package is built on top of [RESPX](https://github.com/lundberg/respx) and passes through the route object which includes the
+[call history](https://lundberg.github.io/respx/guide/#call-history).
+
+```python linenums="1" hl_lines="4 15 27"
+from openai import OpenAI
+
+import openai_responses
+from openai_responses import ChatCompletionMock # (1)
+
+
+@openai_responses.mock.chat.completions(
+    choices=[
+        {"message": {"content": "Hello, how can I help?"}},
+        {"message": {"content": "Hi! I'm here to help!"}},
+        {"message": {"content": "How can I help?"}},
+    ],
+    latency=5,
+)
+def test_create_completion_with_multiple_choices(chat_completion_mock: ChatCompletionMock): # (2)
+    client = OpenAI(api_key="fakeKey")
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello!"},
+        ],
+        n=3,
+    )
+    assert len(completion.choices) == 3
+
+    assert chat_completion_mock.create.route.calls.call_count == 1 # (3)
+```
+
+1. Optionally import the mocker class for type annotations and autocomplete support
+2. Add the correct mocker class fixture
+3. Use RESPX route call history to add additional assertions to your tests
