@@ -8,6 +8,7 @@ theme:
     - navigation.tabs.sticky
     - navigation.expand
     - navigation.indexes
+    - navigation.top
     - content.code.select
     - content.code.annotate
     - content.code.copy
@@ -59,9 +60,11 @@ nav:
   - index.md
   - User Guide:
       - user_guide/index.md
-      - user_guide/mockers.md
+      - user_guide/decorators.md
       - user_guide/chaining.md
+      - user_guide/mocks.md
       - user_guide/state.md
+      - user_guide/async.md
   - Endpoints:
       - endpoints/index.md
       - endpoints/chat.md
