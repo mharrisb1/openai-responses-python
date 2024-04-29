@@ -26,6 +26,8 @@ feat: lorem ipsum
 
 The roadmap is just a ranking of the currently open issues and no hard dates are set at this point for any fix or new feature.
 
+I have added version release milestones to some of the issues to give a sense of what is coming in what order. View milestones [here](https://github.com/mharrisb1/openai-responses-python/milestones).
+
 I (Michael) am the BDFL of the project and can and will arbitrarily rank issues according to my own needs (and those of my [employer](https://www.definite.app)) but for the most part I try to evaluate priority of issues based on a 2-dimensional system that looks at **_effort_** and **_impact_**.
 
 - _Effort_ is a rough estimate of whether something will take a lot of work, some work, or little work to implement
