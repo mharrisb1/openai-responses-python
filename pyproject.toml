@@ -6,7 +6,8 @@ authors = ["Michael Harris <mharris@definite.app>"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/mharrisb1/openai-responses-python"
-homepage = "https://github.com/mharrisb1/openai-responses-python"
+homepage = "https://mharrisb1.github.io/openai-responses-python/"
+documentation = "https://mharrisb1.github.io/openai-responses-python/"
 packages = [{ include = "openai_responses", from = "src" }]
 
 [tool.poetry.plugins.pytest11]
