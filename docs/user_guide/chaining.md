@@ -1,4 +1,4 @@
-# Chaining Decorators
+# Chaining
 
 To mock more than one API endpoint, you can chain decorators as much as you'd like.
 
@@ -20,3 +20,7 @@ def test_list_runs(threads_mock: ThreadsMock, runs_mock: RunsMock):
     assert runs_mock.create.route.calls.call_count == 20
     assert runs_mock.list.route.calls.call_count == 1
 ```
+
+!!! tip
+
+    To share state between mocks, see the [state](state.md) page in the user guide.

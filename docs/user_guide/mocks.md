@@ -1,4 +1,4 @@
-# Mocker Classes
+# Mocks
 
 Each mock decorator also has an accompanying mocker class. These classes are provided as pytest fixtures and are always available. To access them from your test function, just include the mocker class name as snake case (e.g. access `FilesMock` mocker with `files_mock`).
 
