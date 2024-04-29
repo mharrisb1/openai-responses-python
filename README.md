@@ -1,6 +1,6 @@
 # 🧪🤖 openai-responses
 
-Pytest plugin for automatically mocking OpenAI requests
+Pytest plugin for automatically mocking OpenAI requests. Built on top of [RESPX](https://github.com/lundberg/respx).
 
 ## Supported endpoints
 
@@ -9,7 +9,7 @@ Pytest plugin for automatically mocking OpenAI requests
 - `/v1/files`
 - `/v1/assistants`
 - `/v1/threads` (+ messages, runs, and steps)
-  
+
 View full support coverage [here](https://mharrisb1.github.io/openai-responses-python/endpoints/).
 
 ## Usage
