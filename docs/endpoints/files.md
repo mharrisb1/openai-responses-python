@@ -78,7 +78,7 @@
         assert files_mock.create.route.calls.call_count == 1
     ```
 
-    1.  See [mockers guide](../user_guide/mockers.md) for more
+    1.  See [mockers guide](../user_guide/mocks.md) for more
 
 ## List files
 
@@ -158,7 +158,7 @@
         assert files_mock.list.route.calls.call_count == 2
     ```
 
-    1.  See [mockers guide](../user_guide/mockers.md) for more
+    1.  See [mockers guide](../user_guide/mocks.md) for more
 
 ## Retrieve file
 
@@ -229,7 +229,7 @@
         assert files_mock.retrieve.route.calls.call_count == 1
     ```
 
-    1.  See [mockers guide](../user_guide/mockers.md) for more
+    1.  See [mockers guide](../user_guide/mocks.md) for more
 
 ## Delete file
 
@@ -297,4 +297,4 @@
         assert files_mock.delete.route.calls.call_count = 1
     ```
 
-    1.  See [mockers guide](../user_guide/mockers.md) for more
+    1.  See [mockers guide](../user_guide/mocks.md) for more

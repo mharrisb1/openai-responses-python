@@ -93,4 +93,4 @@
         assert chat_completion_mock.create.route.calls.call_count == 1
     ```
 
-    1.  See [mockers guide](../user_guide/mockers.md) for more
+    1.  See [mockers guide](../user_guide/mocks.md) for more
