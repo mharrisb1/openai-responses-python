@@ -4,7 +4,7 @@ from typing import Any, Callable, Optional
 
 import respx
 
-from ._routes import ChatWrapper
+from ._routes import ChatWrapper, EmbeddingsWrapper
 
 
 class OpenAIMock:
@@ -28,8 +28,6 @@ class OpenAIMock:
                     kwargs["openai_mock"] = self
                 assert self._router is not None
                 with self._router:
-                    # TODO: init state store
-                    self._register_routes()
                     return await fn(*args, **kwargs)
 
             @wraps(fn)
@@ -38,17 +36,18 @@ class OpenAIMock:
                     kwargs["openai_mock"] = self
                 assert self._router is not None
                 with self._router:
-                    # TODO: init state store
-                    self._register_routes()
                     return fn(*args, **kwargs)
 
             return async_wrapper if is_async else sync_wrapper
 
         return wrapper
 
-    def _register_routes(self) -> None: ...
-
     @property
     def chat(self) -> ChatWrapper:
         assert self._router is not None, "Can only be called within a mock"
         return ChatWrapper(self._router)
+
+    @property
+    def embeddings(self) -> EmbeddingsWrapper:
+        assert self._router is not None, "Can only be called within a mock"
+        return EmbeddingsWrapper(self._router)
