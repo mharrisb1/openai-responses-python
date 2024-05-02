@@ -7,7 +7,7 @@ import respx
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.completion_create_params import CompletionCreateParams
 
-from .base import Route
+from .base import StatelessRoute
 
 from .._types.partials.chat import PartialChatCompletion
 
@@ -20,7 +20,7 @@ from .._utils.token import add_token_usage_for_completion
 __all__ = ["ChatCompletionsCreateRoute"]
 
 
-class ChatCompletionsCreateRoute(Route[ChatCompletion, PartialChatCompletion]):
+class ChatCompletionsCreateRoute(StatelessRoute[ChatCompletion, PartialChatCompletion]):
     def __init__(self, router: respx.MockRouter) -> None:
         super().__init__(
             route=router.post(url__regex="/v1/chat/completions"),

@@ -6,11 +6,12 @@ import respx
 
 from openai import BaseModel
 
+from .._stores import StateStore
 from .._types.generics import M, P
 from .._types.protocols import ResponseHandler
 from .._utils.serde import model_dict
 
-__all__ = ["Route"]
+__all__ = ["StatelessRoute", "StatefulRoute"]
 
 
 class Route(ABC, Generic[M, P]):
@@ -91,3 +92,13 @@ class Route(ABC, Generic[M, P]):
             M: Full model instance
         """
         raise NotImplementedError
+
+
+class StatelessRoute(Route[M, P]):
+    pass
+
+
+class StatefulRoute(Route[M, P]):
+    def __init__(self, route: respx.Route, status_code: int, state: StateStore) -> None:
+        super().__init__(route, status_code)
+        self._state = state

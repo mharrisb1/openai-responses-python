@@ -8,7 +8,7 @@ from openai.types.create_embedding_response import CreateEmbeddingResponse, Usag
 import httpx
 import respx
 
-from .base import Route
+from .base import StatelessRoute
 
 from .._types.partials.embeddings import PartialCreateEmbeddingResponse
 
@@ -19,7 +19,7 @@ __all__ = ["EmbeddingsCreateRoute"]
 
 
 class EmbeddingsCreateRoute(
-    Route[
+    StatelessRoute[
         CreateEmbeddingResponse,
         PartialCreateEmbeddingResponse,
     ]
