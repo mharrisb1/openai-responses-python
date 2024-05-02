@@ -1,5 +1,4 @@
 import json
-from typing import Any
 
 import httpx
 import respx
@@ -13,7 +12,7 @@ from .._types.partials.chat import PartialChatCompletion
 
 from .._utils.faker import faker
 from .._utils.filter import remove_none
-from .._utils.serde import model_dict, model_parse
+from .._utils.serde import model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 from .._utils.token import add_token_usage_for_completion
 
@@ -25,19 +24,6 @@ class ChatCompletionsCreateRoute(StatelessRoute[ChatCompletion, PartialChatCompl
         super().__init__(
             route=router.post(url__regex="/v1/chat/completions"),
             status_code=201,
-        )
-
-    def _handler(
-        self,
-        request: httpx.Request,
-        route: respx.Route,
-        **kwargs: Any,
-    ) -> httpx.Response:
-        self._route = route
-        completion = self._build({}, request)
-        return httpx.Response(
-            status_code=self._status_code,
-            json=model_dict(completion),
         )
 
     @staticmethod

@@ -1,5 +1,4 @@
 import json
-from typing import Any
 
 from openai.types.embedding import Embedding
 from openai.types.embedding_create_params import EmbeddingCreateParams
@@ -13,7 +12,7 @@ from .base import StatelessRoute
 from .._types.partials.embeddings import PartialCreateEmbeddingResponse
 
 from .._utils.filter import remove_none
-from .._utils.serde import model_dict, model_parse
+from .._utils.serde import model_parse
 
 __all__ = ["EmbeddingsCreateRoute"]
 
@@ -28,19 +27,6 @@ class EmbeddingsCreateRoute(
         super().__init__(
             route=router.post(url__regex="/v1/embeddings"),
             status_code=201,
-        )
-
-    def _handler(
-        self,
-        request: httpx.Request,
-        route: respx.Route,
-        **kwargs: Any,
-    ) -> httpx.Response:
-        self._route = route
-        embeddings = self._build({}, request)
-        return httpx.Response(
-            status_code=self._status_code,
-            json=model_dict(embeddings),
         )
 
     @staticmethod

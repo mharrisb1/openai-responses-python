@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Optional, Union
+from typing import Any, Callable, Generic, Optional, Union
 
 import httpx
 import respx
@@ -8,10 +8,11 @@ from openai import BaseModel
 
 from .._stores import StateStore
 from .._types.generics import M, P
-from .._types.protocols import ResponseHandler
 from .._utils.serde import model_dict
 
 __all__ = ["StatelessRoute", "StatefulRoute"]
+
+ResponseHandler = Callable[..., httpx.Response]
 
 
 class Route(ABC, Generic[M, P]):
@@ -61,12 +62,10 @@ class Route(ABC, Generic[M, P]):
 
         return _handler
 
-    @abstractmethod
     def _handler(
         self,
         request: httpx.Request,
         route: respx.Route,
-        **kwargs: Any,
     ) -> httpx.Response:
         """Default response handler for route
 
@@ -77,7 +76,13 @@ class Route(ABC, Generic[M, P]):
         Returns:
             httpx.Response: Mocked response
         """
-        raise NotADirectoryError
+        self._route = route
+        empty: Any = {}  # NOTE: avoids mypy complaint
+        model = self._build(empty, request)
+        return httpx.Response(
+            status_code=self._status_code,
+            json=model_dict(model),
+        )
 
     @staticmethod
     @abstractmethod
@@ -95,10 +100,17 @@ class Route(ABC, Generic[M, P]):
 
 
 class StatelessRoute(Route[M, P]):
-    pass
+    def __init__(self, *, route: respx.Route, status_code: int) -> None:
+        super().__init__(route, status_code)
 
 
 class StatefulRoute(Route[M, P]):
-    def __init__(self, route: respx.Route, status_code: int, state: StateStore) -> None:
+    def __init__(
+        self,
+        *,
+        route: respx.Route,
+        status_code: int,
+        state: StateStore,
+    ) -> None:
         super().__init__(route, status_code)
         self._state = state
