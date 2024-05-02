@@ -6,7 +6,7 @@ import openai_responses
 from openai_responses import OpenAIMock
 
 
-EMBEDDINGS = [0.0023064255, -0.009327292, -0.0028842222]
+EMBEDDING = [0.0023064255, -0.009327292, -0.0028842222]
 
 
 @openai_responses.mock()
@@ -15,7 +15,7 @@ def test_create_embedding(openai_mock: OpenAIMock):
         "data": [
             {
                 "object": "embedding",
-                "embedding": EMBEDDINGS,
+                "embedding": EMBEDDING,
                 "index": 0,
             },
         ]
@@ -30,7 +30,7 @@ def test_create_embedding(openai_mock: OpenAIMock):
 
     assert embeddings.model == "text-embedding-ada-002"
     assert len(embeddings.data) == 1
-    assert embeddings.data[0].embedding == EMBEDDINGS
+    assert embeddings.data[0].embedding == EMBEDDING
     assert embeddings.data[0]
 
 
@@ -41,7 +41,7 @@ async def test_async_create_embedding(openai_mock: OpenAIMock):
         "data": [
             {
                 "object": "embedding",
-                "embedding": EMBEDDINGS,
+                "embedding": EMBEDDING,
                 "index": 0,
             },
         ]
@@ -56,5 +56,5 @@ async def test_async_create_embedding(openai_mock: OpenAIMock):
 
     assert embeddings.model == "text-embedding-ada-002"
     assert len(embeddings.data) == 1
-    assert embeddings.data[0].embedding == EMBEDDINGS
+    assert embeddings.data[0].embedding == EMBEDDING
     assert embeddings.data[0]
