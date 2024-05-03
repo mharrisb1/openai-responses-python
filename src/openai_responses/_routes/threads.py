@@ -6,6 +6,7 @@ import httpx
 import respx
 
 from openai.types.beta.thread import Thread
+from openai.types.beta.thread_update_params import ThreadUpdateParams
 
 from ._base import StatefulRoute
 
@@ -17,7 +18,7 @@ from .._utils.serde import model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
 
-__all__ = ["ThreadCreateRoute", "ThreadRetrieveRoute"]
+__all__ = ["ThreadCreateRoute", "ThreadRetrieveRoute", "ThreadUpdateRoute"]
 
 
 class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
@@ -71,6 +72,39 @@ class ThreadRetrieveRoute(StatefulRoute[Thread, PartialThread]):
             return httpx.Response(404)
 
         return httpx.Response(status_code=200, json=model_dict(found))
+
+    @staticmethod
+    def _build(partial: PartialThread, request: httpx.Request) -> Thread:
+        raise NotImplementedError
+
+
+class ThreadUpdateRoute(StatefulRoute[Thread, PartialThread]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.post(url__regex=r"/v1/threads/(?P<id>[a-zA-Z0-9\_]+)"),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+        id = kwargs["id"]
+        found = self._state.beta.threads.get(id)
+        if not found:
+            return httpx.Response(404)
+
+        content: ThreadUpdateParams = json.loads(request.content)
+        deserialized = model_dict(found)
+        updated = model_parse(Thread, deserialized | content)
+        self._state.beta.threads.put(updated)
+
+        return httpx.Response(status_code=200, json=model_dict(updated))
 
     @staticmethod
     def _build(partial: PartialThread, request: httpx.Request) -> Thread:
