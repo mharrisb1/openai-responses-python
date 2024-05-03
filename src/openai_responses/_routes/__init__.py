@@ -12,6 +12,7 @@ from .assistants import (
     AssistantUpdateRoute,
     AssistantDeleteRoute,
 )
+from .threads import ThreadCreateRoute
 
 __all__ = [
     "BetaRoutes",
@@ -47,6 +48,7 @@ class FileRoutes:
 class BetaRoutes:
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         self.assistants = AssistantsRoutes(router, state)
+        self.threads = ThreadRoutes(router, state)
 
 
 class AssistantsRoutes:
@@ -56,3 +58,8 @@ class AssistantsRoutes:
         self.retrieve = AssistantRetrieveRoute(router, state)
         self.update = AssistantUpdateRoute(router, state)
         self.delete = AssistantDeleteRoute(router, state)
+
+
+class ThreadRoutes:
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        self.create = ThreadCreateRoute(router, state)
