@@ -9,7 +9,7 @@ from openai.pagination import SyncPage
 from openai.types.file_object import FileObject
 from openai.types.file_deleted import FileDeleted
 
-from .base import StatefulRoute
+from ._base import StatefulRoute
 
 from .._stores import StateStore
 from .._types.partials.files import (

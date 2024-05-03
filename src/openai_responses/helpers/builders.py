@@ -7,7 +7,7 @@ from openai.types.create_embedding_response import CreateEmbeddingResponse
 
 from openai.types.beta.assistant import Assistant
 
-from .._routes.base import Route
+from .._routes._base import Route
 from .._routes.assistants import AssistantCreateRoute
 from .._routes.chat import ChatCompletionsCreateRoute
 from .._routes.embeddings import EmbeddingsCreateRoute

@@ -6,7 +6,7 @@ import respx
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.completion_create_params import CompletionCreateParams
 
-from .base import StatelessRoute
+from ._base import StatelessRoute
 
 from .._types.partials.chat import PartialChatCompletion
 

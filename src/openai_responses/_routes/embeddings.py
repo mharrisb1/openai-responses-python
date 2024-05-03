@@ -7,7 +7,7 @@ from openai.types.create_embedding_response import CreateEmbeddingResponse, Usag
 import httpx
 import respx
 
-from .base import StatelessRoute
+from ._base import StatelessRoute
 
 from .._types.partials.embeddings import PartialCreateEmbeddingResponse
 

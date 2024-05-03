@@ -7,7 +7,7 @@ import respx
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.assistant_create_params import AssistantCreateParams
 
-from .base import StatefulRoute
+from ._base import StatefulRoute
 
 from .._stores import StateStore
 from .._types.partials.assistants import PartialAssistant
