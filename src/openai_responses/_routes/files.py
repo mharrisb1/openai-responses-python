@@ -1,25 +1,38 @@
 import re
+from typing_extensions import override
 
 import httpx
 import respx
 
+from openai.pagination import SyncPage
 from openai.types.file_object import FileObject
 
 from .base import StatefulRoute
 
 from .._stores import StateStore
-from .._types.partials.files import PartialFileObject
+from .._types.partials.files import PartialFileObject, PartialFileList
 
 from .._utils.faker import faker
+from .._utils.serde import model_dict
 from .._utils.time import utcnow_unix_timestamp_s
 
 
 class FileCreateRoute(StatefulRoute[FileObject, PartialFileObject]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=respx.post(url__regex="/v1/files"),
+            route=router.post(url__regex="/v1/files"),
             status_code=201,
             state=state,
+        )
+
+    @override
+    def _handler(self, request: httpx.Request, route: respx.Route) -> httpx.Response:
+        self._route = route
+        model = self._build({}, request)
+        self._state.files.put(model)
+        return httpx.Response(
+            status_code=self._status_code,
+            json=model_dict(model),
         )
 
     @staticmethod
@@ -50,3 +63,29 @@ class FileCreateRoute(StatefulRoute[FileObject, PartialFileObject]):
             status=partial.get("status", "uploaded"),
             status_details=partial.get("status_details"),
         )
+
+
+class FileListRoute(StatefulRoute[SyncPage[FileObject], PartialFileList]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.get(url__regex="/v1/files"),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(self, request: httpx.Request, route: respx.Route) -> httpx.Response:
+        self._route = route
+        purpose = request.url.params.get("purpose")
+        files = SyncPage[FileObject](
+            object="list",
+            data=self._state.files.list(purpose=purpose),
+        )
+        return httpx.Response(status_code=200, json=model_dict(files))
+
+    @staticmethod
+    def _build(
+        partial: PartialFileList,
+        request: httpx.Request,
+    ) -> SyncPage[FileObject]:
+        raise NotImplementedError

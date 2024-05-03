@@ -4,7 +4,7 @@ from .._stores import StateStore
 
 from .chat import ChatCompletionsCreateRoute
 from .embeddings import EmbeddingsCreateRoute
-from .files import FileCreateRoute
+from .files import FileCreateRoute, FileListRoute
 
 __all__ = [
     "ChatWrapper",
@@ -29,5 +29,6 @@ class EmbeddingsWrapper:
 
 
 class FileWrapper:
-    def __init__(self, router: respx.MockRouter, store: StateStore) -> None:
-        self.create = FileCreateRoute(router, store)
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        self.create = FileCreateRoute(router, state)
+        self.list = FileListRoute(router, state)
