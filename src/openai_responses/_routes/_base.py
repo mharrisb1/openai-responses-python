@@ -39,8 +39,15 @@ class Route(ABC, Generic[M, P]):
 
     @response.setter
     def response(
-        self, value: Union[httpx.Response, M, P, Callable[..., httpx.Response]]
+        self,
+        value: Union[httpx.Response, M, P, Callable[..., httpx.Response]],
     ) -> None:
+        """
+        Sets the value of route response. See docs for more details and examples.
+
+        Args:
+            value: Either an HTTPX response, an OpenAI model, a partial model, or a callable that returns an HTTPX response
+        """
         self._response = value
         self._route.side_effect = self._side_effect
 
