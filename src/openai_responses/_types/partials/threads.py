@@ -1,7 +1,7 @@
 from typing import Dict, List, Literal, TypedDict
 from typing_extensions import NotRequired
 
-__all__ = ["PartialThread"]
+__all__ = ["PartialThread", "PartialThreadDeleted"]
 
 
 class PartialToolResourcesCodeInterpreter(TypedDict):
@@ -22,3 +22,9 @@ class PartialThread(TypedDict):
     created_at: NotRequired[int]
     metadata: NotRequired[Dict[str, str]]
     object: NotRequired[Literal["thread"]]
+
+
+class PartialThreadDeleted(TypedDict):
+    id: NotRequired[str]
+    object: NotRequired[Literal["thread.deleted"]]
+    deleted: NotRequired[bool]

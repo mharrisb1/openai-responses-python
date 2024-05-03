@@ -12,7 +12,12 @@ from .assistants import (
     AssistantUpdateRoute,
     AssistantDeleteRoute,
 )
-from .threads import ThreadCreateRoute, ThreadRetrieveRoute, ThreadUpdateRoute
+from .threads import (
+    ThreadCreateRoute,
+    ThreadRetrieveRoute,
+    ThreadUpdateRoute,
+    ThreadDeleteRoute,
+)
 
 __all__ = [
     "BetaRoutes",
@@ -65,3 +70,4 @@ class ThreadRoutes:
         self.create = ThreadCreateRoute(router, state)
         self.retrieve = ThreadRetrieveRoute(router, state)
         self.update = ThreadUpdateRoute(router, state)
+        self.delete = ThreadDeleteRoute(router, state)

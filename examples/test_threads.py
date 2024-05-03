@@ -38,3 +38,14 @@ def test_update_thread(openai_mock: OpenAIMock):
     assert updated.metadata == {"foo": "baz"}
     assert openai_mock.beta.threads.create.calls.call_count == 1
     assert openai_mock.beta.threads.update.calls.call_count == 1
+
+
+@openai_responses.mock()
+def test_delete_thread(openai_mock: OpenAIMock):
+    client = openai.Client(api_key="sk-fake123")
+
+    thread = client.beta.threads.create()
+
+    assert client.beta.threads.delete(thread.id).deleted
+    assert openai_mock.beta.threads.create.calls.call_count == 1
+    assert openai_mock.beta.threads.delete.calls.call_count == 1
