@@ -15,7 +15,7 @@ from .._stores import StateStore
 from .._types.partials.files import (
     PartialFileObject,
     PartialFileList,
-    PartialFileDeleteObject,
+    PartialFileDeleted,
 )
 
 from .._utils.faker import faker
@@ -130,7 +130,7 @@ class FileRetrieveRoute(StatefulRoute[FileObject, PartialFileObject]):
         raise NotImplementedError
 
 
-class FileDeleteRoute(StatefulRoute[FileObject, PartialFileDeleteObject]):
+class FileDeleteRoute(StatefulRoute[FileObject, PartialFileDeleted]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.delete(url__regex=r"/v1/files/(?P<id>[a-zA-Z0-9\-]+)"),
@@ -148,7 +148,6 @@ class FileDeleteRoute(StatefulRoute[FileObject, PartialFileDeleteObject]):
         self._route = route
         id = kwargs["id"]
         deleted = self._state.files.delete(id)
-
         return httpx.Response(
             status_code=200,
             json=model_dict(FileDeleted(id=id, deleted=deleted, object="file")),
@@ -156,7 +155,7 @@ class FileDeleteRoute(StatefulRoute[FileObject, PartialFileDeleteObject]):
 
     @staticmethod
     def _build(
-        partial: PartialFileDeleteObject,
+        partial: PartialFileDeleted,
         request: httpx.Request,
     ) -> FileObject:
         raise NotImplementedError
