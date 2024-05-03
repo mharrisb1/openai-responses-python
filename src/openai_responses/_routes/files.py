@@ -16,6 +16,8 @@ from .._utils.faker import faker
 from .._utils.serde import model_dict
 from .._utils.time import utcnow_unix_timestamp_s
 
+REGEXP_FILE = r'Content-Disposition: form-data;[^;]+; name="purpose"\r\n\r\n(?P<purpose_value>[^\r\n]+)|filename="(?P<filename>[^"]+)"'
+
 
 class FileCreateRoute(StatefulRoute[FileObject, PartialFileObject]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
@@ -43,9 +45,7 @@ class FileCreateRoute(StatefulRoute[FileObject, PartialFileObject]):
         purpose = "assistants"
 
         # FIXME: hacky
-        prog = re.compile(
-            r'Content-Disposition: form-data;[^;]+; name="purpose"\r\n\r\n(?P<purpose_value>[^\r\n]+)|filename="(?P<filename>[^"]+)"'
-        )
+        prog = re.compile(REGEXP_FILE)
         matches = prog.finditer(content)
         for match in matches:
             if match.group("filename"):
