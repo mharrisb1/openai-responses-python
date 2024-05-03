@@ -1,11 +1,14 @@
+import pytest
+
 import openai
 
 import openai_responses
 from openai_responses import OpenAIMock
 
 
+@pytest.mark.asyncio
 @openai_responses.mock()
-def test_create_chat_completion(openai_mock: OpenAIMock):
+async def test_async_create_chat_completion(openai_mock: OpenAIMock):
     openai_mock.chat.completions.create.response = {
         "choices": [
             {
@@ -16,8 +19,8 @@ def test_create_chat_completion(openai_mock: OpenAIMock):
         ]
     }
 
-    client = openai.Client(api_key="sk-fake123")
-    completion = client.chat.completions.create(
+    client = openai.AsyncClient(api_key="sk-fake123")
+    completion = await client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
