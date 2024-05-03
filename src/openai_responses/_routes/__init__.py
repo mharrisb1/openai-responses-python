@@ -4,7 +4,7 @@ from .._stores import StateStore
 
 from .chat import ChatCompletionsCreateRoute
 from .embeddings import EmbeddingsCreateRoute
-from .files import FileCreateRoute, FileListRoute, FileRetrieveRoute
+from .files import FileCreateRoute, FileListRoute, FileRetrieveRoute, FileDeleteRoute
 
 __all__ = [
     "ChatWrapper",
@@ -33,3 +33,4 @@ class FileWrapper:
         self.create = FileCreateRoute(router, state)
         self.list = FileListRoute(router, state)
         self.retrieve = FileRetrieveRoute(router, state)
+        self.delete = FileDeleteRoute(router, state)

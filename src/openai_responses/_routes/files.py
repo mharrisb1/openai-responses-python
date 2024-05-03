@@ -7,11 +7,16 @@ import respx
 
 from openai.pagination import SyncPage
 from openai.types.file_object import FileObject
+from openai.types.file_deleted import FileDeleted
 
 from .base import StatefulRoute
 
 from .._stores import StateStore
-from .._types.partials.files import PartialFileObject, PartialFileList
+from .._types.partials.files import (
+    PartialFileObject,
+    PartialFileList,
+    PartialFileDeleteObject,
+)
 
 from .._utils.faker import faker
 from .._utils.serde import model_dict
@@ -19,7 +24,7 @@ from .._utils.time import utcnow_unix_timestamp_s
 
 REGEXP_FILE = r'Content-Disposition: form-data;[^;]+; name="purpose"\r\n\r\n(?P<purpose_value>[^\r\n]+)|filename="(?P<filename>[^"]+)"'
 
-__all__ = ["FileCreateRoute", "FileListRoute", "FileRetrieveRoute"]
+__all__ = ["FileCreateRoute", "FileListRoute", "FileRetrieveRoute", "FileDeleteRoute"]
 
 
 class FileCreateRoute(StatefulRoute[FileObject, PartialFileObject]):
@@ -120,6 +125,38 @@ class FileRetrieveRoute(StatefulRoute[FileObject, PartialFileObject]):
     @staticmethod
     def _build(
         partial: PartialFileObject,
+        request: httpx.Request,
+    ) -> FileObject:
+        raise NotImplementedError
+
+
+class FileDeleteRoute(StatefulRoute[FileObject, PartialFileDeleteObject]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.delete(url__regex=r"/v1/files/(?P<id>[a-zA-Z0-9\-]+)"),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+        id = kwargs["id"]
+        deleted = self._state.files.delete(id)
+
+        return httpx.Response(
+            status_code=200,
+            json=model_dict(FileDeleted(id=id, deleted=deleted, object="file")),
+        )
+
+    @staticmethod
+    def _build(
+        partial: PartialFileDeleteObject,
         request: httpx.Request,
     ) -> FileObject:
         raise NotImplementedError

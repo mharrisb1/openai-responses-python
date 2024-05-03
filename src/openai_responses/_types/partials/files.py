@@ -1,7 +1,7 @@
 from typing import List, Literal, TypedDict
 from typing_extensions import NotRequired
 
-__all__ = ["PartialFileObject", "PartialFileList"]
+__all__ = ["PartialFileObject", "PartialFileList", "PartialFileDeleteObject"]
 
 
 class PartialFileObject(TypedDict):
@@ -20,3 +20,9 @@ class PartialFileObject(TypedDict):
 class PartialFileList(TypedDict):
     data: NotRequired[List[PartialFileObject]]
     object: NotRequired[Literal["list"]]
+
+
+class PartialFileDeleteObject(TypedDict):
+    id: NotRequired[str]
+    object: NotRequired[Literal["file"]]
+    deleted: NotRequired[bool]
