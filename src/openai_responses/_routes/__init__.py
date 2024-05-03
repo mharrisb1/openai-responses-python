@@ -2,10 +2,16 @@ import respx
 
 from .._stores import StateStore
 
-from .assistants import AssistantCreateRoute
 from .chat import ChatCompletionsCreateRoute
 from .embeddings import EmbeddingsCreateRoute
 from .files import FileCreateRoute, FileListRoute, FileRetrieveRoute, FileDeleteRoute
+from .assistants import (
+    AssistantCreateRoute,
+    AssistantListRoute,
+    AssistantRetrieveRoute,
+    AssistantUpdateRoute,
+    AssistantDeleteRoute,
+)
 
 __all__ = [
     "BetaRoutes",
@@ -46,3 +52,7 @@ class BetaRoutes:
 class AssistantsRoutes:
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         self.create = AssistantCreateRoute(router, state)
+        self.list = AssistantListRoute(router, state)
+        self.retrieve = AssistantRetrieveRoute(router, state)
+        self.update = AssistantUpdateRoute(router, state)
+        self.delete = AssistantDeleteRoute(router, state)

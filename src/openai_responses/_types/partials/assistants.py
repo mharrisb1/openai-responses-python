@@ -3,6 +3,8 @@ from typing_extensions import NotRequired
 
 from openai._utils._transform import PropertyInfo
 
+__all__ = ["PartialAssistant", "PartialAssistantList", "PartialAssistantDeleted"]
+
 
 class PartialAssistantResponseFormat(TypedDict):
     type: NotRequired[Literal["text", "json_object"]]
@@ -67,3 +69,17 @@ class PartialAssistant(TypedDict):
     temperature: NotRequired[float]
     tool_resources: NotRequired[PartialToolResources]
     top_p: NotRequired[float]
+
+
+class PartialAssistantList(TypedDict):
+    object: NotRequired[Literal["list"]]
+    data: NotRequired[List[PartialAssistant]]
+    first_id: NotRequired[str]
+    last_id: NotRequired[str]
+    has_more: NotRequired[bool]
+
+
+class PartialAssistantDeleted(TypedDict):
+    id: NotRequired[str]
+    object: NotRequired[Literal["assistant.deleted"]]
+    deleted: NotRequired[bool]
