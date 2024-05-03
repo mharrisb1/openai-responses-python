@@ -11,7 +11,6 @@ from ._base import StatelessRoute
 
 from .._types.partials.embeddings import PartialCreateEmbeddingResponse
 
-from .._utils.filter import remove_none
 from .._utils.serde import model_parse
 
 __all__ = ["EmbeddingsCreateRoute"]
@@ -37,10 +36,12 @@ class EmbeddingsCreateRoute(
         content: EmbeddingCreateParams = json.loads(request.content)
         embeddings = partial.get("data", [])
         response = CreateEmbeddingResponse(
-            data=remove_none([model_parse(Embedding, e) for e in embeddings]),
+            data=[model_parse(Embedding, e) for e in embeddings],
             model=partial.get("model", content["model"]),
             object="list",
-            usage=model_parse(Usage, partial.get("usage"))
-            or Usage(prompt_tokens=0, total_tokens=0),
+            usage=model_parse(
+                Usage,
+                partial.get("usage", dict({"prompt_tokens": 0, "total_tokens": 0})),
+            ),
         )
         return response
