@@ -11,23 +11,25 @@ ASSERTION_ERROR = "Can only be called within a mock context"
 
 
 class OpenAIMock:
-    def __init__(self) -> None:
-        self._router: Optional[respx.MockRouter] = None
-        self._state: Optional[StateStore] = None
-
-    def __call__(
+    def __init__(
         self,
-        *,
         base_url: Optional[str] = None,
         state: Optional[StateStore] = None,
-    ):
+    ) -> None:
         self._router = respx.mock(
             assert_all_called=False,
             base_url=base_url or "https://api.openai.com",
         )
-
         self._state = state or StateStore()
 
+        self.chat = ChatWrapper(self._router)
+        self.embeddings = EmbeddingsWrapper(self._router)
+        self.files = FileWrapper(self._router, self._state)
+
+        # sort routes (IMPORTANT)
+        self._router.routes._routes.sort(key=lambda r: len(repr(r._pattern)), reverse=True)  # type: ignore
+
+    def _start_mock(self):
         def wrapper(fn: Callable[..., Any]):
             is_async = inspect.iscoroutinefunction(fn)
             argspec = inspect.getfullargspec(fn)
@@ -52,18 +54,3 @@ class OpenAIMock:
             return async_wrapper if is_async else sync_wrapper
 
         return wrapper
-
-    @property
-    def chat(self) -> ChatWrapper:
-        assert self._router, ASSERTION_ERROR
-        return ChatWrapper(self._router)
-
-    @property
-    def embeddings(self) -> EmbeddingsWrapper:
-        assert self._router, ASSERTION_ERROR
-        return EmbeddingsWrapper(self._router)
-
-    @property
-    def files(self) -> FileWrapper:
-        assert self._router and self._state, ASSERTION_ERROR
-        return FileWrapper(self._router, self._state)
