@@ -8,7 +8,6 @@ import respx
 from openai.pagination import SyncCursorPage
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.assistant_deleted import AssistantDeleted
-from openai.types.beta.assistant_create_params import AssistantCreateParams
 from openai.types.beta.assistant_update_params import AssistantUpdateParams
 
 from ._base import StatefulRoute
@@ -53,31 +52,14 @@ class AssistantCreateRoute(StatefulRoute[Assistant, PartialAssistant]):
 
     @staticmethod
     def _build(partial: PartialAssistant, request: httpx.Request) -> Assistant:
-        content: AssistantCreateParams = json.loads(request.content)
-        return model_parse(
-            Assistant,
-            {
-                "id": partial.get("id", faker.beta.assistant.id()),
-                "created_at": partial.get("created_at", utcnow_unix_timestamp_s()),
-                "description": content.get("description", partial.get("description")),
-                "instructions": content.get(
-                    "instructions", partial.get("instructions")
-                ),
-                "metadata": content.get("metadata", partial.get("metadata")),
-                "model": content["model"],
-                "name": content.get("name", partial.get("name")),
-                "object": "assistant",
-                "tools": content.get("tools", partial.get("tools", [])),
-                "response_format": content.get(
-                    "response_format", partial.get("response_format")
-                ),
-                "temperature": content.get("temperature", partial.get("temperature")),
-                "tool_resources": content.get(
-                    "tool_resources", partial.get("tool_resources")
-                ),
-                "top_p": content.get("top_p", partial.get("top_p")),
-            },
-        )
+        content = json.loads(request.content)
+        defaults: PartialAssistant = {
+            "id": faker.beta.assistant.id(),
+            "created_at": utcnow_unix_timestamp_s(),
+            "tools": [],
+            "object": "assistant",
+        }
+        return model_parse(Assistant, content | partial | defaults)
 
 
 class AssistantListRoute(
