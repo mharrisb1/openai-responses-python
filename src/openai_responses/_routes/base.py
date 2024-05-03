@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Generic, Optional, Union
+from functools import partial
+import inspect
+from typing import Any, Callable, Generic, Union
+from typing_extensions import override
 
 import httpx
 import respx
@@ -12,8 +15,6 @@ from .._utils.serde import model_dict
 
 __all__ = ["StatelessRoute", "StatefulRoute"]
 
-ResponseHandler = Callable[..., httpx.Response]
-
 
 class Route(ABC, Generic[M, P]):
     def __init__(
@@ -23,41 +24,46 @@ class Route(ABC, Generic[M, P]):
     ) -> None:
         self._route = route
         self._status_code = status_code
-        self._response: Optional[Union[httpx.Response, M, P, ResponseHandler]] = None
+        self._response: Union[httpx.Response, M, P, Callable[..., httpx.Response]] = (
+            self._handler
+        )
+        self._route.side_effect = self._response
 
     @property
     def calls(self):
         return self._route.calls
 
     @property
-    def response(self) -> Optional[Union[httpx.Response, M, P, ResponseHandler]]:
-        return self._handler
+    def response(self) -> Union[httpx.Response, M, P, Callable[..., httpx.Response]]:
+        return self._response
 
     @response.setter
-    def response(self, value: Union[httpx.Response, M, P, ResponseHandler]) -> None:
+    def response(
+        self, value: Union[httpx.Response, M, P, Callable[..., httpx.Response]]
+    ) -> None:
         self._response = value
         self._route.side_effect = self._side_effect
 
     @property
-    def _side_effect(self) -> ResponseHandler:
-        handler = self._response or self._handler
-        if callable(handler):
-            return handler
+    def _side_effect(self) -> Callable[..., httpx.Response]:
+        if callable(self._response):
+            return self._response
 
         def _handler(request: httpx.Request, route: respx.Route, **kwargs: Any):
-            if isinstance(handler, BaseModel):
+            if isinstance(self._response, BaseModel):
                 return httpx.Response(
                     status_code=self._status_code,
-                    json=model_dict(handler),
+                    json=model_dict(self._response),
                 )
 
-            elif isinstance(handler, httpx.Response):
-                return handler
+            elif isinstance(self._response, httpx.Response):
+                return self._response
 
             else:
+                assert not callable(self._response)
                 return httpx.Response(
                     status_code=self._status_code,
-                    json=model_dict(self._build(handler, request)),
+                    json=model_dict(self._build(self._response, request)),
                 )
 
         return _handler
@@ -87,7 +93,7 @@ class Route(ABC, Generic[M, P]):
     @staticmethod
     @abstractmethod
     def _build(partial: P, request: httpx.Request) -> M:
-        """Merge partial and content to create a ful instance of model M
+        """Merge partial and content to create a full instance of model M
 
         Args:
             partial (P): Partial model
@@ -114,3 +120,43 @@ class StatefulRoute(Route[M, P]):
     ) -> None:
         super().__init__(route, status_code)
         self._state = state
+
+    @property
+    @override
+    def _side_effect(self) -> Callable[..., httpx.Response]:
+        if callable(self._response):
+            argspec = inspect.getfullargspec(self._response)
+            needs_store = "state_store" in argspec.args
+            if needs_store:
+                return partial(self._response, state_store=self._state)
+            else:
+                return self._response
+
+        def _handler(request: httpx.Request, route: respx.Route, **kwargs: Any):
+            if isinstance(self._response, BaseModel):
+                self._state._blind_put(self._response)
+                return httpx.Response(
+                    status_code=self._status_code,
+                    json=model_dict(self._response),
+                )
+
+            elif isinstance(self._response, httpx.Response):
+                return self._response
+
+            else:
+                assert not callable(self._response)
+                try:
+                    model = self._build(self._response, request)
+                    self._state._blind_put(model)
+                    return httpx.Response(
+                        status_code=self._status_code,
+                        json=model_dict(model),
+                    )
+                except NotImplementedError:
+                    import warnings
+
+                    warnings.warn("Failed to build model")
+                    warnings.warn("Falling back to default handler")
+                    return self._handler(request, route)
+
+        return _handler
