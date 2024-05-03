@@ -3,14 +3,20 @@ from typing import Optional, Type
 import httpx
 
 from openai.types.chat.chat_completion import ChatCompletion
+from openai.types.create_embedding_response import CreateEmbeddingResponse
 
 from .._routes.base import Route
 from .._routes.chat import ChatCompletionsCreateRoute
+from .._routes.embeddings import EmbeddingsCreateRoute
 
 from .._types.generics import M, P
 from .._types.partials.chat import PartialChatCompletion
+from .._types.partials.embeddings import PartialCreateEmbeddingResponse
 
-__all__ = ["chat_completion_from_create_request"]
+__all__ = [
+    "chat_completion_from_create_request",
+    "embedding_create_response_from_create_request",
+]
 
 
 def _abstract_builder(
@@ -28,3 +34,11 @@ def chat_completion_from_create_request(
     extra: Optional[PartialChatCompletion] = None,
 ) -> ChatCompletion:
     return _abstract_builder(ChatCompletionsCreateRoute, request, extra=extra)
+
+
+def embedding_create_response_from_create_request(
+    request: httpx.Request,
+    *,
+    extra: Optional[PartialCreateEmbeddingResponse] = None,
+) -> CreateEmbeddingResponse:
+    return _abstract_builder(EmbeddingsCreateRoute, request, extra=extra)
