@@ -1,5 +1,7 @@
-from typing import Literal, TypedDict
+from typing import List, Literal, TypedDict
 from typing_extensions import NotRequired
+
+__all__ = ["PartialFileObject", "PartialFileList"]
 
 
 class PartialFileObject(TypedDict):
@@ -13,3 +15,8 @@ class PartialFileObject(TypedDict):
     ]
     status: NotRequired[Literal["uploaded", "processed", "error"]]
     status_details: NotRequired[str]
+
+
+class PartialFileList(TypedDict):
+    data: NotRequired[List[PartialFileObject]]
+    object: NotRequired[Literal["list"]]
