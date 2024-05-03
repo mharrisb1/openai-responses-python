@@ -4,7 +4,7 @@ from typing import Any, Callable, Optional
 
 import respx
 
-from ._routes import ChatWrapper, EmbeddingsWrapper, FileWrapper
+from ._routes import BetaRoutes, ChatRoutes, EmbeddingsRoutes, FileRoutes
 from ._stores import StateStore
 
 ASSERTION_ERROR = "Can only be called within a mock context"
@@ -22,11 +22,12 @@ class OpenAIMock:
         )
         self._state = state or StateStore()
 
-        self.chat = ChatWrapper(self._router)
-        self.embeddings = EmbeddingsWrapper(self._router)
-        self.files = FileWrapper(self._router, self._state)
+        self.beta = BetaRoutes(self._router, self._state)
+        self.chat = ChatRoutes(self._router)
+        self.embeddings = EmbeddingsRoutes(self._router)
+        self.files = FileRoutes(self._router, self._state)
 
-        # sort routes (IMPORTANT)
+        # NOTE: need to sort routes to avoid match conflicts
         self._router.routes._routes.sort(key=lambda r: len(repr(r._pattern)), reverse=True)  # type: ignore
 
     def _start_mock(self):
