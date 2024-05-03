@@ -5,7 +5,8 @@ from openai_responses import OpenAIMock, Request, Response, Route
 from openai_responses.helpers.builders import chat_completion_from_create_request
 
 
-def custom_response_handler(request: Request, route: Route) -> Response:
+def completion_with_failures(request: Request, route: Route) -> Response:
+    """Simulate 2 failures before sending successful response"""
     if route.call_count < 2:
         return Response(500)
 
@@ -16,7 +17,7 @@ def custom_response_handler(request: Request, route: Route) -> Response:
 
 @openai_responses.mock()
 def test_create_chat_completion(openai_mock: OpenAIMock):
-    openai_mock.chat.completions.create.response = custom_response_handler
+    openai_mock.chat.completions.create.response = completion_with_failures
 
     client = openai.Client(api_key="sk-fake123", max_retries=3)
     client.chat.completions.create(
