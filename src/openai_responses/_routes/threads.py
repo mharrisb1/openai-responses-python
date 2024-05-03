@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from typing_extensions import override
 
 import httpx
@@ -16,7 +17,7 @@ from .._utils.serde import model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
 
-__all__ = ["ThreadCreateRoute"]
+__all__ = ["ThreadCreateRoute", "ThreadRetrieveRoute"]
 
 
 class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
@@ -46,3 +47,31 @@ class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
             "object": "thread",
         }
         return model_parse(Thread, content | partial | defaults)
+
+
+class ThreadRetrieveRoute(StatefulRoute[Thread, PartialThread]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.get(url__regex=r"/v1/threads/(?P<id>[a-zA-Z0-9\_]+)"),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+        id = kwargs["id"]
+        found = self._state.beta.threads.get(id)
+        if not found:
+            return httpx.Response(404)
+
+        return httpx.Response(status_code=200, json=model_dict(found))
+
+    @staticmethod
+    def _build(partial: PartialThread, request: httpx.Request) -> Thread:
+        raise NotImplementedError
