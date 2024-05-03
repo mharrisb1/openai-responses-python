@@ -15,9 +15,8 @@ openai_responses = "openai_responses.plugin"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-openai = "^1.23"
+openai = "^1.25"
 respx = "^0.20.2"
-decorator = "^5.1.1"
 faker-openai-api-provider = "^0.1.0"
 tiktoken = "^0.6.0"
 
