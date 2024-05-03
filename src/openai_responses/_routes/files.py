@@ -1,4 +1,5 @@
 import re
+from typing import Any
 from typing_extensions import override
 
 import httpx
@@ -17,6 +18,8 @@ from .._utils.serde import model_dict
 from .._utils.time import utcnow_unix_timestamp_s
 
 REGEXP_FILE = r'Content-Disposition: form-data;[^;]+; name="purpose"\r\n\r\n(?P<purpose_value>[^\r\n]+)|filename="(?P<filename>[^"]+)"'
+
+__all__ = ["FileCreateRoute", "FileListRoute", "FileRetrieveRoute"]
 
 
 class FileCreateRoute(StatefulRoute[FileObject, PartialFileObject]):
@@ -88,4 +91,35 @@ class FileListRoute(StatefulRoute[SyncPage[FileObject], PartialFileList]):
         partial: PartialFileList,
         request: httpx.Request,
     ) -> SyncPage[FileObject]:
+        raise NotImplementedError
+
+
+class FileRetrieveRoute(StatefulRoute[FileObject, PartialFileObject]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.get(url__regex=r"/v1/files/(?P<id>[a-zA-Z0-9\-]+)"),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+        id = kwargs["id"]
+        found = self._state.files.get(id)
+        if not found:
+            return httpx.Response(404)
+
+        return httpx.Response(status_code=200, json=model_dict(found))
+
+    @staticmethod
+    def _build(
+        partial: PartialFileObject,
+        request: httpx.Request,
+    ) -> FileObject:
         raise NotImplementedError
