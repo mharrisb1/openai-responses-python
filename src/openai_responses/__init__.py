@@ -6,12 +6,12 @@ from ._mock import OpenAIMock
 from ._stores import StateStore
 
 __all__ = [
-    # main interface
+    # main API
     "mock",
-    # internal
+    # internal types
     "OpenAIMock",
     "StateStore",
-    # external
+    # external types
     "Request",
     "Response",
     "Route",
