@@ -18,7 +18,7 @@ from .threads import (
     ThreadUpdateRoute,
     ThreadDeleteRoute,
 )
-from .messages import MessageCreateRoute, MessageListRoute
+from .messages import MessageCreateRoute, MessageListRoute, MessageRetrieveRoute
 
 __all__ = [
     "BetaRoutes",
@@ -80,3 +80,4 @@ class MessageRoutes:
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         self.create = MessageCreateRoute(router, state)
         self.list = MessageListRoute(router, state)
+        self.retrieve = MessageRetrieveRoute(router, state)
