@@ -133,8 +133,11 @@ class MessageStore(BaseStore[Message]):
         order: Optional[str] = None,
         after: Optional[str] = None,
         before: Optional[str] = None,
+        run_id: Optional[str] = None,
     ) -> List[Message]:
         objs = [m for m in list(self._data.values()) if m.thread_id == thread_id]
+        if run_id:
+            objs = [obj for obj in objs if obj.run_id == run_id]
         objs = list(reversed(objs)) if (order or "desc") == "desc" else objs
 
         start_ix = 0
