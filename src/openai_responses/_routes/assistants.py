@@ -59,7 +59,7 @@ class AssistantCreateRoute(StatefulRoute[Assistant, PartialAssistant]):
             "tools": [],
             "object": "assistant",
         }
-        return model_parse(Assistant, content | partial | defaults)
+        return model_parse(Assistant, defaults | partial | content)
 
 
 class AssistantListRoute(

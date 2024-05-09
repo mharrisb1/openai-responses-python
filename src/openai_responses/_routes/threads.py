@@ -53,7 +53,7 @@ class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
             "created_at": utcnow_unix_timestamp_s(),
             "object": "thread",
         }
-        return model_parse(Thread, content | partial | defaults)
+        return model_parse(Thread, defaults | partial | content)
 
 
 class ThreadRetrieveRoute(StatefulRoute[Thread, PartialThread]):
