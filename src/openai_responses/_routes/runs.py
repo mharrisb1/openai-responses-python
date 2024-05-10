@@ -338,8 +338,9 @@ class RunCancelRoute(StatefulRoute[Run, PartialRun]):
         if not found_run:
             return httpx.Response(404)
 
-        found_run.status = "cancelling"
+        found_run.status = "cancelled"
         self._state.beta.threads.runs.put(found_run)
+        found_run.status = "cancelling"
 
         return httpx.Response(status_code=200, json=model_dict(found_run))
 
