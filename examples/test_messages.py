@@ -56,3 +56,28 @@ def test_retrieve_message(openai_mock: OpenAIMock):
     assert openai_mock.beta.threads.create.calls.call_count == 1
     assert openai_mock.beta.threads.messages.create.calls.call_count == 1
     assert openai_mock.beta.threads.messages.retrieve.calls.call_count == 1
+
+
+@openai_responses.mock()
+def test_update_message(openai_mock: OpenAIMock):
+    client = openai.Client(api_key="sk-fake123")
+
+    thread = client.beta.threads.create()
+    message = client.beta.threads.messages.create(
+        thread.id,
+        content="Hello!",
+        role="user",
+        metadata={"foo": "1"},
+    )
+    updated = client.beta.threads.messages.update(
+        message.id,
+        thread_id=thread.id,
+        metadata={"foo": "2"},
+    )
+
+    assert updated.id == message.id
+    assert message.metadata == {"foo": "1"}
+    assert updated.metadata == {"foo": "2"}
+    assert openai_mock.beta.threads.create.calls.call_count == 1
+    assert openai_mock.beta.threads.messages.create.calls.call_count == 1
+    assert openai_mock.beta.threads.messages.update.calls.call_count == 1

@@ -7,6 +7,7 @@ import respx
 
 from openai.pagination import SyncCursorPage
 from openai.types.beta.threads.message import Message
+from openai.types.beta.threads.message_update_params import MessageUpdateParams
 
 from ._base import StatefulRoute
 
@@ -17,7 +18,12 @@ from .._utils.faker import faker
 from .._utils.serde import model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
-__all__ = ["MessageCreateRoute", "MessageListRoute", "MessageRetrieveRoute"]
+__all__ = [
+    "MessageCreateRoute",
+    "MessageListRoute",
+    "MessageRetrieveRoute",
+    "MessageUpdateRoute",
+]
 
 
 class MessageCreateRoute(StatefulRoute[Message, PartialMessage]):
@@ -162,6 +168,47 @@ class MessageRetrieveRoute(StatefulRoute[Message, PartialMessage]):
             return httpx.Response(404)
 
         return httpx.Response(status_code=200, json=model_dict(found_message))
+
+    @staticmethod
+    def _build(partial: PartialMessage, request: httpx.Request) -> Message:
+        raise NotImplementedError
+
+
+class MessageUpdateRoute(StatefulRoute[Message, PartialMessage]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.post(
+                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<id>[a-zA-Z0-9\_]+)"
+            ),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+
+        thread_id = kwargs["thread_id"]
+        found_thread = self._state.beta.threads.get(thread_id)
+        if not found_thread:
+            return httpx.Response(404)
+
+        id = kwargs["id"]
+        found_message = self._state.beta.threads.messages.get(id)
+        if not found_message:
+            return httpx.Response(404)
+
+        content: MessageUpdateParams = json.loads(request.content)
+        deserialized = model_dict(found_message)
+        updated = model_parse(Message, deserialized | content)
+        self._state.beta.threads.messages.put(updated)
+
+        return httpx.Response(status_code=200, json=model_dict(updated))
 
     @staticmethod
     def _build(partial: PartialMessage, request: httpx.Request) -> Message:

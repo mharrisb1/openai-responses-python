@@ -18,7 +18,12 @@ from .threads import (
     ThreadUpdateRoute,
     ThreadDeleteRoute,
 )
-from .messages import MessageCreateRoute, MessageListRoute, MessageRetrieveRoute
+from .messages import (
+    MessageCreateRoute,
+    MessageListRoute,
+    MessageRetrieveRoute,
+    MessageUpdateRoute,
+)
 
 __all__ = [
     "BetaRoutes",
@@ -81,3 +86,4 @@ class MessageRoutes:
         self.create = MessageCreateRoute(router, state)
         self.list = MessageListRoute(router, state)
         self.retrieve = MessageRetrieveRoute(router, state)
+        self.update = MessageUpdateRoute(router, state)
