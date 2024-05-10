@@ -8,6 +8,7 @@ import respx
 from openai.pagination import SyncCursorPage
 from openai.types.beta.threads.run import Run
 from openai.types.beta.threads.run_create_params import RunCreateParams
+from openai.types.beta.threads.run_update_params import RunUpdateParams
 from openai.types.beta.thread_create_and_run_params import ThreadCreateAndRunParams
 
 from ._base import StatefulRoute
@@ -22,7 +23,13 @@ from .._utils.serde import model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
 
-__all__ = ["RunCreateRoute", "ThreadCreateAndRun", "RunListRoute", "RunRetrieveRoute"]
+__all__ = [
+    "RunCreateRoute",
+    "ThreadCreateAndRun",
+    "RunListRoute",
+    "RunRetrieveRoute",
+    "RunUpdateRoute",
+]
 
 
 class RunCreateRoute(StatefulRoute[Run, PartialRun]):
@@ -215,6 +222,47 @@ class RunRetrieveRoute(StatefulRoute[Run, PartialRun]):
             return httpx.Response(404)
 
         return httpx.Response(status_code=200, json=model_dict(found_run))
+
+    @staticmethod
+    def _build(partial: PartialRun, request: httpx.Request) -> Run:
+        raise NotImplementedError
+
+
+class RunUpdateRoute(StatefulRoute[Run, PartialRun]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.post(
+                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)"
+            ),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+
+        thread_id = kwargs["thread_id"]
+        found_thread = self._state.beta.threads.get(thread_id)
+        if not found_thread:
+            return httpx.Response(404)
+
+        id = kwargs["id"]
+        found_run = self._state.beta.threads.runs.get(id)
+        if not found_run:
+            return httpx.Response(404)
+
+        content: RunUpdateParams = json.loads(request.content)
+        deserialized = model_dict(found_run)
+        updated = model_parse(Run, deserialized | content)
+        self._state.beta.threads.runs.put(updated)
+
+        return httpx.Response(status_code=200, json=model_dict(updated))
 
     @staticmethod
     def _build(partial: PartialRun, request: httpx.Request) -> Run:
