@@ -29,6 +29,7 @@ __all__ = [
     "RunListRoute",
     "RunRetrieveRoute",
     "RunUpdateRoute",
+    "RunSubmitToolOutputsRoute",
 ]
 
 
@@ -263,6 +264,43 @@ class RunUpdateRoute(StatefulRoute[Run, PartialRun]):
         self._state.beta.threads.runs.put(updated)
 
         return httpx.Response(status_code=200, json=model_dict(updated))
+
+    @staticmethod
+    def _build(partial: PartialRun, request: httpx.Request) -> Run:
+        raise NotImplementedError
+
+
+class RunSubmitToolOutputsRoute(StatefulRoute[Run, PartialRun]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.post(
+                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)/submit_tool_outputs"
+            ),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        # TODO: update associated run step in store
+        self._route = route
+
+        thread_id = kwargs["thread_id"]
+        found_thread = self._state.beta.threads.get(thread_id)
+        if not found_thread:
+            return httpx.Response(404)
+
+        id = kwargs["id"]
+        found_run = self._state.beta.threads.runs.get(id)
+        if not found_run:
+            return httpx.Response(404)
+
+        return httpx.Response(status_code=200, json=model_dict(found_run))
 
     @staticmethod
     def _build(partial: PartialRun, request: httpx.Request) -> Run:

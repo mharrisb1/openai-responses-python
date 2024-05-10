@@ -31,6 +31,7 @@ from .runs import (
     RunListRoute,
     RunRetrieveRoute,
     RunUpdateRoute,
+    RunSubmitToolOutputsRoute,
 )
 
 __all__ = [
@@ -106,3 +107,4 @@ class RunRoutes:
         self.list = RunListRoute(router, state)
         self.retrieve = RunRetrieveRoute(router, state)
         self.update = RunUpdateRoute(router, state)
+        self.submit_tool_outputs = RunSubmitToolOutputsRoute(router, state)
