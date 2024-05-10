@@ -12,7 +12,7 @@ from openai.types.beta.thread_deleted import ThreadDeleted
 
 from ._base import StatefulRoute
 
-from ..helpers.builders import message_from_create_request
+from ..helpers.builders.messages import message_from_create_request
 
 from .._stores import StateStore
 from .._types.partials.threads import PartialThread, PartialThreadDeleted
