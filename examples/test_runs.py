@@ -164,11 +164,15 @@ def test_cancel_run(openai_mock: OpenAIMock):
 
     cancelled = client.beta.threads.runs.cancel(run.id, thread_id=thread.id)
 
+    found = client.beta.threads.runs.retrieve(run.id, thread_id=thread.id)
+
     assert cancelled.id == run.id
     assert run.status == "queued"
     assert cancelled.status == "cancelling"
+    assert found.status == "cancelled"
 
     assert openai_mock.beta.assistants.create.calls.call_count == 1
     assert openai_mock.beta.threads.create.calls.call_count == 1
     assert openai_mock.beta.threads.runs.create.calls.call_count == 1
     assert openai_mock.beta.threads.runs.cancel.calls.call_count == 1
+    assert openai_mock.beta.threads.runs.retrieve.calls.call_count == 1

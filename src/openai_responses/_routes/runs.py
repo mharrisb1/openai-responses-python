@@ -18,6 +18,7 @@ from ..helpers.builders.threads import thread_from_create_request
 from .._stores import StateStore
 from .._types.partials.runs import PartialRun, PartialRunList
 
+from .._utils.copy import model_copy
 from .._utils.faker import faker
 from .._utils.serde import model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
@@ -340,9 +341,10 @@ class RunCancelRoute(StatefulRoute[Run, PartialRun]):
 
         found_run.status = "cancelled"
         self._state.beta.threads.runs.put(found_run)
-        found_run.status = "cancelling"
+        copy = model_copy(found_run)
+        copy.status = "cancelling"
 
-        return httpx.Response(status_code=200, json=model_dict(found_run))
+        return httpx.Response(status_code=200, json=model_dict(copy))
 
     @staticmethod
     def _build(partial: PartialRun, request: httpx.Request) -> Run:
