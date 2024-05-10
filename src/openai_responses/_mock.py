@@ -30,6 +30,10 @@ class OpenAIMock:
         # NOTE: need to sort routes to avoid match conflicts
         self._router.routes._routes.sort(key=lambda r: len(repr(r._pattern)), reverse=True)  # type: ignore
 
+    @property
+    def state(self) -> StateStore:
+        return self._state
+
     def _start_mock(self):
         def wrapper(fn: Callable[..., Any]):
             is_async = inspect.iscoroutinefunction(fn)
