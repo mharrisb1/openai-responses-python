@@ -6,10 +6,13 @@ import httpx
 import respx
 
 from openai.types.beta.thread import Thread
+from openai.types.beta.thread_create_params import ThreadCreateParams
 from openai.types.beta.thread_update_params import ThreadUpdateParams
 from openai.types.beta.thread_deleted import ThreadDeleted
 
 from ._base import StatefulRoute
+
+from ..helpers.builders import message_from_create_request
 
 from .._stores import StateStore
 from .._types.partials.threads import PartialThread, PartialThreadDeleted
@@ -38,8 +41,18 @@ class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
     @override
     def _handler(self, request: httpx.Request, route: respx.Route) -> httpx.Response:
         self._route = route
+
+        content: ThreadCreateParams = json.loads(request.content)
         model = self._build({}, request)
         self._state.beta.threads.put(model)
+
+        if content.get("messages"):
+            for params in content.get("messages", []):
+                encoded = json.dumps(params).encode("utf-8")
+                create_message_req = httpx.Request(method="", url="", content=encoded)
+                message = message_from_create_request(model.id, create_message_req)
+                self._state.beta.threads.messages.put(message)
+
         return httpx.Response(
             status_code=self._status_code,
             json=model_dict(model),
@@ -48,6 +61,10 @@ class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
     @staticmethod
     def _build(partial: PartialThread, request: httpx.Request) -> Thread:
         content = json.loads(request.content)
+        if content.get("messages"):
+            del content["messages"]
+        if content.get("tool_resources"):
+            del content["tool_resources"]
         defaults: PartialThread = {
             "id": faker.beta.thread.id(),
             "created_at": utcnow_unix_timestamp_s(),
