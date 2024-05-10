@@ -30,6 +30,7 @@ __all__ = [
     "RunRetrieveRoute",
     "RunUpdateRoute",
     "RunSubmitToolOutputsRoute",
+    "RunCancelRoute",
 ]
 
 
@@ -299,6 +300,46 @@ class RunSubmitToolOutputsRoute(StatefulRoute[Run, PartialRun]):
         found_run = self._state.beta.threads.runs.get(id)
         if not found_run:
             return httpx.Response(404)
+
+        return httpx.Response(status_code=200, json=model_dict(found_run))
+
+    @staticmethod
+    def _build(partial: PartialRun, request: httpx.Request) -> Run:
+        raise NotImplementedError
+
+
+class RunCancelRoute(StatefulRoute[Run, PartialRun]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.post(
+                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)/cancel"
+            ),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        # TODO: update associated run step in store
+        self._route = route
+
+        thread_id = kwargs["thread_id"]
+        found_thread = self._state.beta.threads.get(thread_id)
+        if not found_thread:
+            return httpx.Response(404)
+
+        id = kwargs["id"]
+        found_run = self._state.beta.threads.runs.get(id)
+        if not found_run:
+            return httpx.Response(404)
+
+        found_run.status = "cancelling"
+        self._state.beta.threads.runs.put(found_run)
 
         return httpx.Response(status_code=200, json=model_dict(found_run))
 
