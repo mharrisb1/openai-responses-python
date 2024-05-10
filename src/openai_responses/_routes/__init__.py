@@ -25,7 +25,7 @@ from .messages import (
     MessageUpdateRoute,
     MessageDeleteRoute,
 )
-from .runs import RunCreateRoute
+from .runs import RunCreateRoute, ThreadCreateAndRun
 
 __all__ = [
     "BetaRoutes",
@@ -79,6 +79,7 @@ class ThreadRoutes:
         self.retrieve = ThreadRetrieveRoute(router, state)
         self.update = ThreadUpdateRoute(router, state)
         self.delete = ThreadDeleteRoute(router, state)
+        self.create_and_run = ThreadCreateAndRun(router, state)
 
         self.messages = MessageRoutes(router, state)
         self.runs = RunRoutes(router, state)

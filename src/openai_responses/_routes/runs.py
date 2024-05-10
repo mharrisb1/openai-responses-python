@@ -7,8 +7,11 @@ import respx
 
 from openai.types.beta.threads.run import Run
 from openai.types.beta.threads.run_create_params import RunCreateParams
+from openai.types.beta.thread_create_and_run_params import ThreadCreateAndRunParams
 
 from ._base import StatefulRoute
+
+from ..helpers.builders.threads import thread_from_create_request
 
 from .._stores import StateStore
 from .._types.partials.runs import PartialRun
@@ -18,7 +21,7 @@ from .._utils.serde import model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
 
-__all__ = ["RunCreateRoute"]
+__all__ = ["RunCreateRoute", "ThreadCreateAndRun"]
 
 
 class RunCreateRoute(StatefulRoute[Run, PartialRun]):
@@ -77,3 +80,51 @@ class RunCreateRoute(StatefulRoute[Run, PartialRun]):
             "status": "queued",
         }
         return model_parse(Run, defaults | partial | content)
+
+
+class ThreadCreateAndRun(StatefulRoute[Run, PartialRun]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.post(url__regex="/v1/threads/runs"),
+            status_code=201,
+            state=state,
+        )
+
+    @override
+    def _handler(self, request: httpx.Request, route: respx.Route) -> httpx.Response:
+        self._route = route
+
+        content: ThreadCreateAndRunParams = json.loads(request.content)
+
+        found_asst = self._state.beta.assistants.get(content["assistant_id"])
+        if not found_asst:
+            return httpx.Response(404)
+
+        thread_create_params = content.get("thread", {})
+        encoded = json.dumps(thread_create_params).encode("utf-8")
+        thread_create_req = httpx.Request("", "", content=encoded)
+        thread = thread_from_create_request(thread_create_req)
+        self._state.beta.threads.put(thread)
+
+        model = self._build(
+            {
+                "thread_id": thread.id,
+                "instructions": found_asst.instructions or "",
+                "model": found_asst.model,
+                "tools": [model_dict(t) for t in (found_asst.tools or [])],  # type: ignore
+            },
+            request,
+        )
+        self._state.beta.threads.runs.put(model)
+        return httpx.Response(
+            status_code=self._status_code,
+            json=model_dict(model),
+        )
+
+    @staticmethod
+    def _build(partial: PartialRun, request: httpx.Request) -> Run:
+        content = json.loads(request.content)
+        if content.get("thread"):
+            del content["thread"]
+
+        return RunCreateRoute._build(partial, request)

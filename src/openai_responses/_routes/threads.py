@@ -47,8 +47,8 @@ class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
         self._state.beta.threads.put(model)
 
         if content.get("messages"):
-            for params in content.get("messages", []):
-                encoded = json.dumps(params).encode("utf-8")
+            for message_create_params in content.get("messages", []):
+                encoded = json.dumps(message_create_params).encode("utf-8")
                 create_message_req = httpx.Request(method="", url="", content=encoded)
                 message = message_from_create_request(model.id, create_message_req)
                 self._state.beta.threads.messages.put(message)
@@ -104,7 +104,9 @@ class ThreadRetrieveRoute(StatefulRoute[Thread, PartialThread]):
 class ThreadUpdateRoute(StatefulRoute[Thread, PartialThread]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.post(url__regex=r"/v1/threads/(?P<id>[a-zA-Z0-9\_]+)"),
+            route=router.post(
+                url__regex=r"/v1/threads/(?P<id>(?!.*runs)[a-zA-Z0-9_]+)"  # NOTE: avoids match on /threads/runs
+            ),
             status_code=200,
             state=state,
         )
