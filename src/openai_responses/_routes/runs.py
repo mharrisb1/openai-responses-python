@@ -5,6 +5,7 @@ from typing_extensions import override
 import httpx
 import respx
 
+from openai.pagination import SyncCursorPage
 from openai.types.beta.threads.run import Run
 from openai.types.beta.threads.run_create_params import RunCreateParams
 from openai.types.beta.thread_create_and_run_params import ThreadCreateAndRunParams
@@ -14,14 +15,14 @@ from ._base import StatefulRoute
 from ..helpers.builders.threads import thread_from_create_request
 
 from .._stores import StateStore
-from .._types.partials.runs import PartialRun
+from .._types.partials.runs import PartialRun, PartialRunList
 
 from .._utils.faker import faker
 from .._utils.serde import model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
 
-__all__ = ["RunCreateRoute", "ThreadCreateAndRun"]
+__all__ = ["RunCreateRoute", "ThreadCreateAndRun", "RunListRoute"]
 
 
 class RunCreateRoute(StatefulRoute[Run, PartialRun]):
@@ -128,3 +129,57 @@ class ThreadCreateAndRun(StatefulRoute[Run, PartialRun]):
             del content["thread"]
 
         return RunCreateRoute._build(partial, request)
+
+
+class RunListRoute(StatefulRoute[SyncCursorPage[Run], PartialRunList]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.get(
+                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs"
+            ),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+
+        thread_id = kwargs["thread_id"]
+        found_thread = self._state.beta.threads.get(thread_id)
+        if not found_thread:
+            return httpx.Response(404)
+
+        limit = request.url.params.get("limit")
+        order = request.url.params.get("order")
+        after = request.url.params.get("after")
+        before = request.url.params.get("before")
+
+        data = self._state.beta.threads.runs.list(
+            thread_id,
+            limit,
+            order,
+            after,
+            before,
+        )
+        result_count = len(data)
+        total_count = len(self._state.beta.threads.runs.list(thread_id))
+        has_data = bool(result_count)
+        has_more = total_count != result_count
+        first_id = data[0].id if has_data else None
+        last_id = data[-1].id if has_data else None
+        model = SyncCursorPage[Run](data=data)
+        return httpx.Response(
+            status_code=200,
+            json=model_dict(model)
+            | {"first_id": first_id, "last_id": last_id, "has_more": has_more},
+        )
+
+    @staticmethod
+    def _build(partial: PartialRunList, request: httpx.Request) -> SyncCursorPage[Run]:
+        raise NotImplementedError

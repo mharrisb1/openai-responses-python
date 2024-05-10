@@ -53,3 +53,32 @@ def test_create_thread_run(openai_mock: OpenAIMock):
 
     assert openai_mock.beta.assistants.create.calls.call_count == 1
     assert openai_mock.beta.threads.create_and_run.calls.call_count == 1
+
+
+@openai_responses.mock()
+def test_list_runs(openai_mock: OpenAIMock):
+    client = openai.Client(api_key="sk-fake123")
+
+    assistant = client.beta.assistants.create(
+        instructions="You are a personal math tutor. When asked a question, write and run Python code to answer the question.",
+        name="Math Tutor",
+        tools=[{"type": "code_interpreter"}],
+        model="gpt-4-turbo",
+    )
+
+    thread = client.beta.threads.create()
+
+    for _ in range(10):
+        client.beta.threads.runs.create(
+            thread.id,
+            assistant_id=assistant.id,
+        )
+
+    runs = client.beta.threads.runs.list(thread.id)
+
+    assert len(runs.data) == 10
+
+    assert openai_mock.beta.assistants.create.calls.call_count == 1
+    assert openai_mock.beta.threads.create.calls.call_count == 1
+    assert openai_mock.beta.threads.runs.create.calls.call_count == 10
+    assert openai_mock.beta.threads.runs.list.calls.call_count == 1
