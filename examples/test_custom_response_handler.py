@@ -2,7 +2,7 @@ import openai
 
 import openai_responses
 from openai_responses import OpenAIMock, Request, Response, Route
-from openai_responses.helpers.builders import chat_completion_from_create_request
+from openai_responses.helpers.builders.chat import chat_completion_from_create_request
 
 
 def completion_with_failures(request: Request, route: Route) -> Response:
