@@ -23,6 +23,7 @@ from .messages import (
     MessageListRoute,
     MessageRetrieveRoute,
     MessageUpdateRoute,
+    MessageDeleteRoute,
 )
 
 __all__ = [
@@ -87,3 +88,4 @@ class MessageRoutes:
         self.list = MessageListRoute(router, state)
         self.retrieve = MessageRetrieveRoute(router, state)
         self.update = MessageUpdateRoute(router, state)
+        self.delete = MessageDeleteRoute(router, state)

@@ -81,3 +81,21 @@ def test_update_message(openai_mock: OpenAIMock):
     assert openai_mock.beta.threads.create.calls.call_count == 1
     assert openai_mock.beta.threads.messages.create.calls.call_count == 1
     assert openai_mock.beta.threads.messages.update.calls.call_count == 1
+
+
+@openai_responses.mock()
+def test_delete_message(openai_mock: OpenAIMock):
+    client = openai.Client(api_key="sk-fake123")
+
+    thread = client.beta.threads.create()
+    message = client.beta.threads.messages.create(
+        thread.id,
+        content="Hello!",
+        role="user",
+        metadata={"foo": "1"},
+    )
+
+    assert client.beta.threads.messages.delete(message.id, thread_id=thread.id).deleted
+    assert openai_mock.beta.threads.create.calls.call_count == 1
+    assert openai_mock.beta.threads.messages.create.calls.call_count == 1
+    assert openai_mock.beta.threads.messages.delete.calls.call_count == 1

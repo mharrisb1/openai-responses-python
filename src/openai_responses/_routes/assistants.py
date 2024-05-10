@@ -191,6 +191,7 @@ class AssistantDeleteRoute(StatefulRoute[AssistantDeleted, PartialAssistantDelet
 
     @staticmethod
     def _build(
-        partial: PartialAssistantDeleted, request: httpx.Request
+        partial: PartialAssistantDeleted,
+        request: httpx.Request,
     ) -> AssistantDeleted:
         raise NotImplementedError

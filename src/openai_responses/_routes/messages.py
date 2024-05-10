@@ -7,12 +7,17 @@ import respx
 
 from openai.pagination import SyncCursorPage
 from openai.types.beta.threads.message import Message
+from openai.types.beta.threads.message_deleted import MessageDeleted
 from openai.types.beta.threads.message_update_params import MessageUpdateParams
 
 from ._base import StatefulRoute
 
 from .._stores import StateStore
-from .._types.partials.messages import PartialMessage, PartialMessageList
+from .._types.partials.messages import (
+    PartialMessage,
+    PartialMessageList,
+    PartialMessageDeleted,
+)
 
 from .._utils.faker import faker
 from .._utils.serde import model_dict, model_parse
@@ -23,6 +28,7 @@ __all__ = [
     "MessageListRoute",
     "MessageRetrieveRoute",
     "MessageUpdateRoute",
+    "MessageDeleteRoute",
 ]
 
 
@@ -212,4 +218,45 @@ class MessageUpdateRoute(StatefulRoute[Message, PartialMessage]):
 
     @staticmethod
     def _build(partial: PartialMessage, request: httpx.Request) -> Message:
+        raise NotImplementedError
+
+
+class MessageDeleteRoute(StatefulRoute[MessageDeleted, PartialMessageDeleted]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.delete(
+                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<id>[a-zA-Z0-9\_]+)"
+            ),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+
+        thread_id = kwargs["thread_id"]
+        found_thread = self._state.beta.threads.get(thread_id)
+        if not found_thread:
+            return httpx.Response(404)
+
+        id = kwargs["id"]
+        deleted = self._state.beta.threads.messages.delete(id)
+        return httpx.Response(
+            status_code=200,
+            json=model_dict(
+                MessageDeleted(id=id, deleted=deleted, object="thread.message.deleted")
+            ),
+        )
+
+    @staticmethod
+    def _build(
+        partial: PartialMessageDeleted,
+        request: httpx.Request,
+    ) -> MessageDeleted:
         raise NotImplementedError

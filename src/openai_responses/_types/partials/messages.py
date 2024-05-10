@@ -3,7 +3,7 @@ from typing_extensions import NotRequired
 
 from openai._utils import PropertyInfo
 
-__all__ = ["PartialMessage", "PartialMessageList"]
+__all__ = ["PartialMessage", "PartialMessageList", "PartialMessageDeleted"]
 
 
 class PartialFileSearchTool(TypedDict):
@@ -97,3 +97,9 @@ class PartialMessageList(TypedDict):
     first_id: NotRequired[str]
     last_id: NotRequired[str]
     has_more: NotRequired[bool]
+
+
+class PartialMessageDeleted(TypedDict):
+    id: NotRequired[str]
+    object: NotRequired[Literal["thread.message.deleted"]]
+    deleted: NotRequired[bool]
