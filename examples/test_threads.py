@@ -22,8 +22,10 @@ def test_create_thread_with_additional_messages(openai_mock: OpenAIMock):
         messages=[{"role": "assistant", "content": "How can I help?"}]
     )
 
+    messages = client.beta.threads.messages.list(thread.id)
+
     assert thread.id
-    assert len(openai_mock.state.beta.threads.messages.list(thread.id)) == 1
+    assert len(messages.data) == 1
     assert openai_mock.beta.threads.create.calls.call_count == 1
 
 
