@@ -86,9 +86,15 @@ class PartialUsage(TypedDict):
     total_tokens: int
 
 
+PartialStepDetails = Annotated[
+    Union[PartialMessageCreationStepDetails, PartialToolCallsStepDetails],
+    PropertyInfo(discriminator="type"),
+]
+
+
 class PartialRunStep(TypedDict):
     id: NotRequired[str]
-    assistant_id: NotRequired[str]
+    assistant_id: str
     cancelled_at: NotRequired[int]
     completed_at: NotRequired[int]
     created_at: NotRequired[int]
@@ -96,19 +102,12 @@ class PartialRunStep(TypedDict):
     failed_at: NotRequired[int]
     last_error: NotRequired[PartialLastError]
     metadata: NotRequired[Dict[str, str]]
-    object: Literal["thread.run.step"]
-    run_id: NotRequired[str]
-    status: NotRequired[
-        Literal["in_progress", "cancelled", "failed", "completed", "expired"]
-    ]
-    step_details: NotRequired[
-        Annotated[
-            Union[PartialMessageCreationStepDetails, PartialToolCallsStepDetails],
-            PropertyInfo(discriminator="type"),
-        ]
-    ]
-    thread_id: NotRequired[str]
-    type: NotRequired[Literal["message_creation", "tool_calls"]]
+    object: NotRequired[Literal["thread.run.step"]]
+    run_id: str
+    status: Literal["in_progress", "cancelled", "failed", "completed", "expired"]
+    step_details: PartialStepDetails
+    thread_id: str
+    type: Literal["message_creation", "tool_calls"]
     usage: NotRequired[PartialUsage]
 
 
