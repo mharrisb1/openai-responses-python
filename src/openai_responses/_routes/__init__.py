@@ -34,6 +34,7 @@ from .runs import (
     RunSubmitToolOutputsRoute,
     RunCancelRoute,
 )
+from .run_steps import RunStepListRoute, RunStepRetrieveRoute
 
 __all__ = [
     "BetaRoutes",
@@ -110,3 +111,11 @@ class RunRoutes:
         self.update = RunUpdateRoute(router, state)
         self.submit_tool_outputs = RunSubmitToolOutputsRoute(router, state)
         self.cancel = RunCancelRoute(router, state)
+
+        self.steps = RunStepRoutes(router, state)
+
+
+class RunStepRoutes:
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        self.list = RunStepListRoute(router, state)
+        self.retrieve = RunStepRetrieveRoute(router, state)

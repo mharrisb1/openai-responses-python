@@ -15,7 +15,7 @@ from .._types.partials.run_steps import PartialRunStep, PartialRunStepList
 from .._utils.serde import model_dict
 
 
-__all__ = ["RunStepListRoute"]
+__all__ = ["RunStepListRoute", "RunStepRetrieveRoute"]
 
 
 class RunStepListRoute(StatefulRoute[SyncCursorPage[RunStep], PartialRunStepList]):
