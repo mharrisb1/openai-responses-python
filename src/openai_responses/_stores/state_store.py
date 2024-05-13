@@ -22,30 +22,29 @@ M = TypeVar(
     ],
 )
 
+Resource = Union[FileObject, Assistant, Thread, Message, Run, RunStep, Any]
+
 
 class StateStore:
     def __init__(self) -> None:
         self.files = FileStore()
         self.beta = Beta()
 
-    def _blind_put(
-        self,
-        m: Union[FileObject, Assistant, Thread, Message, Run, RunStep, Any],
-    ) -> None:
-        if isinstance(m, FileObject):
-            self.files.put(m)
-        elif isinstance(m, Assistant):
-            self.beta.assistants.put(m)
-        elif isinstance(m, Thread):
-            self.beta.threads.put(m)
-        elif isinstance(m, Message):
-            self.beta.threads.messages.put(m)
-        elif isinstance(m, Run):
-            self.beta.threads.runs.put(m)
-        elif isinstance(m, RunStep):
-            self.beta.threads.runs.steps.put(m)
+    def _blind_put(self, resource: Resource) -> None:
+        if isinstance(resource, FileObject):
+            self.files.put(resource)
+        elif isinstance(resource, Assistant):
+            self.beta.assistants.put(resource)
+        elif isinstance(resource, Thread):
+            self.beta.threads.put(resource)
+        elif isinstance(resource, Message):
+            self.beta.threads.messages.put(resource)
+        elif isinstance(resource, Run):
+            self.beta.threads.runs.put(resource)
+        elif isinstance(resource, RunStep):
+            self.beta.threads.runs.steps.put(resource)
         else:
-            raise TypeError(f"Cannot put object of type {type(m)} in store")
+            raise TypeError(f"Cannot put object of type {type(resource)} in store")
 
 
 class Beta:
