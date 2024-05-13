@@ -33,18 +33,18 @@ I (Michael) am the BDFL of the project and can and will arbitrarily rank issues 
 - _Effort_ is a rough estimate of whether something will take a lot of work, some work, or little work to implement
 - _Impact_ is a rough estimate of how important something is
 
-Both are unscientific flawed but they allow me to try to focus on maximizing impact while minimizing effort which is important for an open source project.
+Both are unscientific and flawed but they allow me to try to focus on what to work on when.
 
-If you look at the [project's issues](https://github.com/mharrisb1/openai-responses-python/issues), you'll see they are labeled with some non-standard labels.
+If you look at the [project's issues](https://github.com/mharrisb1/openai-responses-python/issues), you'll see they are labeled with some non-standard issue labels.
 
-| Label                                                                                  | Description   |
-| -------------------------------------------------------------------------------------- | ------------- |
-| <span style='background-color: green; padding: 2px; border-radius: 5px'>e0 🌵</span>   | Low effort    |
+| Label                                                                                | Description   |
+| ------------------------------------------------------------------------------------ | ------------- |
+| <span style='background-color: green; padding: 2px; border-radius: 5px'>e0 🌵</span>  | Low effort    |
 | <span style='background-color: yellow; padding: 2px; border-radius: 5px'>e1 ⚡️</span> | Medium effort |
-| <span style='background-color: red; padding: 2px; border-radius: 5px'>e2 🔥</span>     | High effort   |
-| <span style='background-color: green; padding: 2px; border-radius: 5px'>i0 🌵</span>   | Low impact    |
+| <span style='background-color: red; padding: 2px; border-radius: 5px'>e2 🔥</span>    | High effort   |
+| <span style='background-color: green; padding: 2px; border-radius: 5px'>i0 🌵</span>  | Low impact    |
 | <span style='background-color: yellow; padding: 2px; border-radius: 5px'>i1 ⚡️</span> | Medium impact |
-| <span style='background-color: red; padding: 2px; border-radius: 5px'>i2 🔥</span>     | High impact   |
+| <span style='background-color: red; padding: 2px; border-radius: 5px'>i2 🔥</span>    | High impact   |
 
 Ranking is evaluated according to this quadrant where the priority is ordered from top to bottom and left to right.
 
@@ -75,33 +75,3 @@ poetry install --with dev                   # install deps including development
 poetry shell                                # activate venv
 tox run                                     # run lint, static analysis, unit tests, and examples
 ```
-
-## Design Overview
-
-### Mocks
-
-Mocks are classes that are responsible for encapsulating all request patching of a given endpoint.
-
-Endpoints are classified as either _stateless_ or _stateful_ mocks. Right now, the only difference between `StatelessMock` and `StatefulMock` is the injection of `used_state` (see [state store](#state-store) below for more).
-
-```mermaid
-classDiagram
-    Mock <-- StatelessMock
-    Mock <-- StatefulMock
-
-    StatelessMock <-- ChatCompletionMock
-    StatelessMock <-- EmbeddingsMock
-
-    StatefulMock <-- FilesMock
-    StatefulMock <-- AssistantsMock
-    StatefulMock <-- ThreadsMock
-    StatefulMock <-- MessagesMock
-    StatefulMock <-- RunsMock
-    StatefulMock <-- RunStepsMock
-```
-
-### State store
-
-The state store is responsible for managing the state of all mocked objects throughout the lifetime of the test scope (function, module, session).
-
-The current implementation of the state store is just a naive dictionary-based KV stores with support for common CRUD operations.
