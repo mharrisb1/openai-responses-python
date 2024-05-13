@@ -10,7 +10,7 @@ def completion_with_failures(request: Request, route: Route) -> Response:
     if route.call_count < 2:
         return Response(500)
 
-    completion = chat_completion_from_create_request(request)
+    completion = chat_completion_from_create_request(request, extra={"choices": []})
 
     return Response(201, json=completion.model_dump())
 

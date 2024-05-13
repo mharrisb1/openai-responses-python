@@ -3,8 +3,7 @@ import json
 import httpx
 import respx
 
-from openai.types.chat.chat_completion import ChatCompletion, Choice
-from openai.types.chat.completion_create_params import CompletionCreateParams
+from openai.types.chat.chat_completion import ChatCompletion
 
 from ._base import StatelessRoute
 
@@ -13,7 +12,6 @@ from .._types.partials.chat import PartialChatCompletion
 from .._utils.faker import faker
 from .._utils.serde import model_parse
 from .._utils.time import utcnow_unix_timestamp_s
-from .._utils.token import add_token_usage_for_completion
 
 __all__ = ["ChatCompletionsCreateRoute"]
 
@@ -30,17 +28,10 @@ class ChatCompletionsCreateRoute(StatelessRoute[ChatCompletion, PartialChatCompl
         partial: PartialChatCompletion,
         request: httpx.Request,
     ) -> ChatCompletion:
-        content: CompletionCreateParams = json.loads(request.content)
-        choices = partial.get("choices", [])
-        completion = ChatCompletion(
-            id=partial.get("id", faker.chat.completion.id()),
-            choices=[model_parse(Choice, c) for c in choices],
-            created=partial.get("created", utcnow_unix_timestamp_s()),
-            model=content["model"],
-            system_fingerprint=partial.get("system_fingerprint", ""),
-            object="chat.completion",
-        )
-
-        add_token_usage_for_completion(completion, content)
-
-        return completion
+        content = json.loads(request.content)
+        defaults: PartialChatCompletion = {
+            "id": partial.get("id", faker.chat.completion.id()),
+            "created": partial.get("created", utcnow_unix_timestamp_s()),
+            "object": "chat.completion",
+        }
+        return model_parse(ChatCompletion, defaults | partial | content)
