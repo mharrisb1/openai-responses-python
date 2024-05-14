@@ -7,8 +7,6 @@ import respx
 from ._routes import BetaRoutes, ChatRoutes, EmbeddingsRoutes, FileRoutes
 from ._stores import StateStore
 
-ASSERTION_ERROR = "Can only be called within a mock context"
-
 
 class OpenAIMock:
     def __init__(
