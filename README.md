@@ -16,9 +16,7 @@ View full support coverage [here](https://mharrisb1.github.io/openai-responses-p
 
 ## Usage
 
-Simply decorate any test function that makes a call to the OpenAI API (either using the [official Python SDK](https://github.com/openai/openai-python) or with [HTTPX](https://www.python-httpx.org/)).
-
-See [docs](https://mharrisb1.github.io/openai-responses-python) for more.
+Just decorate any test function that makes a call to the OpenAI API (either using the [official Python SDK](https://github.com/openai/openai-python) or with [HTTPX](https://www.python-httpx.org/)).
 
 ```python
 import openai
@@ -39,6 +37,8 @@ def test_create_assistant():
 
     assert assistant.name == "Math Tutor"
 ```
+
+See [examples](https://github.com/mharrisb1/openai-responses-python/tree/main/examples) or [docs](https://mharrisb1.github.io/openai-responses-python) for more.
 
 ## Installation
 
