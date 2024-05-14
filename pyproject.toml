@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openai-responses"
-version = "0.2.1"
+version = "0.3.0"
 description = "Automatically mock OpenAI requests"
 authors = ["Michael Harris <mharris@definite.app>"]
 license = "MIT"
@@ -15,11 +15,9 @@ openai_responses = "openai_responses.plugin"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-openai = "^1.23"
+openai = "^1.25"
 respx = "^0.20.2"
-decorator = "^5.1.1"
 faker-openai-api-provider = "^0.1.0"
-tiktoken = "^0.6.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.2.0"

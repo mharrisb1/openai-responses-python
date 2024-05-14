@@ -60,19 +60,14 @@ nav:
   - index.md
   - User Guide:
       - user_guide/index.md
-      - user_guide/decorators.md
-      - user_guide/chaining.md
-      - user_guide/mocks.md
-      - user_guide/state.md
+      - user_guide/mock.md
+      - user_guide/decorator.md
+      - user_guide/routes.md
+      - user_guide/responses.md
       - user_guide/async.md
-  - Endpoints:
-      - endpoints/index.md
-      - endpoints/chat.md
-      - endpoints/embeddings.md
-      - endpoints/files.md
-      - Assistants:
-        - endpoints/assistants/assistants.md
-        - endpoints/assistants/threads.md
-        - endpoints/assistants/messages.md
-        - endpoints/assistants/runs.md
-        - endpoints/assistants/run_steps.md
+      - user_guide/helpers.md
+  - Routes:
+    - routes/index.md
+  
+extra_css:
+  - stylesheets/icons.css
