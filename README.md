@@ -16,7 +16,7 @@ View full support coverage [here](https://mharrisb1.github.io/openai-responses-p
 
 ## Usage
 
-Just decorate any test function that makes a call to the OpenAI API (either using the [official Python SDK](https://github.com/openai/openai-python) or with [HTTPX](https://www.python-httpx.org/)).
+Just decorate any test function that makes a call to the OpenAI API (either using [openai-python](https://github.com/openai/openai-python) or with [HTTPX](https://www.python-httpx.org/)).
 
 ```python
 import openai
