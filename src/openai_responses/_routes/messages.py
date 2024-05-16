@@ -1,4 +1,3 @@
-import json
 from typing import Any
 from typing_extensions import override
 
@@ -20,7 +19,7 @@ from .._types.partials.messages import (
 )
 
 from .._utils.faker import faker
-from .._utils.serde import model_dict, model_parse
+from .._utils.serde import json_loads, model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
 __all__ = [
@@ -65,7 +64,7 @@ class MessageCreateRoute(StatefulRoute[Message, PartialMessage]):
 
     @staticmethod
     def _build(partial: PartialMessage, request: httpx.Request) -> Message:
-        content = json.loads(request.content)
+        content = json_loads(request.content)
         defaults: PartialMessage = {
             "id": faker.beta.thread.message.id(),
             "content": [],
@@ -209,7 +208,7 @@ class MessageUpdateRoute(StatefulRoute[Message, PartialMessage]):
         if not found_message:
             return httpx.Response(404)
 
-        content: MessageUpdateParams = json.loads(request.content)
+        content: MessageUpdateParams = json_loads(request.content)
         deserialized = model_dict(found_message)
         updated = model_parse(Message, deserialized | content)
         self._state.beta.threads.messages.put(updated)

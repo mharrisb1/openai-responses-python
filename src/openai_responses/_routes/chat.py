@@ -1,5 +1,3 @@
-import json
-
 import httpx
 import respx
 
@@ -10,7 +8,7 @@ from ._base import StatelessRoute
 from .._types.partials.chat import PartialChatCompletion
 
 from .._utils.faker import faker
-from .._utils.serde import model_parse
+from .._utils.serde import json_loads, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
 __all__ = ["ChatCompletionsCreateRoute"]
@@ -28,7 +26,7 @@ class ChatCompletionsCreateRoute(StatelessRoute[ChatCompletion, PartialChatCompl
         partial: PartialChatCompletion,
         request: httpx.Request,
     ) -> ChatCompletion:
-        content = json.loads(request.content)
+        content = json_loads(request.content)
         defaults: PartialChatCompletion = {
             "id": partial.get("id", faker.chat.completion.id()),
             "created": partial.get("created", utcnow_unix_timestamp_s()),

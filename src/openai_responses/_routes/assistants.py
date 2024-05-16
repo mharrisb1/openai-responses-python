@@ -1,4 +1,3 @@
-import json
 from typing import Any
 from typing_extensions import override
 
@@ -20,7 +19,7 @@ from .._types.partials.assistants import (
 )
 
 from .._utils.faker import faker
-from .._utils.serde import model_dict, model_parse
+from .._utils.serde import json_loads, model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
 __all__ = [
@@ -52,7 +51,7 @@ class AssistantCreateRoute(StatefulRoute[Assistant, PartialAssistant]):
 
     @staticmethod
     def _build(partial: PartialAssistant, request: httpx.Request) -> Assistant:
-        content = json.loads(request.content)
+        content = json_loads(request.content)
         defaults: PartialAssistant = {
             "id": faker.beta.assistant.id(),
             "created_at": utcnow_unix_timestamp_s(),
@@ -152,7 +151,7 @@ class AssistantUpdateRoute(StatefulRoute[Assistant, PartialAssistant]):
         if not found:
             return httpx.Response(404)
 
-        content: AssistantUpdateParams = json.loads(request.content)
+        content: AssistantUpdateParams = json_loads(request.content)
         deserialized = model_dict(found)
         updated = model_parse(Assistant, deserialized | content)
         self._state.beta.assistants.put(updated)

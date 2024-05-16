@@ -1,8 +1,16 @@
+import json
 from typing import Any, Type
 
 from openai import BaseModel
 
 from .._types.generics import M
+
+__all__ = ["json_loads", "model_dict", "model_parse"]
+
+
+def json_loads(b: bytes) -> Any:
+    d = json.loads(b)
+    return {k: v for k, v in d.items() if v is not None}
 
 
 def model_dict(m: BaseModel) -> dict[str, Any]:
