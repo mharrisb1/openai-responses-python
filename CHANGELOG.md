@@ -1,9 +1,17 @@
 # Changelog
 
+## 0.3.1
+
+Fixes:
+
+- [#31: feat: add support for null args on create_and_run](https://github.com/mharrisb1/openai-responses-python/issues/31)
+- [#32: feat: add support for parameters in client.beta.threads.messages.list](https://github.com/mharrisb1/openai-responses-python/issues/32)
+
+Thanks @pietroMonta42 for finding these issues.
+
 ## 0.3.0
 
-> [!IMPORTANT]
-> **Breaking change**: Completely redesigned API
+> [!IMPORTANT] > **Breaking change**: Completely redesigned API
 
 Introducing an all-new API that is both simpler to use and much more flexible. See [docs](https://mharrisb1.github.io/openai-responses-python) for more.
 
