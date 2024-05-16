@@ -44,12 +44,21 @@ def test_create_thread_run(openai_mock: OpenAIMock):
         model="gpt-4-turbo",
     )
 
-    run = client.beta.threads.create_and_run(assistant_id=assistant.id)
+    run = client.beta.threads.create_and_run(
+        assistant_id=assistant.id,
+        thread={"messages": [{"role": "user", "content": "Hi"}]},
+        model=None,
+        instructions=None,
+        tools=None,
+    )
+
+    messages = client.beta.threads.messages.list(run.thread_id)
 
     assert run.id
     assert run.assistant_id == assistant.id
     assert run.instructions == assistant.instructions
     assert run.tools == assistant.tools
+    assert len(messages.data) == 1
 
     assert openai_mock.beta.assistants.create.calls.call_count == 1
     assert openai_mock.beta.threads.create_and_run.calls.call_count == 1

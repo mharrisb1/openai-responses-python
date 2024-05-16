@@ -1,5 +1,3 @@
-import json
-
 from openai.types.embedding import Embedding
 from openai.types.embedding_create_params import EmbeddingCreateParams
 from openai.types.create_embedding_response import CreateEmbeddingResponse, Usage
@@ -11,7 +9,7 @@ from ._base import StatelessRoute
 
 from .._types.partials.embeddings import PartialCreateEmbeddingResponse
 
-from .._utils.serde import model_parse
+from .._utils.serde import json_loads, model_parse
 
 __all__ = ["EmbeddingsCreateRoute"]
 
@@ -33,7 +31,7 @@ class EmbeddingsCreateRoute(
         partial: PartialCreateEmbeddingResponse,
         request: httpx.Request,
     ) -> CreateEmbeddingResponse:
-        content: EmbeddingCreateParams = json.loads(request.content)
+        content: EmbeddingCreateParams = json_loads(request.content)
         embeddings = partial.get("data", [])
         response = CreateEmbeddingResponse(
             data=[model_parse(Embedding, e) for e in embeddings],

@@ -13,6 +13,7 @@ from openai.types.beta.thread_create_and_run_params import ThreadCreateAndRunPar
 
 from ._base import StatefulRoute
 
+from ..helpers.builders.messages import message_from_create_request
 from ..helpers.builders.threads import thread_from_create_request
 
 from .._stores import StateStore
@@ -20,7 +21,7 @@ from .._types.partials.runs import PartialRun, PartialRunList
 
 from .._utils.copy import model_copy
 from .._utils.faker import faker
-from .._utils.serde import model_dict, model_parse
+from .._utils.serde import json_loads, model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
 
@@ -59,7 +60,7 @@ class RunCreateRoute(StatefulRoute[Run, PartialRun]):
         if not found_thread:
             return httpx.Response(404)
 
-        content: RunCreateParams = json.loads(request.content)
+        content: RunCreateParams = json_loads(request.content)
 
         found_asst = self._state.beta.assistants.get(content["assistant_id"])
         if not found_asst:
@@ -82,7 +83,7 @@ class RunCreateRoute(StatefulRoute[Run, PartialRun]):
 
     @staticmethod
     def _build(partial: PartialRun, request: httpx.Request) -> Run:
-        content = json.loads(request.content)
+        content = json_loads(request.content)
         defaults: PartialRun = {
             "id": faker.beta.thread.run.id(),
             "created_at": utcnow_unix_timestamp_s(),
@@ -105,7 +106,7 @@ class ThreadCreateAndRun(StatefulRoute[Run, PartialRun]):
     def _handler(self, request: httpx.Request, route: respx.Route) -> httpx.Response:
         self._route = route
 
-        content: ThreadCreateAndRunParams = json.loads(request.content)
+        content: ThreadCreateAndRunParams = json_loads(request.content)
 
         found_asst = self._state.beta.assistants.get(content["assistant_id"])
         if not found_asst:
@@ -116,6 +117,12 @@ class ThreadCreateAndRun(StatefulRoute[Run, PartialRun]):
         thread_create_req = httpx.Request("", "", content=encoded)
         thread = thread_from_create_request(thread_create_req)
         self._state.beta.threads.put(thread)
+
+        for message_create_params in thread_create_params.get("messages", []):
+            encoded = json.dumps(message_create_params).encode("utf-8")
+            create_message_req = httpx.Request(method="", url="", content=encoded)
+            message = message_from_create_request(thread.id, create_message_req)
+            self._state.beta.threads.messages.put(message)
 
         model = self._build(
             {
@@ -134,7 +141,7 @@ class ThreadCreateAndRun(StatefulRoute[Run, PartialRun]):
 
     @staticmethod
     def _build(partial: PartialRun, request: httpx.Request) -> Run:
-        content = json.loads(request.content)
+        content = json_loads(request.content)
         if content.get("thread"):
             del content["thread"]
 
@@ -260,7 +267,7 @@ class RunUpdateRoute(StatefulRoute[Run, PartialRun]):
         if not found_run:
             return httpx.Response(404)
 
-        content: RunUpdateParams = json.loads(request.content)
+        content: RunUpdateParams = json_loads(request.content)
         deserialized = model_dict(found_run)
         updated = model_parse(Run, deserialized | content)
         self._state.beta.threads.runs.put(updated)

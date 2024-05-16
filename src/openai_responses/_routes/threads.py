@@ -18,7 +18,7 @@ from .._stores import StateStore
 from .._types.partials.threads import PartialThread, PartialThreadDeleted
 
 from .._utils.faker import faker
-from .._utils.serde import model_dict, model_parse
+from .._utils.serde import json_loads, model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
 
@@ -42,16 +42,15 @@ class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
     def _handler(self, request: httpx.Request, route: respx.Route) -> httpx.Response:
         self._route = route
 
-        content: ThreadCreateParams = json.loads(request.content)
+        content: ThreadCreateParams = json_loads(request.content)
         model = self._build({}, request)
         self._state.beta.threads.put(model)
 
-        if content.get("messages"):
-            for message_create_params in content.get("messages", []):
-                encoded = json.dumps(message_create_params).encode("utf-8")
-                create_message_req = httpx.Request(method="", url="", content=encoded)
-                message = message_from_create_request(model.id, create_message_req)
-                self._state.beta.threads.messages.put(message)
+        for message_create_params in content.get("messages", []):
+            encoded = json.dumps(message_create_params).encode("utf-8")
+            create_message_req = httpx.Request(method="", url="", content=encoded)
+            message = message_from_create_request(model.id, create_message_req)
+            self._state.beta.threads.messages.put(message)
 
         return httpx.Response(
             status_code=self._status_code,
