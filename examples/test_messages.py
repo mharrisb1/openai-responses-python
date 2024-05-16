@@ -39,6 +39,10 @@ def test_list_messages(openai_mock: OpenAIMock):
     assert openai_mock.beta.threads.messages.create.calls.call_count == 10
     assert openai_mock.beta.threads.messages.list.calls.call_count == 1
 
+    messages = client.beta.threads.messages.list(thread.id, limit=4, order="desc")
+    assert len(messages.data) == 4
+    assert openai_mock.beta.threads.messages.list.calls.call_count == 2
+
 
 @openai_responses.mock()
 def test_retrieve_message(openai_mock: OpenAIMock):
