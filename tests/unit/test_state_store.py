@@ -70,7 +70,7 @@ def test_assistant_store(state_store: StateStore):
         )
 
     assts = state_store.beta.assistants.list(
-        limit=100,
+        limit="100",
         order="asc",
         after="asst_19",
         before="asst_30",
@@ -80,7 +80,7 @@ def test_assistant_store(state_store: StateStore):
     assert assts[-1].id == "asst_29"
 
     assts = state_store.beta.assistants.list(
-        limit=100,
+        limit="100",
         order="desc",
         after="asst_30",
         before="asst_19",
@@ -138,7 +138,7 @@ def test_message_store(state_store: StateStore):
 
     messages = state_store.beta.threads.messages.list(
         thread_id="thread_abc123",
-        limit=100,
+        limit="100",
         order="asc",
         after="msg_19",
         before="msg_30",
@@ -150,7 +150,7 @@ def test_message_store(state_store: StateStore):
 
     messages = state_store.beta.threads.messages.list(
         thread_id="thread_abc123",
-        limit=100,
+        limit="100",
         order="desc",
         after="msg_30",
         before="msg_19",
@@ -201,7 +201,7 @@ def test_run_store(state_store: StateStore):
 
     runs = state_store.beta.threads.runs.list(
         thread_id="thread_abc123",
-        limit=100,
+        limit="100",
         order="asc",
         after="run_19",
         before="run_30",
@@ -213,7 +213,7 @@ def test_run_store(state_store: StateStore):
 
     runs = state_store.beta.threads.runs.list(
         thread_id="thread_abc123",
-        limit=100,
+        limit="100",
         order="desc",
         after="run_30",
         before="run_19",
