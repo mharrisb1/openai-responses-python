@@ -11,7 +11,8 @@ Thanks @pietroMonta42 for finding these issues.
 
 ## 0.3.0
 
-> [!IMPORTANT] > **Breaking change**: Completely redesigned API
+> [!IMPORTANT]
+> **Breaking change**: Completely redesigned API
 
 Introducing an all-new API that is both simpler to use and much more flexible. See [docs](https://mharrisb1.github.io/openai-responses-python) for more.
 
