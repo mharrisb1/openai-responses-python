@@ -9,6 +9,11 @@ repository = "https://github.com/mharrisb1/openai-responses-python"
 homepage = "https://mharrisb1.github.io/openai-responses-python/"
 documentation = "https://mharrisb1.github.io/openai-responses-python/"
 packages = [{ include = "openai_responses", from = "src" }]
+keywords = ["openai", "pytest", "testing"]
+classifiers = [
+  "Topic :: Software Development :: Testing :: Mocking",
+  "Topic :: Software Development :: Testing :: Unit",
+]
 
 [tool.poetry.plugins.pytest11]
 openai_responses = "openai_responses.plugin"
