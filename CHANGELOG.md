@@ -2,6 +2,10 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.3.3
+
+Fixes incorrect partial type definition for run step tool calls.
+
 ## 0.3.2
 
 Adds `router` property on `OpenAIMock` class to expose instance of [respx.MockRouter](https://github.com/lundberg/respx/blob/366dd0bea824464e6ec9242a88f9b390a9dd74cb/respx/router.py#L323) to easily allow user to add additional routes to mock like non-OpenAI API calls, or enable a call to a route to pass through to the external service.
