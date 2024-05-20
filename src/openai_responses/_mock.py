@@ -28,6 +28,11 @@ class OpenAIMock:
         # NOTE: need to sort routes to avoid match conflicts
         self._router.routes._routes.sort(key=lambda r: len(repr(r._pattern)), reverse=True)  # type: ignore
 
+    @property
+    def router(self) -> respx.MockRouter:
+        """[RESPX](https://lundberg.github.io/respx) router with patched OpenAI routes"""
+        return self._router
+
     def _start_mock(self):
         def wrapper(fn: Callable[..., Any]):
             is_async = inspect.iscoroutinefunction(fn)
@@ -38,16 +43,14 @@ class OpenAIMock:
             async def async_wrapper(*args: Any, **kwargs: Any):
                 if needs_ref:
                     kwargs["openai_mock"] = self
-                assert self._router is not None
-                with self._router:
+                with self.router:
                     return await fn(*args, **kwargs)
 
             @wraps(fn)
             def sync_wrapper(*args: Any, **kwargs: Any):
                 if needs_ref:
                     kwargs["openai_mock"] = self
-                assert self._router is not None
-                with self._router:
+                with self.router:
                     return fn(*args, **kwargs)
 
             return async_wrapper if is_async else sync_wrapper

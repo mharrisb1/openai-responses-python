@@ -66,6 +66,7 @@ nav:
       - user_guide/responses.md
       - user_guide/async.md
       - user_guide/helpers.md
+      - user_guide/external.md
   - Routes:
     - routes/index.md
   
