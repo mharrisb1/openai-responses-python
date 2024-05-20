@@ -69,13 +69,15 @@ class PartialFunctionToolCall(TypedDict):
 
 
 class PartialToolCallsStepDetails(TypedDict):
-    tool_calls: Annotated[
-        Union[
-            PartialCodeInterpreterToolCall,
-            PartialFileSearchToolCall,
-            PartialFunctionToolCall,
-        ],
-        PropertyInfo(discriminator="type"),
+    tool_calls: List[
+        Annotated[
+            Union[
+                PartialCodeInterpreterToolCall,
+                PartialFileSearchToolCall,
+                PartialFunctionToolCall,
+            ],
+            PropertyInfo(discriminator="type"),
+        ]
     ]
     type: Literal["tool_calls"]
 
