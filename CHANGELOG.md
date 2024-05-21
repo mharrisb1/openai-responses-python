@@ -2,6 +2,25 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.4.0
+
+> [!IMPORTANT]
+> Breaking change
+
+> [!NOTE]
+> ✨ Streaming support is here
+
+Tons of changes:
+
+- New `EventStream` and `AsyncEventStream` objects to create mock event streams
+- `OpenAIMock` class now exposes state store through `state` property
+- Updated and more organized API
+- New examples:
+  - Create run with streaming
+  - Create run with streaming (async)
+  - Exporting router as transport to use as `http_client` in OpenAI client constructor
+- Plus some small bug fixes and QoL enhancements
+
 ## 0.3.4
 
 Overriding base URL was not working properly for Azure endpoints. Thanks @mapohjola for pointing this out. This moves the version prefix (i.e. `/v1`) from the OpenAI routes to the default base URL. Also added an example using Azure endpoints.
