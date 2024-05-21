@@ -105,7 +105,9 @@ class AssistantListRoute(
 class AssistantRetrieveRoute(StatefulRoute[Assistant, PartialAssistant]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.get(url__regex=r"/assistants/(?P<id>[a-zA-Z0-9\_]+)"),
+            route=router.get(
+                url__regex=r"/assistants/(?P<assistant_id>[a-zA-Z0-9\_]+)"
+            ),
             status_code=200,
             state=state,
         )
@@ -118,8 +120,8 @@ class AssistantRetrieveRoute(StatefulRoute[Assistant, PartialAssistant]):
         **kwargs: Any,
     ) -> httpx.Response:
         self._route = route
-        id = kwargs["id"]
-        found = self._state.beta.assistants.get(id)
+        assistant_id = kwargs["assistant_id"]
+        found = self._state.beta.assistants.get(assistant_id)
         if not found:
             return httpx.Response(404)
 
@@ -133,7 +135,9 @@ class AssistantRetrieveRoute(StatefulRoute[Assistant, PartialAssistant]):
 class AssistantUpdateRoute(StatefulRoute[Assistant, PartialAssistant]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.post(url__regex=r"/assistants/(?P<id>[a-zA-Z0-9\_]+)"),
+            route=router.post(
+                url__regex=r"/assistants/(?P<assistant_id>[a-zA-Z0-9\_]+)"
+            ),
             status_code=200,
             state=state,
         )
@@ -146,8 +150,8 @@ class AssistantUpdateRoute(StatefulRoute[Assistant, PartialAssistant]):
         **kwargs: Any,
     ) -> httpx.Response:
         self._route = route
-        id = kwargs["id"]
-        found = self._state.beta.assistants.get(id)
+        assistant_id = kwargs["assistant_id"]
+        found = self._state.beta.assistants.get(assistant_id)
         if not found:
             return httpx.Response(404)
 
@@ -166,7 +170,9 @@ class AssistantUpdateRoute(StatefulRoute[Assistant, PartialAssistant]):
 class AssistantDeleteRoute(StatefulRoute[AssistantDeleted, PartialAssistantDeleted]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.delete(url__regex=r"/assistants/(?P<id>[a-zA-Z0-9\_]+)"),
+            route=router.delete(
+                url__regex=r"/assistants/(?P<assistant_id>[a-zA-Z0-9\_]+)"
+            ),
             status_code=200,
             state=state,
         )
@@ -179,12 +185,14 @@ class AssistantDeleteRoute(StatefulRoute[AssistantDeleted, PartialAssistantDelet
         **kwargs: Any,
     ) -> httpx.Response:
         self._route = route
-        id = kwargs["id"]
-        deleted = self._state.beta.assistants.delete(id)
+        assistant_id = kwargs["assistant_id"]
+        deleted = self._state.beta.assistants.delete(assistant_id)
         return httpx.Response(
             status_code=200,
             json=model_dict(
-                AssistantDeleted(id=id, deleted=deleted, object="assistant.deleted")
+                AssistantDeleted(
+                    id=assistant_id, deleted=deleted, object="assistant.deleted"
+                )
             ),
         )
 

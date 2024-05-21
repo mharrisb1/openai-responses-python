@@ -204,7 +204,7 @@ class RunRetrieveRoute(StatefulRoute[Run, PartialRun]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.get(
-                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<run_id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -224,8 +224,8 @@ class RunRetrieveRoute(StatefulRoute[Run, PartialRun]):
         if not found_thread:
             return httpx.Response(404)
 
-        id = kwargs["id"]
-        found_run = self._state.beta.threads.runs.get(id)
+        run_id = kwargs["run_id"]
+        found_run = self._state.beta.threads.runs.get(run_id)
         if not found_run:
             return httpx.Response(404)
 
@@ -240,7 +240,7 @@ class RunUpdateRoute(StatefulRoute[Run, PartialRun]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<run_id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -260,8 +260,8 @@ class RunUpdateRoute(StatefulRoute[Run, PartialRun]):
         if not found_thread:
             return httpx.Response(404)
 
-        id = kwargs["id"]
-        found_run = self._state.beta.threads.runs.get(id)
+        run_id = kwargs["run_id"]
+        found_run = self._state.beta.threads.runs.get(run_id)
         if not found_run:
             return httpx.Response(404)
 
@@ -281,7 +281,7 @@ class RunSubmitToolOutputsRoute(StatefulRoute[Run, PartialRun]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)/submit_tool_outputs"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<run_id>[a-zA-Z0-9\_]+)/submit_tool_outputs"
             ),
             status_code=200,
             state=state,
@@ -302,8 +302,8 @@ class RunSubmitToolOutputsRoute(StatefulRoute[Run, PartialRun]):
         if not found_thread:
             return httpx.Response(404)
 
-        id = kwargs["id"]
-        found_run = self._state.beta.threads.runs.get(id)
+        run_id = kwargs["run_id"]
+        found_run = self._state.beta.threads.runs.get(run_id)
         if not found_run:
             return httpx.Response(404)
 
@@ -318,7 +318,7 @@ class RunCancelRoute(StatefulRoute[Run, PartialRun]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)/cancel"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<run_id>[a-zA-Z0-9\_]+)/cancel"
             ),
             status_code=200,
             state=state,
@@ -339,8 +339,8 @@ class RunCancelRoute(StatefulRoute[Run, PartialRun]):
         if not found_thread:
             return httpx.Response(404)
 
-        id = kwargs["id"]
-        found_run = self._state.beta.threads.runs.get(id)
+        run_id = kwargs["run_id"]
+        found_run = self._state.beta.threads.runs.get(run_id)
         if not found_run:
             return httpx.Response(404)
 

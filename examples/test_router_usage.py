@@ -1,5 +1,4 @@
 import json
-from typing import Any
 
 import httpx
 import openai
@@ -14,10 +13,9 @@ def polled_get_run_responses(
     request: Request,
     route: Route,
     state_store: StateStore,
-    **kwargs: Any,
+    thread_id: str,
+    run_id: str,
 ) -> Response:
-    # RESPX will inject `id` (for run ID) and `thread_id` into the kwargs
-    run_id = kwargs["id"]
     run = state_store.beta.threads.runs.get(run_id)
     assert run
     if route.call_count < 4:
@@ -29,6 +27,7 @@ def polled_get_run_responses(
         run = merge_run_with_partial(
             run,
             {
+                "thread_id": thread_id,
                 "status": "requires_action",
                 "required_action": {
                     "type": "submit_tool_outputs",
