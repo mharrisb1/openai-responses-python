@@ -2,6 +2,14 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.3.4
+
+Overriding base URL was not working properly for Azure endpoints. Thanks @mapohjola for pointing this out. This moves the version prefix (i.e. `/v1`) from the OpenAI routes to the default base URL. Also added an example using Azure endpoints.
+
+Closed:
+
+- [#9: feat: base url override](https://github.com/mharrisb1/openai-responses-python/issues/9)
+
 ## 0.3.3
 
 Fixes incorrect partial type definition for run step tool calls.
