@@ -5,7 +5,7 @@ from typing import Any, Callable, Optional
 import respx
 
 from ._routes import BetaRoutes, ChatRoutes, EmbeddingsRoutes, FileRoutes
-from ._stores import StateStore
+from .stores import StateStore
 
 
 class OpenAIMock:
@@ -32,6 +32,11 @@ class OpenAIMock:
     def router(self) -> respx.MockRouter:
         """[RESPX](https://lundberg.github.io/respx) router with patched OpenAI routes"""
         return self._router
+
+    @property
+    def state(self) -> StateStore:
+        """State store for API resources"""
+        return self._state
 
     def _start_mock(self):
         def wrapper(fn: Callable[..., Any]):
