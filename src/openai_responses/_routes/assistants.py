@@ -11,7 +11,7 @@ from openai.types.beta.assistant_update_params import AssistantUpdateParams
 
 from ._base import StatefulRoute
 
-from .._stores import StateStore
+from ..stores import StateStore
 from .._types.partials.assistants import (
     PartialAssistant,
     PartialAssistantList,

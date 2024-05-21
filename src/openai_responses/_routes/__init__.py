@@ -1,6 +1,6 @@
 import respx
 
-from .._stores import StateStore
+from ..stores import StateStore
 
 from .chat import ChatCompletionsCreateRoute
 from .embeddings import EmbeddingsCreateRoute

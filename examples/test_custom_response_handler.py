@@ -1,7 +1,9 @@
 import openai
 
 import openai_responses
-from openai_responses import OpenAIMock, Request, Response, Route
+from openai_responses import OpenAIMock
+from openai_responses.ext.httpx import Request, Response
+from openai_responses.ext.respx import Route
 from openai_responses.helpers.builders.chat import chat_completion_from_create_request
 
 

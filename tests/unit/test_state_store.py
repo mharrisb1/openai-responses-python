@@ -5,7 +5,7 @@ from openai.types.beta.thread import Thread
 from openai.types.beta.threads.message import Message
 from openai.types.beta.threads.run import Run
 
-from openai_responses import StateStore
+from openai_responses.stores import StateStore
 
 
 @pytest.fixture

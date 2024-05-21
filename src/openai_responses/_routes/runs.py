@@ -16,7 +16,7 @@ from ._base import StatefulRoute
 from ..helpers.builders.messages import message_from_create_request
 from ..helpers.builders.threads import thread_from_create_request
 
-from .._stores import StateStore
+from ..stores import StateStore
 from .._types.partials.runs import PartialRun, PartialRunList
 
 from .._utils.copy import model_copy

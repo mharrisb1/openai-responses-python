@@ -4,7 +4,8 @@ import openai
 from openai import APIStatusError
 
 import openai_responses
-from openai_responses import OpenAIMock, Response
+from openai_responses import OpenAIMock
+from openai_responses.ext.httpx import Response
 
 
 @openai_responses.mock()

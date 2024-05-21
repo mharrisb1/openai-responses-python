@@ -9,7 +9,7 @@ import respx
 
 from openai import BaseModel
 
-from .._stores import StateStore
+from ..stores import StateStore
 from .._types.generics import M, P
 from .._utils.serde import model_dict
 
@@ -133,7 +133,9 @@ class StatefulRoute(Route[M, P]):
     def _side_effect(self) -> Callable[..., httpx.Response]:
         if callable(self._response):
             argspec = inspect.getfullargspec(self._response)
-            needs_store = "state_store" in argspec.args
+            needs_store = (
+                "state_store" in argspec.args or "state_store" in argspec.kwonlyargs
+            )
             if needs_store:
                 return partial(self._response, state_store=self._state)
             else:

@@ -9,7 +9,7 @@ from openai.types.beta.threads.runs.run_step import RunStep
 
 from ._base import StatefulRoute
 
-from .._stores import StateStore
+from ..stores import StateStore
 from .._types.partials.run_steps import PartialRunStep, PartialRunStepList
 
 from .._utils.serde import model_dict

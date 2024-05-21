@@ -11,7 +11,7 @@ from openai.types.beta.threads.message_update_params import MessageUpdateParams
 
 from ._base import StatefulRoute
 
-from .._stores import StateStore
+from ..stores import StateStore
 from .._types.partials.messages import (
     PartialMessage,
     PartialMessageList,
@@ -74,13 +74,29 @@ class MessageCreateRoute(StatefulRoute[Message, PartialMessage]):
             "status": "completed",
         }
         if content.get("content"):
-            defaults["content"].append(
-                {
-                    "type": "text",
-                    "text": {"annotations": [], "value": content.get("content")},
-                }
-            )
+            value = content.get("content")
+            if isinstance(value, str):
+                defaults["content"].append(
+                    {
+                        "type": "text",
+                        "text": {"annotations": [], "value": value},
+                    }
+                )
+            else:
+                for block in value:
+                    if block.get("type") == "text":
+                        defaults["content"].append(
+                            {
+                                "type": "text",
+                                "text": {
+                                    "annotations": [],
+                                    "value": block.get("text"),
+                                },
+                            }
+                        )
+
             del content["content"]
+
         return model_parse(Message, defaults | partial | content)
 
 
