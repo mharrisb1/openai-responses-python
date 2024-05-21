@@ -30,7 +30,7 @@ __all__ = ["FileCreateRoute", "FileListRoute", "FileRetrieveRoute", "FileDeleteR
 class FileCreateRoute(StatefulRoute[FileObject, PartialFileObject]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.post(url__regex="/v1/files"),
+            route=router.post(url__regex="/files"),
             status_code=201,
             state=state,
         )
@@ -76,7 +76,7 @@ class FileCreateRoute(StatefulRoute[FileObject, PartialFileObject]):
 class FileListRoute(StatefulRoute[SyncPage[FileObject], PartialFileList]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.get(url__regex="/v1/files"),
+            route=router.get(url__regex="/files"),
             status_code=200,
             state=state,
         )
@@ -102,7 +102,7 @@ class FileListRoute(StatefulRoute[SyncPage[FileObject], PartialFileList]):
 class FileRetrieveRoute(StatefulRoute[FileObject, PartialFileObject]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.get(url__regex=r"/v1/files/(?P<id>[a-zA-Z0-9\-]+)"),
+            route=router.get(url__regex=r"/files/(?P<id>[a-zA-Z0-9\-]+)"),
             status_code=200,
             state=state,
         )
@@ -133,7 +133,7 @@ class FileRetrieveRoute(StatefulRoute[FileObject, PartialFileObject]):
 class FileDeleteRoute(StatefulRoute[FileObject, PartialFileDeleted]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.delete(url__regex=r"/v1/files/(?P<id>[a-zA-Z0-9\-]+)"),
+            route=router.delete(url__regex=r"/files/(?P<id>[a-zA-Z0-9\-]+)"),
             status_code=200,
             state=state,
         )

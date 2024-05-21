@@ -22,7 +22,7 @@ class EmbeddingsCreateRoute(
 ):
     def __init__(self, router: respx.MockRouter) -> None:
         super().__init__(
-            route=router.post(url__regex="/v1/embeddings"),
+            route=router.post(url__regex="/embeddings"),
             status_code=201,
         )
 

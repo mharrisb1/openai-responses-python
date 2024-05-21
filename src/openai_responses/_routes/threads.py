@@ -33,7 +33,7 @@ __all__ = [
 class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.post(url__regex="/v1/threads"),
+            route=router.post(url__regex="/threads"),
             status_code=201,
             state=state,
         )
@@ -75,7 +75,7 @@ class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
 class ThreadRetrieveRoute(StatefulRoute[Thread, PartialThread]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.get(url__regex=r"/v1/threads/(?P<id>[a-zA-Z0-9\_]+)"),
+            route=router.get(url__regex=r"/threads/(?P<id>[a-zA-Z0-9\_]+)"),
             status_code=200,
             state=state,
         )
@@ -104,7 +104,7 @@ class ThreadUpdateRoute(StatefulRoute[Thread, PartialThread]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/v1/threads/(?P<id>(?!.*runs)[a-zA-Z0-9_]+)"  # NOTE: avoids match on /threads/runs
+                url__regex=r"/threads/(?P<id>(?!.*runs)[a-zA-Z0-9_]+)"  # NOTE: avoids match on /threads/runs
             ),
             status_code=200,
             state=state,
@@ -138,7 +138,7 @@ class ThreadUpdateRoute(StatefulRoute[Thread, PartialThread]):
 class ThreadDeleteRoute(StatefulRoute[ThreadDeleted, PartialThreadDeleted]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.delete(url__regex=r"/v1/threads/(?P<id>[a-zA-Z0-9\_]+)"),
+            route=router.delete(url__regex=r"/threads/(?P<id>[a-zA-Z0-9\_]+)"),
             status_code=200,
             state=state,
         )

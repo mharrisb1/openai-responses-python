@@ -22,7 +22,7 @@ class RunStepListRoute(StatefulRoute[SyncCursorPage[RunStep], PartialRunStepList
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.get(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<run_id>[a-zA-Z0-9\_]+)/steps"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<run_id>[a-zA-Z0-9\_]+)/steps"
             ),
             status_code=200,
             state=state,
@@ -85,7 +85,7 @@ class RunStepRetrieveRoute(StatefulRoute[RunStep, PartialRunStep]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.get(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<run_id>[a-zA-Z0-9\_]+)/steps/(?P<id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<run_id>[a-zA-Z0-9\_]+)/steps/(?P<id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,

@@ -17,7 +17,7 @@ __all__ = ["ChatCompletionsCreateRoute"]
 class ChatCompletionsCreateRoute(StatelessRoute[ChatCompletion, PartialChatCompletion]):
     def __init__(self, router: respx.MockRouter) -> None:
         super().__init__(
-            route=router.post(url__regex="/v1/chat/completions"),
+            route=router.post(url__regex="/chat/completions"),
             status_code=201,
         )
 

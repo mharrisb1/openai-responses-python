@@ -35,7 +35,7 @@ class MessageCreateRoute(StatefulRoute[Message, PartialMessage]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages"
             ),
             status_code=201,
             state=state,
@@ -88,7 +88,7 @@ class MessageListRoute(StatefulRoute[SyncCursorPage[Message], PartialMessageList
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.get(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages"
             ),
             status_code=200,
             state=state,
@@ -147,7 +147,7 @@ class MessageRetrieveRoute(StatefulRoute[Message, PartialMessage]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.get(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -183,7 +183,7 @@ class MessageUpdateRoute(StatefulRoute[Message, PartialMessage]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -224,7 +224,7 @@ class MessageDeleteRoute(StatefulRoute[MessageDeleted, PartialMessageDeleted]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.delete(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
