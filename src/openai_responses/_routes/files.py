@@ -11,7 +11,7 @@ from openai.types.file_deleted import FileDeleted
 
 from ._base import StatefulRoute
 
-from .._stores import StateStore
+from ..stores import StateStore
 from .._types.partials.files import (
     PartialFileObject,
     PartialFileList,

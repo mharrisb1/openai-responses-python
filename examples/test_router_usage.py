@@ -1,11 +1,13 @@
 import json
 
-import httpx
 import openai
 from openai.types.beta.threads.run_submit_tool_outputs_params import ToolOutput
 
 import openai_responses
-from openai_responses import OpenAIMock, Request, Response, Route, StateStore
+from openai_responses import OpenAIMock
+from openai_responses.stores import StateStore
+from openai_responses.ext.httpx import Request, Response, post
+from openai_responses.ext.respx import Route
 from openai_responses.helpers.mergers.runs import merge_run_with_partial
 
 
@@ -115,7 +117,7 @@ def test_external_api_mock(openai_mock: OpenAIMock):
             tool_outputs: list[ToolOutput] = []
             for tool in run.required_action.submit_tool_outputs.tool_calls:
                 if tool.function.name == "get_current_temperature":
-                    res = httpx.post(
+                    res = post(
                         url="https://api.myweatherapi.com",
                         json=json.loads(tool.function.arguments),
                     )

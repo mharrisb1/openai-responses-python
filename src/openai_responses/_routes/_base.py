@@ -9,7 +9,7 @@ import respx
 
 from openai import BaseModel
 
-from .._stores import StateStore
+from ..stores import StateStore
 from .._types.generics import M, P
 from .._utils.serde import model_dict
 

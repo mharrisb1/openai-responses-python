@@ -11,7 +11,7 @@ from openai.types.beta.threads.message_update_params import MessageUpdateParams
 
 from ._base import StatefulRoute
 
-from .._stores import StateStore
+from ..stores import StateStore
 from .._types.partials.messages import (
     PartialMessage,
     PartialMessageList,

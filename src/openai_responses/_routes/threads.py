@@ -14,7 +14,7 @@ from ._base import StatefulRoute
 
 from ..helpers.builders.messages import message_from_create_request
 
-from .._stores import StateStore
+from ..stores import StateStore
 from .._types.partials.threads import PartialThread, PartialThreadDeleted
 
 from .._utils.faker import faker

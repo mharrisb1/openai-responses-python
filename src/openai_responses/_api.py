@@ -1,7 +1,7 @@
 from typing import Any, Awaitable, Callable, Optional, Union
 
 from ._mock import OpenAIMock
-from ._stores import StateStore
+from .stores import StateStore
 
 WrappedFn = Callable[..., Union[Callable[..., Any], Awaitable[Callable[..., Any]]]]
 

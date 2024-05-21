@@ -1,7 +1,7 @@
 from typing import Optional
 
 from .._mock import OpenAIMock
-from .._stores.state_store import Resource, StateStore
+from ..stores.state_store import Resource, StateStore
 
 
 def add_resource_to_state_store(
