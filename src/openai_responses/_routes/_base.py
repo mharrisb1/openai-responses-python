@@ -133,7 +133,9 @@ class StatefulRoute(Route[M, P]):
     def _side_effect(self) -> Callable[..., httpx.Response]:
         if callable(self._response):
             argspec = inspect.getfullargspec(self._response)
-            needs_store = "state_store" in argspec.args
+            needs_store = (
+                "state_store" in argspec.args or "state_store" in argspec.kwonlyargs
+            )
             if needs_store:
                 return partial(self._response, state_store=self._state)
             else:
