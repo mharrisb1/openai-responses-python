@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass
-from typing import AsyncGenerator, Generator, Literal, Optional, Tuple, Union, overload
+from typing import AsyncIterator, Generator, Literal, Optional, Tuple, Union, overload
 
 from openai.types import ErrorObject
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
@@ -12,9 +12,10 @@ from openai.types.beta.threads.run import Run
 from openai.types.beta.threads.runs.run_step import RunStep
 from openai.types.beta.threads.runs.run_step_delta import RunStepDelta
 
+from ._utils.aio import make_async_generator
 from ._utils.serde import model_dict
 
-__all__ = ["EventStream", "AsyncEventStream"]
+__all__ = ["Event", "EventStream", "AsyncEventStream"]
 
 EventType = Literal[
     "thread.created",
@@ -56,23 +57,23 @@ EventData = Union[
 
 @dataclass(frozen=True)
 class Event:
-    type: Optional[EventType]
+    event: Optional[EventType]
     data: EventData
 
     def to_sse_event(self) -> Tuple[Optional[bytes], Optional[bytes]]:
-        encoded_event = f"event: {self.type}\n".encode() if self.type else None
+        encoded_event = f"event: {self.event}\n".encode() if self.event else None
         encoded_data = f"data: {json.dumps(model_dict(self.data))}\n\n".encode()
         return encoded_event, encoded_data
 
 
 class BaseEventStream:
     @overload
-    def event(self, type: Literal["thread.created"], data: Thread) -> Event: ...
+    def event(self, event: Literal["thread.created"], data: Thread) -> Event: ...
 
     @overload
     def event(
         self,
-        type: Literal[
+        event: Literal[
             "thread.run.created",
             "thread.run.queued",
             "thread.run.in_progress",
@@ -90,7 +91,7 @@ class BaseEventStream:
     @overload
     def event(
         self,
-        type: Literal[
+        event: Literal[
             "thread.run.step.created",
             "thread.run.step.in_progress",
             "thread.run.step.completed",
@@ -103,13 +104,13 @@ class BaseEventStream:
 
     @overload
     def event(
-        self, type: Literal["thread.run.step.delta"], data: RunStepDelta
+        self, event: Literal["thread.run.step.delta"], data: RunStepDelta
     ) -> Event: ...
 
     @overload
     def event(
         self,
-        type: Literal[
+        event: Literal[
             "thread.message.created",
             "thread.message.in_progress",
             "thread.message.completed",
@@ -120,20 +121,23 @@ class BaseEventStream:
 
     @overload
     def event(
-        self, type: Literal["thread.message.delta"], data: MessageDelta
+        self, event: Literal["thread.message.delta"], data: MessageDelta
     ) -> Event: ...
 
     @overload
-    def event(self, type: Literal["error"], data: ErrorObject) -> Event: ...
+    def event(self, event: Literal["error"], data: ErrorObject) -> Event: ...
 
     @overload
-    def event(self, type: None, data: ChatCompletionChunk) -> Event: ...
+    def event(self, event: None, data: ChatCompletionChunk) -> Event: ...
 
-    def event(self, type: Optional[EventType], data: EventData) -> Event:
+    def event(self, event: Optional[EventType], data: EventData) -> Event:
         """
         Create a server sent event payload with optional event.type and event.data payloads
         """
-        return Event(type, data)
+        return Event(event, data)
+
+    def generate(self) -> Generator[Event, None, None]:
+        raise NotImplementedError
 
 
 class EventStream(BaseEventStream):
@@ -150,15 +154,12 @@ class EventStream(BaseEventStream):
         yield b"event: done\n"
         yield b"data: [DONE]\n\n"
 
-    def generate(self) -> Generator[Event, None, None]:
-        raise NotImplementedError
-
 
 class AsyncEventStream(BaseEventStream):
     """Async event stream protocol for building mock OpenAI server sent event stream"""
 
-    async def __aiter__(self) -> AsyncGenerator[bytes, None]:
-        async for _event in await self.generate():
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        async for _event in make_async_generator(self.generate()):
             t, d = _event.to_sse_event()
             if t:
                 yield t
@@ -166,6 +167,3 @@ class AsyncEventStream(BaseEventStream):
                 yield d
         yield b"event: done\n"
         yield b"data: [DONE]\n\n"
-
-    async def generate(self) -> AsyncGenerator[Event, None]:
-        raise NotImplementedError
