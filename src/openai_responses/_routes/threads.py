@@ -75,7 +75,7 @@ class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
 class ThreadRetrieveRoute(StatefulRoute[Thread, PartialThread]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.get(url__regex=r"/threads/(?P<id>[a-zA-Z0-9\_]+)"),
+            route=router.get(url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)"),
             status_code=200,
             state=state,
         )
@@ -88,8 +88,8 @@ class ThreadRetrieveRoute(StatefulRoute[Thread, PartialThread]):
         **kwargs: Any,
     ) -> httpx.Response:
         self._route = route
-        id = kwargs["id"]
-        found = self._state.beta.threads.get(id)
+        thread_id = kwargs["thread_id"]
+        found = self._state.beta.threads.get(thread_id)
         if not found:
             return httpx.Response(404)
 
@@ -104,7 +104,7 @@ class ThreadUpdateRoute(StatefulRoute[Thread, PartialThread]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/threads/(?P<id>(?!.*runs)[a-zA-Z0-9_]+)"  # NOTE: avoids match on /threads/runs
+                url__regex=r"/threads/(?P<thread_id>(?!.*runs)[a-zA-Z0-9_]+)"  # NOTE: avoids match on /threads/runs
             ),
             status_code=200,
             state=state,
@@ -118,8 +118,8 @@ class ThreadUpdateRoute(StatefulRoute[Thread, PartialThread]):
         **kwargs: Any,
     ) -> httpx.Response:
         self._route = route
-        id = kwargs["id"]
-        found = self._state.beta.threads.get(id)
+        thread_id = kwargs["thread_id"]
+        found = self._state.beta.threads.get(thread_id)
         if not found:
             return httpx.Response(404)
 
@@ -138,7 +138,7 @@ class ThreadUpdateRoute(StatefulRoute[Thread, PartialThread]):
 class ThreadDeleteRoute(StatefulRoute[ThreadDeleted, PartialThreadDeleted]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.delete(url__regex=r"/threads/(?P<id>[a-zA-Z0-9\_]+)"),
+            route=router.delete(url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)"),
             status_code=200,
             state=state,
         )
@@ -151,12 +151,12 @@ class ThreadDeleteRoute(StatefulRoute[ThreadDeleted, PartialThreadDeleted]):
         **kwargs: Any,
     ) -> httpx.Response:
         self._route = route
-        id = kwargs["id"]
-        deleted = self._state.beta.threads.delete(id)
+        thread_id = kwargs["thread_id"]
+        deleted = self._state.beta.threads.delete(thread_id)
         return httpx.Response(
             status_code=200,
             json=model_dict(
-                ThreadDeleted(id=id, deleted=deleted, object="thread.deleted")
+                ThreadDeleted(id=thread_id, deleted=deleted, object="thread.deleted")
             ),
         )
 

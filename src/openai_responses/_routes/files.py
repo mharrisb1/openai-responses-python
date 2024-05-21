@@ -102,7 +102,7 @@ class FileListRoute(StatefulRoute[SyncPage[FileObject], PartialFileList]):
 class FileRetrieveRoute(StatefulRoute[FileObject, PartialFileObject]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.get(url__regex=r"/files/(?P<id>[a-zA-Z0-9\-]+)"),
+            route=router.get(url__regex=r"/files/(?P<file_id>[a-zA-Z0-9\-]+)"),
             status_code=200,
             state=state,
         )
@@ -115,8 +115,8 @@ class FileRetrieveRoute(StatefulRoute[FileObject, PartialFileObject]):
         **kwargs: Any,
     ) -> httpx.Response:
         self._route = route
-        id = kwargs["id"]
-        found = self._state.files.get(id)
+        fil_id = kwargs["file_id"]
+        found = self._state.files.get(fil_id)
         if not found:
             return httpx.Response(404)
 
@@ -133,7 +133,7 @@ class FileRetrieveRoute(StatefulRoute[FileObject, PartialFileObject]):
 class FileDeleteRoute(StatefulRoute[FileObject, PartialFileDeleted]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.delete(url__regex=r"/files/(?P<id>[a-zA-Z0-9\-]+)"),
+            route=router.delete(url__regex=r"/files/(?P<file_id>[a-zA-Z0-9\-]+)"),
             status_code=200,
             state=state,
         )
@@ -146,11 +146,11 @@ class FileDeleteRoute(StatefulRoute[FileObject, PartialFileDeleted]):
         **kwargs: Any,
     ) -> httpx.Response:
         self._route = route
-        id = kwargs["id"]
-        deleted = self._state.files.delete(id)
+        file_id = kwargs["file_id"]
+        deleted = self._state.files.delete(file_id)
         return httpx.Response(
             status_code=200,
-            json=model_dict(FileDeleted(id=id, deleted=deleted, object="file")),
+            json=model_dict(FileDeleted(id=file_id, deleted=deleted, object="file")),
         )
 
     @staticmethod

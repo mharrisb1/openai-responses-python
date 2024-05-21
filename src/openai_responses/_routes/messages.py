@@ -147,7 +147,7 @@ class MessageRetrieveRoute(StatefulRoute[Message, PartialMessage]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.get(
-                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<message_id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -167,8 +167,8 @@ class MessageRetrieveRoute(StatefulRoute[Message, PartialMessage]):
         if not found_thread:
             return httpx.Response(404)
 
-        id = kwargs["id"]
-        found_message = self._state.beta.threads.messages.get(id)
+        message_id = kwargs["message_id"]
+        found_message = self._state.beta.threads.messages.get(message_id)
         if not found_message:
             return httpx.Response(404)
 
@@ -183,7 +183,7 @@ class MessageUpdateRoute(StatefulRoute[Message, PartialMessage]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<message_id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -203,8 +203,8 @@ class MessageUpdateRoute(StatefulRoute[Message, PartialMessage]):
         if not found_thread:
             return httpx.Response(404)
 
-        id = kwargs["id"]
-        found_message = self._state.beta.threads.messages.get(id)
+        message_id = kwargs["message_id"]
+        found_message = self._state.beta.threads.messages.get(message_id)
         if not found_message:
             return httpx.Response(404)
 
@@ -224,7 +224,7 @@ class MessageDeleteRoute(StatefulRoute[MessageDeleted, PartialMessageDeleted]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.delete(
-                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/messages/(?P<message_id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -244,12 +244,14 @@ class MessageDeleteRoute(StatefulRoute[MessageDeleted, PartialMessageDeleted]):
         if not found_thread:
             return httpx.Response(404)
 
-        id = kwargs["id"]
-        deleted = self._state.beta.threads.messages.delete(id)
+        message_id = kwargs["message_id"]
+        deleted = self._state.beta.threads.messages.delete(message_id)
         return httpx.Response(
             status_code=200,
             json=model_dict(
-                MessageDeleted(id=id, deleted=deleted, object="thread.message.deleted")
+                MessageDeleted(
+                    id=message_id, deleted=deleted, object="thread.message.deleted"
+                )
             ),
         )
 

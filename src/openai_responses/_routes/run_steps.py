@@ -85,7 +85,7 @@ class RunStepRetrieveRoute(StatefulRoute[RunStep, PartialRunStep]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.get(
-                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<run_id>[a-zA-Z0-9\_]+)/steps/(?P<id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<run_id>[a-zA-Z0-9\_]+)/steps/(?P<step_id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -110,8 +110,8 @@ class RunStepRetrieveRoute(StatefulRoute[RunStep, PartialRunStep]):
         if not found_run:
             return httpx.Response(404)
 
-        id = kwargs["id"]
-        found_run_step = self._state.beta.threads.runs.steps.get(id)
+        step_id = kwargs["step_id"]
+        found_run_step = self._state.beta.threads.runs.steps.get(step_id)
         if not found_run_step:
             return httpx.Response(404)
 
