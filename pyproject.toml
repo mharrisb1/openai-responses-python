@@ -49,3 +49,4 @@ strictSetInference = true
 reportMissingTypeStubs = false
 reportUnusedImport = "error"
 reportPrivateUsage = "none"
+reportWildcardImportFromLibrary = "none"
