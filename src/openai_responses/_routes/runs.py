@@ -40,7 +40,7 @@ class RunCreateRoute(StatefulRoute[Run, PartialRun]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs"
             ),
             status_code=201,
             state=state,
@@ -97,7 +97,7 @@ class RunCreateRoute(StatefulRoute[Run, PartialRun]):
 class ThreadCreateAndRun(StatefulRoute[Run, PartialRun]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.post(url__regex="/v1/threads/runs"),
+            route=router.post(url__regex="/threads/runs"),
             status_code=201,
             state=state,
         )
@@ -151,9 +151,7 @@ class ThreadCreateAndRun(StatefulRoute[Run, PartialRun]):
 class RunListRoute(StatefulRoute[SyncCursorPage[Run], PartialRunList]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.get(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs"
-            ),
+            route=router.get(url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs"),
             status_code=200,
             state=state,
         )
@@ -206,7 +204,7 @@ class RunRetrieveRoute(StatefulRoute[Run, PartialRun]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.get(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -242,7 +240,7 @@ class RunUpdateRoute(StatefulRoute[Run, PartialRun]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -283,7 +281,7 @@ class RunSubmitToolOutputsRoute(StatefulRoute[Run, PartialRun]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)/submit_tool_outputs"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)/submit_tool_outputs"
             ),
             status_code=200,
             state=state,
@@ -320,7 +318,7 @@ class RunCancelRoute(StatefulRoute[Run, PartialRun]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/v1/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)/cancel"
+                url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs/(?P<id>[a-zA-Z0-9\_]+)/cancel"
             ),
             status_code=200,
             state=state,

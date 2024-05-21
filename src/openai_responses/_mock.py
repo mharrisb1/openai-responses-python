@@ -16,7 +16,7 @@ class OpenAIMock:
     ) -> None:
         self._router = respx.mock(
             assert_all_called=False,
-            base_url=base_url or "https://api.openai.com",
+            base_url=base_url or "https://api.openai.com/v1",
         )
         self._state = state or StateStore()
 
