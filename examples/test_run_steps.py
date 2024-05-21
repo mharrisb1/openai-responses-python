@@ -4,7 +4,6 @@ import openai_responses
 from openai_responses import OpenAIMock
 from openai_responses.helpers.builders.messages import build_message
 from openai_responses.helpers.builders.run_steps import build_run_step
-from openai_responses.helpers.state_store import add_resource_to_state_store
 
 
 @openai_responses.mock()
@@ -60,8 +59,8 @@ def test_list_run_steps(openai_mock: OpenAIMock):
             },
         }
     )
-    add_resource_to_state_store(assistant_message, mock=openai_mock)
-    add_resource_to_state_store(run_step, mock=openai_mock)
+    openai_mock.state.beta.threads.messages.put(assistant_message)
+    openai_mock.state.beta.threads.runs.steps.put(run_step)
 
     steps = client.beta.threads.runs.steps.list(run.id, thread_id=thread.id)
 
