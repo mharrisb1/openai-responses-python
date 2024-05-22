@@ -141,9 +141,9 @@ def test_external_api_mock(openai_mock: OpenAIMock):
         else:
             continue
 
-    assert openai_mock.beta.assistants.create.calls.call_count == 1
-    assert openai_mock.beta.threads.create.calls.call_count == 1
-    assert openai_mock.beta.threads.messages.create.calls.call_count == 1
-    assert openai_mock.beta.threads.runs.create.calls.call_count == 1
-    assert openai_mock.beta.threads.runs.retrieve.calls.call_count == 5
-    assert openai_mock.beta.threads.runs.submit_tool_outputs.calls.call_count == 1
+    assert openai_mock.beta.assistants.create.route.call_count == 1
+    assert openai_mock.beta.threads.create.route.call_count == 1
+    assert openai_mock.beta.threads.messages.create.route.call_count == 1
+    assert openai_mock.beta.threads.runs.create.route.call_count == 1
+    assert openai_mock.beta.threads.runs.retrieve.route.call_count == 5
+    assert openai_mock.beta.threads.runs.submit_tool_outputs.route.call_count == 1

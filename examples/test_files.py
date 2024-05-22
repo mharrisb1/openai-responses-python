@@ -14,7 +14,7 @@ def test_create_file(openai_mock: OpenAIMock):
     )
 
     assert file.filename == "example.json"
-    assert openai_mock.files.create.calls.call_count == 1
+    assert openai_mock.files.create.route.call_count == 1
 
 
 @openai_responses.mock()
@@ -30,8 +30,8 @@ def test_list_files(openai_mock: OpenAIMock):
     files = client.files.list()
 
     assert len(files.data) == 10
-    assert openai_mock.files.create.calls.call_count == 10
-    assert openai_mock.files.list.calls.call_count == 1
+    assert openai_mock.files.create.route.call_count == 10
+    assert openai_mock.files.list.route.call_count == 1
 
 
 @openai_responses.mock()
@@ -48,8 +48,8 @@ def test_retrieve_file(openai_mock: OpenAIMock):
     assert found.id == file.id
     assert file.filename == "example.json"
     assert found.filename == file.filename
-    assert openai_mock.files.create.calls.call_count == 1
-    assert openai_mock.files.retrieve.calls.call_count == 1
+    assert openai_mock.files.create.route.call_count == 1
+    assert openai_mock.files.retrieve.route.call_count == 1
 
 
 @openai_responses.mock()
@@ -61,6 +61,6 @@ def test_delete_file(openai_mock: OpenAIMock):
         purpose="fine-tune",
     )
 
-    assert client.files.delete(file.id).deleted == True
-    assert openai_mock.files.create.calls.call_count == 1
-    assert openai_mock.files.delete.calls.call_count == 1
+    assert client.files.delete(file.id).deleted
+    assert openai_mock.files.create.route.call_count == 1
+    assert openai_mock.files.delete.route.call_count == 1
