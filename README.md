@@ -12,7 +12,7 @@ Pytest plugin for automatically mocking OpenAI requests. Powered by [RESPX](http
 - `/v1/assistants`
 - `/v1/threads` (+ messages, runs, and steps)
 
-View full support coverage [here](https://mharrisb1.github.io/openai-responses-python/routes).
+View full support coverage [here](https://mharrisb1.github.io/openai-responses-python/coverage).
 
 ## Usage
 
@@ -46,7 +46,7 @@ See [examples](https://github.com/mharrisb1/openai-responses-python/tree/main/ex
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/openai-responses.svg)](https://pypi.org/project/openai-responses/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/openai-responses)](https://pypi.org/project/openai-responses/)
 
-Available on [PyPi](https://pypi.org/project/openai-responses/)
+Available on [PyPI](https://pypi.org/project/openai-responses/)
 
 ```bash
 pip install openai-responses
