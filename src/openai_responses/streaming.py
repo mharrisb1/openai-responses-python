@@ -67,12 +67,13 @@ class Event:
 
 
 class BaseEventStream:
+    @staticmethod
     @overload
-    def event(self, event: Literal["thread.created"], data: Thread) -> Event: ...
+    def event(event: Literal["thread.created"], data: Thread) -> Event: ...
 
+    @staticmethod
     @overload
     def event(
-        self,
         event: Literal[
             "thread.run.created",
             "thread.run.queued",
@@ -88,9 +89,9 @@ class BaseEventStream:
         data: Run,
     ) -> Event: ...
 
+    @staticmethod
     @overload
     def event(
-        self,
         event: Literal[
             "thread.run.step.created",
             "thread.run.step.in_progress",
@@ -102,14 +103,13 @@ class BaseEventStream:
         data: RunStep,
     ) -> Event: ...
 
+    @staticmethod
     @overload
-    def event(
-        self, event: Literal["thread.run.step.delta"], data: RunStepDelta
-    ) -> Event: ...
+    def event(event: Literal["thread.run.step.delta"], data: RunStepDelta) -> Event: ...
 
+    @staticmethod
     @overload
     def event(
-        self,
         event: Literal[
             "thread.message.created",
             "thread.message.in_progress",
@@ -119,20 +119,22 @@ class BaseEventStream:
         data: Message,
     ) -> Event: ...
 
+    @staticmethod
     @overload
-    def event(
-        self, event: Literal["thread.message.delta"], data: MessageDelta
-    ) -> Event: ...
+    def event(event: Literal["thread.message.delta"], data: MessageDelta) -> Event: ...
 
+    @staticmethod
     @overload
-    def event(self, event: Literal["error"], data: ErrorObject) -> Event: ...
+    def event(event: Literal["error"], data: ErrorObject) -> Event: ...
 
+    @staticmethod
     @overload
-    def event(self, event: None, data: ChatCompletionChunk) -> Event: ...
+    def event(event: None, data: ChatCompletionChunk) -> Event: ...
 
-    def event(self, event: Optional[EventType], data: EventData) -> Event:
+    @staticmethod
+    def event(event: Optional[EventType], data: EventData) -> Event:
         """
-        Create a server sent event payload with optional event.type and event.data payloads
+        Create a server sent event payload with event.type (optional) and event.data payloads
         """
         return Event(event, data)
 
