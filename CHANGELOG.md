@@ -15,6 +15,7 @@ Tons of changes:
 - New `EventStream` and `AsyncEventStream` objects to create mock event streams
 - `OpenAIMock` class now exposes state store through `state` property
 - Updated and more organized API
+- Replacement of `calls` property on routes in favor of `route` property
 - New examples:
   - Create run with streaming
   - Create run with streaming (async)
