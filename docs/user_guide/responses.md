@@ -12,7 +12,7 @@ For all routes, but especially stateful routes, you can skip manually defining t
 
 ## Partial
 
-All routes have an associated *partial* object. Partials are just typed dictionaries representations of the response objects where fields are not required. Any field not defined by the user will be given a default value by merging the partial object with the default response object.
+All routes have an associated _partial_ object. Partials are just typed dictionaries representations of the OpenAI response object. Any field not defined by the user will be given a default value by merging the partial object with the default response object.
 
 Let's look at an example:
 
@@ -34,7 +34,7 @@ Thanks to Python's `TypedDict` type, autocompletion for field names are automati
 
 ## Model
 
-Along with partial objects, you can also define the response as a full Pydantic `BaseModel` object which is what the official Python library uses for defining resource types.
+Along with partial objects, you can also choose to set the response to the _full_ OpenAI object.
 
 One use case for this is to manually set the `status` field on the run resource object for polling.
 
@@ -51,11 +51,17 @@ run = client.beta.threads.runs.retrieve(run.id, thread_id=thread.id)
 assert run.status == "in_progress"
 ```
 
+!!! note
+
+    This example does not persist the updated run state in the state store. It is recommended to do so.
+
 ## HTTPX Response
 
-You can also set the response to a raw HTTPX response object. This is more involved than using either a partial or model but can allow you to test things like server failures or other status codes.
+You can set the response to a raw HTTPX response object. This is more involved than using either a partial or model but can allow you to test things like server failures or other status codes.
 
-For convenience, `openai_responses` provides a re-import of `httpx.Response`.
+!!! tip
+
+    For convenience, `openai_responses` provides an easy way to import external objects from HTTPX and RESPX.
 
 ```python linenums="1"
 import pytest
@@ -64,7 +70,8 @@ import openai
 from openai import APIStatusError
 
 import openai_responses
-from openai_responses import OpenAIMock, Response
+from openai_responses import OpenAIMock
+from openai_responses.ext.httpx import Response
 
 
 @openai_responses.mock()
@@ -91,19 +98,27 @@ The function's signature must match one of:
 
 ```
 (request: httpx.Request) -> httpx.Response
+
 (request: httpx.Request, route: respx.Route) -> httpx.Response
-(request: httpx.Request, route: respx.Route, state: openai_responses.StateStore) -> httpx.Response
+
+(request: httpx.Request, route: respx.Route, ,*, state: openai_responses.StateStore) -> httpx.Response
+
+(request: httpx.Request, route: respx.Route, ,*, state: openai_responses.StateStore, ...) -> httpx.Response
 ```
 
-Again, for convenience, the necessary HTTPX and RESPX imports are re-imported and provided by this library.
-
 Looking at a real-life example, this test simulates two failed calls before finally succeeding on the third call.
+
+!!! tip
+
+    For convenience, `openai_responses` provides an easy way to import external objects from HTTPX and RESPX.
 
 ```python linenums="1"
 import openai
 
 import openai_responses
-from openai_responses import OpenAIMock, Request, Response, Route
+from openai_responses import OpenAIMock
+from openai_responses.ext.httpx import Request, Response
+from openai_responses.ext.respx import Route
 from openai_responses.helpers.builders.chat import chat_completion_from_create_request
 
 
@@ -133,4 +148,54 @@ def test_create_chat_completion(openai_mock: OpenAIMock):
     assert openai_mock.chat.completions.create.calls.call_count == 3
 ```
 
-This example also makes use of [helpers](helpers.md) which are convenient utilities for common operations like creating a model from a request, storing data in the state store, etc.
+!!! note
+
+    This example also makes use of [helpers](helpers.md) which are convenient utilities for common operations.
+
+### State store injection
+
+For functions used with stateful routes you can add `state_store` as an argument or keyword-only argument and it will be automatically provided.
+
+```python linenums="1"
+import openai_responses
+from openai_responses import OpenAIMock
+from openai_responses.stores import StateStore
+from openai_responses.ext.httpx import Request, Response, post
+from openai_responses.ext.respx import Route
+
+def polled_get_run_responses(
+    request: Request,
+    route: Route,
+    *,
+    state_store: StateStore,
+) -> Response:
+    ...
+```
+
+### Path parameters
+
+For routes like those in the Assistants API, some resources have child resources (e.g. a message _belongs_ to a thread). Those routes have the resource IDs in the path as path parameters.
+
+For example, the route for retrieving runs is:
+
+```
+/threads/{thread_id}/runs/{run_id}
+```
+
+For functions, you can access those path parameters like this:
+
+```python linenums="1"
+def polled_get_run_responses(
+    request: Request,
+    route: Route,
+    *,
+    state_store: StateStore,
+    thread_id: str,
+    run_id: str,
+) -> Response:
+    ...
+```
+
+!!! warning
+
+    If a route has path parameters but you do not need them in the function signature then you *must* add `kwargs` to the function. These arguments are automatically added to the function and without them in the signature or without using `kwargs` you will get an error.

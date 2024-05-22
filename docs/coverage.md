@@ -1,6 +1,4 @@
-# Routes
-
-See example usage [here](https://github.com/mharrisb1/openai-responses-python/tree/main/examples).
+# Coverage
 
 ??? warning "File attatchments"
 
@@ -10,9 +8,7 @@ See example usage [here](https://github.com/mharrisb1/openai-responses-python/tr
 
     [Legacy endpoints](https://platform.openai.com/docs/api-reference/completions) are not supported and are not on the roadmap.
 
-## Coverage
-
-The end-goal of this library is to support all OpenAI API routes but currently only a subset is supported. See the [roadmap](https://github.com/mharrisb1/openai-responses-python/blob/main/CONTRIBUTING.md#roadmap) for more information on support priority.
+The end-goal of this library is to eventually support all OpenAI API routes. See the [roadmap](https://github.com/mharrisb1/openai-responses-python/blob/main/CONTRIBUTING.md#roadmap) for more information.
 
 | Route                              |         Supported          |    Streaming Supported     | Route Type |
 | ---------------------------------- | :------------------------: | :------------------------: | ---------- |
