@@ -28,9 +28,9 @@ def test_create_run(openai_mock: OpenAIMock):
     assert run.instructions == assistant.instructions
     assert run.tools == assistant.tools
 
-    assert openai_mock.beta.assistants.create.calls.call_count == 1
-    assert openai_mock.beta.threads.create.calls.call_count == 1
-    assert openai_mock.beta.threads.runs.create.calls.call_count == 1
+    assert openai_mock.beta.assistants.create.route.call_count == 1
+    assert openai_mock.beta.threads.create.route.call_count == 1
+    assert openai_mock.beta.threads.runs.create.route.call_count == 1
 
 
 @openai_responses.mock()
@@ -60,8 +60,8 @@ def test_create_thread_run(openai_mock: OpenAIMock):
     assert run.tools == assistant.tools
     assert len(messages.data) == 1
 
-    assert openai_mock.beta.assistants.create.calls.call_count == 1
-    assert openai_mock.beta.threads.create_and_run.calls.call_count == 1
+    assert openai_mock.beta.assistants.create.route.call_count == 1
+    assert openai_mock.beta.threads.create_and_run.route.call_count == 1
 
 
 @openai_responses.mock()
@@ -87,10 +87,10 @@ def test_list_runs(openai_mock: OpenAIMock):
 
     assert len(runs.data) == 10
 
-    assert openai_mock.beta.assistants.create.calls.call_count == 1
-    assert openai_mock.beta.threads.create.calls.call_count == 1
-    assert openai_mock.beta.threads.runs.create.calls.call_count == 10
-    assert openai_mock.beta.threads.runs.list.calls.call_count == 1
+    assert openai_mock.beta.assistants.create.route.call_count == 1
+    assert openai_mock.beta.threads.create.route.call_count == 1
+    assert openai_mock.beta.threads.runs.create.route.call_count == 10
+    assert openai_mock.beta.threads.runs.list.route.call_count == 1
 
 
 @openai_responses.mock()
@@ -115,10 +115,10 @@ def test_retrieve_run(openai_mock: OpenAIMock):
 
     assert found.id == run.id
 
-    assert openai_mock.beta.assistants.create.calls.call_count == 1
-    assert openai_mock.beta.threads.create.calls.call_count == 1
-    assert openai_mock.beta.threads.runs.create.calls.call_count == 1
-    assert openai_mock.beta.threads.runs.retrieve.calls.call_count == 1
+    assert openai_mock.beta.assistants.create.route.call_count == 1
+    assert openai_mock.beta.threads.create.route.call_count == 1
+    assert openai_mock.beta.threads.runs.create.route.call_count == 1
+    assert openai_mock.beta.threads.runs.retrieve.route.call_count == 1
 
 
 @openai_responses.mock()
@@ -150,10 +150,10 @@ def test_update_run(openai_mock: OpenAIMock):
     assert run.metadata == {"foo": "1"}
     assert updated.metadata == {"foo": "2"}
 
-    assert openai_mock.beta.assistants.create.calls.call_count == 1
-    assert openai_mock.beta.threads.create.calls.call_count == 1
-    assert openai_mock.beta.threads.runs.create.calls.call_count == 1
-    assert openai_mock.beta.threads.runs.update.calls.call_count == 1
+    assert openai_mock.beta.assistants.create.route.call_count == 1
+    assert openai_mock.beta.threads.create.route.call_count == 1
+    assert openai_mock.beta.threads.runs.create.route.call_count == 1
+    assert openai_mock.beta.threads.runs.update.route.call_count == 1
 
 
 @openai_responses.mock()
@@ -180,8 +180,8 @@ def test_cancel_run(openai_mock: OpenAIMock):
     assert cancelled.status == "cancelling"
     assert found.status == "cancelled"
 
-    assert openai_mock.beta.assistants.create.calls.call_count == 1
-    assert openai_mock.beta.threads.create.calls.call_count == 1
-    assert openai_mock.beta.threads.runs.create.calls.call_count == 1
-    assert openai_mock.beta.threads.runs.cancel.calls.call_count == 1
-    assert openai_mock.beta.threads.runs.retrieve.calls.call_count == 1
+    assert openai_mock.beta.assistants.create.route.call_count == 1
+    assert openai_mock.beta.threads.create.route.call_count == 1
+    assert openai_mock.beta.threads.runs.create.route.call_count == 1
+    assert openai_mock.beta.threads.runs.cancel.route.call_count == 1
+    assert openai_mock.beta.threads.runs.retrieve.route.call_count == 1

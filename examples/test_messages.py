@@ -16,8 +16,8 @@ def test_create_message(openai_mock: OpenAIMock):
 
     assert message.id
     assert message.thread_id == thread.id
-    assert openai_mock.beta.threads.create.calls.call_count == 1
-    assert openai_mock.beta.threads.messages.create.calls.call_count == 1
+    assert openai_mock.beta.threads.create.route.call_count == 1
+    assert openai_mock.beta.threads.messages.create.route.call_count == 1
 
 
 @openai_responses.mock()
@@ -35,13 +35,13 @@ def test_list_messages(openai_mock: OpenAIMock):
     messages = client.beta.threads.messages.list(thread.id)
 
     assert len(messages.data) == 10
-    assert openai_mock.beta.threads.create.calls.call_count == 1
-    assert openai_mock.beta.threads.messages.create.calls.call_count == 10
-    assert openai_mock.beta.threads.messages.list.calls.call_count == 1
+    assert openai_mock.beta.threads.create.route.call_count == 1
+    assert openai_mock.beta.threads.messages.create.route.call_count == 10
+    assert openai_mock.beta.threads.messages.list.route.call_count == 1
 
     messages = client.beta.threads.messages.list(thread.id, limit=4, order="desc")
     assert len(messages.data) == 4
-    assert openai_mock.beta.threads.messages.list.calls.call_count == 2
+    assert openai_mock.beta.threads.messages.list.route.call_count == 2
 
 
 @openai_responses.mock()
@@ -57,9 +57,9 @@ def test_retrieve_message(openai_mock: OpenAIMock):
     found = client.beta.threads.messages.retrieve(message.id, thread_id=thread.id)
 
     assert found.id == message.id
-    assert openai_mock.beta.threads.create.calls.call_count == 1
-    assert openai_mock.beta.threads.messages.create.calls.call_count == 1
-    assert openai_mock.beta.threads.messages.retrieve.calls.call_count == 1
+    assert openai_mock.beta.threads.create.route.call_count == 1
+    assert openai_mock.beta.threads.messages.create.route.call_count == 1
+    assert openai_mock.beta.threads.messages.retrieve.route.call_count == 1
 
 
 @openai_responses.mock()
@@ -82,9 +82,9 @@ def test_update_message(openai_mock: OpenAIMock):
     assert updated.id == message.id
     assert message.metadata == {"foo": "1"}
     assert updated.metadata == {"foo": "2"}
-    assert openai_mock.beta.threads.create.calls.call_count == 1
-    assert openai_mock.beta.threads.messages.create.calls.call_count == 1
-    assert openai_mock.beta.threads.messages.update.calls.call_count == 1
+    assert openai_mock.beta.threads.create.route.call_count == 1
+    assert openai_mock.beta.threads.messages.create.route.call_count == 1
+    assert openai_mock.beta.threads.messages.update.route.call_count == 1
 
 
 @openai_responses.mock()
@@ -100,6 +100,6 @@ def test_delete_message(openai_mock: OpenAIMock):
     )
 
     assert client.beta.threads.messages.delete(message.id, thread_id=thread.id).deleted
-    assert openai_mock.beta.threads.create.calls.call_count == 1
-    assert openai_mock.beta.threads.messages.create.calls.call_count == 1
-    assert openai_mock.beta.threads.messages.delete.calls.call_count == 1
+    assert openai_mock.beta.threads.create.route.call_count == 1
+    assert openai_mock.beta.threads.messages.create.route.call_count == 1
+    assert openai_mock.beta.threads.messages.delete.route.call_count == 1

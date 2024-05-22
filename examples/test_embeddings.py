@@ -30,3 +30,4 @@ def test_create_embedding(openai_mock: OpenAIMock):
     assert len(embeddings.data) == 1
     assert embeddings.data[0].embedding == EMBEDDING
     assert embeddings.data[0]
+    assert openai_mock.embeddings.create.route.call_count == 1

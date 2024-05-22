@@ -119,4 +119,4 @@ def test_handle_stream(openai_mock: OpenAIMock):
     assert event_count == 4
     assert len(messages.data) == 2
 
-    assert openai_mock.beta.threads.runs.create.calls.call_count == 1
+    assert openai_mock.beta.threads.runs.create.route.call_count == 1

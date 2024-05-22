@@ -30,4 +30,4 @@ def test_create_chat_completion(openai_mock: OpenAIMock):
         ],
     )
 
-    assert openai_mock.chat.completions.create.calls.call_count == 3
+    assert openai_mock.chat.completions.create.route.call_count == 3

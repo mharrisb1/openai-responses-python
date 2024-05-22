@@ -36,4 +36,4 @@ def test_create_chat_completion():
 
     assert len(completion.choices) == 1
     assert completion.choices[0].message.content == "Hello! How can I help?"
-    assert openai_mock.chat.completions.create.calls.call_count == 1
+    assert openai_mock.chat.completions.create.route.call_count == 1

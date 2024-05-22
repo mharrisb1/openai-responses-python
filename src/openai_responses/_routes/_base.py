@@ -30,8 +30,8 @@ class Route(ABC, Generic[M, P]):
         self._route.side_effect = self._response
 
     @property
-    def calls(self):
-        return self._route.calls
+    def route(self) -> respx.Route:
+        return self._route
 
     @property
     def response(self) -> Union[httpx.Response, M, P, Callable[..., httpx.Response]]:
