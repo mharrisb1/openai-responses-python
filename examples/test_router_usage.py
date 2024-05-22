@@ -14,6 +14,7 @@ from openai_responses.helpers.mergers.runs import merge_run_with_partial
 def polled_get_run_responses(
     request: Request,
     route: Route,
+    *,
     state_store: StateStore,
     thread_id: str,
     run_id: str,
