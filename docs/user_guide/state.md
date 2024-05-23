@@ -46,3 +46,31 @@ my_custom_state.beta.assistants.put(Assistant(...))
 def my_test_function(openai_mock: OpenAIMock):
     ...
 ```
+
+Alternatively, you can use a Pytest fixture to pass around the custom state.
+
+```python linenums="1"
+import pytest
+
+import openai
+
+import openai_responses
+from openai_responses import OpenAIMock
+from openai_responses.stores import StateStore
+
+
+@pytest.fixture(scope="module")
+def shared_state():
+    return StateStore()
+
+
+@openai_responses.mock()
+def test_create_assistant(openai_mock: OpenAIMock, shared_state: StateStore):
+    openai_mock.state = shared_state
+    ...
+
+@openai_responses.mock()
+def test_retrieve_assistant(openai_mock: OpenAIMock, shared_state: StateStore):
+    openai_mock.state = shared_state
+    ...
+```

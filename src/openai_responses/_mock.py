@@ -38,6 +38,15 @@ class OpenAIMock:
         """State store for API resources"""
         return self._state
 
+    @state.setter
+    def state(self, value: StateStore) -> None:
+        assert isinstance(value, StateStore), "Object is not an instance of StateStore"
+        self._state = value
+        self.beta = BetaRoutes(self._router, self._state)
+        self.chat = ChatRoutes(self._router)
+        self.embeddings = EmbeddingsRoutes(self._router)
+        self.files = FileRoutes(self._router, self._state)
+
     def _start_mock(self):
         def wrapper(fn: Callable[..., Any]):
             is_async = inspect.iscoroutinefunction(fn)
