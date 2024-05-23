@@ -2,6 +2,10 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.4.1
+
+Adds setter for `OpenAIMock` state store
+
 ## 0.4.0
 
 > [!IMPORTANT]
