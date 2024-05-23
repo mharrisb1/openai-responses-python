@@ -4,15 +4,21 @@ Pytest plugin for automatically mocking OpenAI requests. Powered by [RESPX](http
 
 [![sdk support](https://img.shields.io/badge/SDK_Support-v1.25+-white?logo=openai&logoColor=black&labelColor=white)](https://github.com/openai/openai-python)
 
-## Supported Routes
+## Supported Endpoints
 
-- `/v1/chat/completions`
-- `/v1/embeddings`
-- `/v1/files`
-- `/v1/assistants`
-- `/v1/threads` (+ messages, runs, and steps)
+- [Chat](https://platform.openai.com/docs/api-reference/chat)
+- [Embeddings](https://platform.openai.com/docs/api-reference/embeddings)
+- [Files](https://platform.openai.com/docs/api-reference/files)
+- [Assistants](https://platform.openai.com/docs/api-reference/assistants)
+- [Threads](https://platform.openai.com/docs/api-reference/threads)
+- [Messages](https://platform.openai.com/docs/api-reference/messages)
+- [Runs](https://platform.openai.com/docs/api-reference/runs)
+- [Run Steps](https://platform.openai.com/docs/api-reference/run-steps)
 
 View full support coverage [here](https://mharrisb1.github.io/openai-responses-python/coverage).
+
+> [!NOTE]
+> ✨ Support for creating streaming responses added in v0.4
 
 ## Usage
 
