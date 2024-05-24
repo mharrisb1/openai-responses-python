@@ -6,6 +6,8 @@ Pytest plugin for automatically mocking OpenAI requests. Powered by [RESPX](http
 
 ## Supported Endpoints
 
+[![support coverage](https://img.shields.io/badge/Endpoints_Covered-49.2%-orange)](https://mharrisb1.github.io/openai-responses-python/coverage)
+
 - [Chat](https://platform.openai.com/docs/api-reference/chat)
 - [Embeddings](https://platform.openai.com/docs/api-reference/embeddings)
 - [Files](https://platform.openai.com/docs/api-reference/files)
