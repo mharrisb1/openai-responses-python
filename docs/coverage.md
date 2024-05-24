@@ -43,8 +43,8 @@ The end-goal of this library is to eventually support all OpenAI API routes. See
 | Create image edit                  |  :material-close:{ .red }  |             -              | -          |
 | Create image variation             |  :material-close:{ .red }  |             -              | -          |
 | **Models**                         |
-| List models                        |  :material-close:{ .red }  |             -              | -          |
-| Retrieve model                     |  :material-close:{ .red }  |             -              | -          |
+| List models                        | :material-check:{ .green } |             -              | Stateful   |
+| Retrieve model                     | :material-check:{ .green } |             -              | Stateful   |
 | Delete a fine-tuned model          |  :material-close:{ .red }  |             -              | -          |
 | **Moderations**                    |
 | Create moderation                  |  :material-close:{ .red }  |             -              | -          |

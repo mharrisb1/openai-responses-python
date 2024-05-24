@@ -1,12 +1,14 @@
 from typing import Any, Dict, Generic, List, Literal, Optional, TypeVar, Union
 
-from openai.types import FileObject
+from openai.types import FileObject, Model
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.thread import Thread
 from openai.types.beta.threads.message import Message
 from openai.types.beta.threads.run import Run
 from openai.types.beta.threads.runs.run_step import RunStep
 
+from .._constants import SYSTEM_MODELS
+from .._utils.serde import model_parse
 
 __all__ = ["StateStore"]
 
@@ -14,6 +16,7 @@ M = TypeVar(
     "M",
     bound=Union[
         FileObject,
+        Model,
         Assistant,
         Thread,
         Message,
@@ -22,12 +25,13 @@ M = TypeVar(
     ],
 )
 
-Resource = Union[FileObject, Assistant, Thread, Message, Run, RunStep, Any]
+Resource = Union[FileObject, Assistant, Thread, Message, Run, RunStep, Model, Any]
 
 
 class StateStore:
     def __init__(self) -> None:
         self.files = FileStore()
+        self.models = ModelStore()
         self.beta = Beta()
 
     def _blind_put(self, resource: Resource) -> None:
@@ -43,6 +47,8 @@ class StateStore:
             self.beta.threads.runs.put(resource)
         elif isinstance(resource, RunStep):
             self.beta.threads.runs.steps.put(resource)
+        elif isinstance(resource, Model):
+            self.models.put(resource)
         else:
             raise TypeError(f"Cannot put object of type {type(resource)} in store")
 
@@ -88,6 +94,16 @@ class FileStore(BaseStore[FileObject]):
         if purpose:
             files = [file for file in files if file.purpose == purpose]
         return files
+
+
+class ModelStore(BaseStore[Model]):
+    def __init__(self) -> None:
+        super().__init__()
+        for model in SYSTEM_MODELS:
+            self._data[str(model["id"])] = model_parse(Model, model)
+
+    def list(self) -> List[Model]:
+        return list(self._data.values())
 
 
 class AssistantStore(BaseStore[Assistant]):
