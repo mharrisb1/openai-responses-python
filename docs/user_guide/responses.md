@@ -12,7 +12,7 @@ For all routes, but especially stateful routes, you can skip manually defining t
 
 ## Partial
 
-All routes have an associated _partial_ object. Partials are just typed dictionaries representations of the OpenAI response object. Any field not defined by the user will be given a default value by merging the partial object with the default response object.
+All routes have an associated _partial_ object. Partials are just typed dictionary representations of the OpenAI response object. Any field not defined by the user will be given a default value by merging the partial object with the default response object.
 
 Let's look at an example:
 
@@ -28,7 +28,7 @@ openai_mock.chat.completions.create.response = {
 }
 ```
 
-In this example, we're explicitly defining what the completion choice field should look like in the response but we're not explicitly defining any of the other fields.
+In this example, we're explicitly defining what the completion `choices` field should look like in the response but we're not explicitly defining any of the other fields.
 
 Thanks to Python's `TypedDict` type, autocompletion for field names are automatically supported in your text editor or IDE.
 
@@ -51,17 +51,13 @@ run = client.beta.threads.runs.retrieve(run.id, thread_id=thread.id)
 assert run.status == "in_progress"
 ```
 
-!!! note
-
-    This example does not persist the updated run state in the state store. It is recommended to do so.
-
 ## HTTPX Response
 
 You can set the response to a raw HTTPX response object. This is more involved than using either a partial or model but can allow you to test things like server failures or other status codes.
 
 !!! tip
 
-    For convenience, `openai_responses` provides an easy way to import external objects from HTTPX and RESPX.
+    For convenience, this library provides an easy way to import external objects from HTTPX and RESPX.
 
 ```python linenums="1"
 import pytest
@@ -108,10 +104,6 @@ The function's signature must match one of:
 
 Looking at a real-life example, this test simulates two failed calls before finally succeeding on the third call.
 
-!!! tip
-
-    For convenience, `openai_responses` provides an easy way to import external objects from HTTPX and RESPX.
-
 ```python linenums="1"
 import openai
 
@@ -127,7 +119,7 @@ def completion_with_failures(request: Request, route: Route) -> Response:
     if route.call_count < 2:
         return Response(500)
 
-    completion = chat_completion_from_create_request(request, extra={"choices": []})
+    completion = chat_completion_from_create_request(request)
 
     return Response(201, json=completion.model_dump())
 
@@ -174,7 +166,7 @@ def polled_get_run_responses(
 
 ### Path parameters
 
-For routes like those in the Assistants API, some resources have child resources (e.g. a message _belongs_ to a thread). Those routes have the resource IDs in the path as path parameters.
+If a route has path parameters then those will also be automatically passed to the response function.
 
 For example, the route for retrieving runs is:
 
