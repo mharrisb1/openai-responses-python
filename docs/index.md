@@ -39,7 +39,7 @@ Simply decorate any test function that makes a call to the OpenAI API.
 
 See [examples](https://github.com/mharrisb1/openai-responses-python/tree/main/examples) for more.
 
-!!! tip
+!!! note
 
      The API call(s) can either come from the [official Python library](https://github.com/openai/openai-python), [HTTPX](https://www.python-httpx.org), or [HTTP Core](https://www.encode.io/httpcore). All documented examples will use the official Python library.
 
