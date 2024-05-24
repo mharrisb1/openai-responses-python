@@ -5,6 +5,7 @@ from ..stores import StateStore
 from .chat import ChatCompletionsCreateRoute
 from .embeddings import EmbeddingsCreateRoute
 from .files import FileCreateRoute, FileListRoute, FileRetrieveRoute, FileDeleteRoute
+from .models import ModelListRoute, ModelRetrieveRoute
 from .assistants import (
     AssistantCreateRoute,
     AssistantListRoute,
@@ -65,6 +66,12 @@ class FileRoutes:
         self.list = FileListRoute(router, state)
         self.retrieve = FileRetrieveRoute(router, state)
         self.delete = FileDeleteRoute(router, state)
+
+
+class ModelRoutes:
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        self.list = ModelListRoute(router, state)
+        self.retrieve = ModelRetrieveRoute(router, state)
 
 
 class BetaRoutes:
