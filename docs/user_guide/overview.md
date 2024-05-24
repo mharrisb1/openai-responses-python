@@ -85,7 +85,7 @@ Stateful routes also contain an instance of a [`StateStore`](state.md) for manag
 
 While routes like `chat.completions.create` are stateless, routes like those in the new Assistants API are stateful and manage resource objects for you behind the scenes.
 
-For stateless routes, a [state store](state.md) is used to manage resources. Since many of the stateful routes are simple CRUD operations, you do not need to manually set the response.
+For stateful routes, a [state store](state.md) is used to manage resources. Since many of the stateful routes are simple CRUD operations, you do not need to manually set the response.
 
 ### Setting the response
 
