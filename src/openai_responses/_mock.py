@@ -9,6 +9,12 @@ from .stores import StateStore
 
 
 class OpenAIMock:
+    beta: BetaRoutes
+    chat: ChatRoutes
+    embeddings: EmbeddingsRoutes
+    files: FileRoutes
+    models: ModelRoutes
+
     def __init__(
         self,
         base_url: Optional[str] = None,
@@ -19,15 +25,7 @@ class OpenAIMock:
             base_url=base_url or "https://api.openai.com/v1",
         )
         self._state = state or StateStore()
-
-        self.beta = BetaRoutes(self._router, self._state)
-        self.chat = ChatRoutes(self._router)
-        self.embeddings = EmbeddingsRoutes(self._router)
-        self.files = FileRoutes(self._router, self._state)
-        self.models = ModelRoutes(self._router, self._state)
-
-        # NOTE: need to sort routes to avoid match conflicts
-        self._router.routes._routes.sort(key=lambda r: len(repr(r._pattern)), reverse=True)  # type: ignore
+        self._init_routes()
 
     @property
     def router(self) -> respx.MockRouter:
@@ -43,10 +41,18 @@ class OpenAIMock:
     def state(self, value: StateStore) -> None:
         assert isinstance(value, StateStore), "Object is not an instance of StateStore"
         self._state = value
+        self._init_routes()
+
+    def _init_routes(self) -> None:
+        """Called on construction and anytime that either `router` or `state` values are changed"""
         self.beta = BetaRoutes(self._router, self._state)
         self.chat = ChatRoutes(self._router)
         self.embeddings = EmbeddingsRoutes(self._router)
         self.files = FileRoutes(self._router, self._state)
+        self.models = ModelRoutes(self._router, self._state)
+
+        # NOTE: need to sort routes to avoid match conflicts
+        self._router.routes._routes.sort(key=lambda r: len(repr(r._pattern)), reverse=True)  # type: ignore
 
     def _start_mock(self):
         def wrapper(fn: Callable[..., Any]):
