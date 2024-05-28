@@ -2,6 +2,15 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.5.0
+
+Adds routes for models and retrieving file content.
+
+Closed:
+
+- [#22: feat: support models endpoint](https://github.com/mharrisb1/openai-responses-python/issues/22)
+- [#46: feat(routes): add retrieve file content route](https://github.com/mharrisb1/openai-responses-python/issues/46)
+
 ## 0.4.1
 
 Adds setter for `OpenAIMock` state store
