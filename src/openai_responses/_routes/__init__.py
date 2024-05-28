@@ -4,7 +4,13 @@ from ..stores import StateStore
 
 from .chat import ChatCompletionsCreateRoute
 from .embeddings import EmbeddingsCreateRoute
-from .files import FileCreateRoute, FileListRoute, FileRetrieveRoute, FileDeleteRoute
+from .files import (
+    FileCreateRoute,
+    FileListRoute,
+    FileRetrieveRoute,
+    FileDeleteRoute,
+    FileRetrieveContentRoute,
+)
 from .models import ModelListRoute, ModelRetrieveRoute
 from .assistants import (
     AssistantCreateRoute,
@@ -66,6 +72,7 @@ class FileRoutes:
         self.list = FileListRoute(router, state)
         self.retrieve = FileRetrieveRoute(router, state)
         self.delete = FileDeleteRoute(router, state)
+        self.content = FileRetrieveContentRoute(router, state)
 
 
 class ModelRoutes:

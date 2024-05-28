@@ -7,6 +7,7 @@ from openai.types.beta.threads.message import Message
 from openai.types.beta.threads.run import Run
 from openai.types.beta.threads.runs.run_step import RunStep
 
+from .content_store import ContentStore
 from .._constants import SYSTEM_MODELS
 from .._utils.serde import model_parse
 
@@ -77,8 +78,11 @@ class BaseStore(Generic[M]):
             return False
 
 
-# TODO: add content storage
 class FileStore(BaseStore[FileObject]):
+    def __init__(self) -> None:
+        super().__init__()
+        self.content = ContentStore()
+
     def list(
         self,
         purpose: Optional[
