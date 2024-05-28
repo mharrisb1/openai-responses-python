@@ -37,7 +37,7 @@ The end-goal of this library is to eventually support all OpenAI API routes. See
 | List files                         | :material-check:{ .green } |             -              | Stateful   |
 | Retrieve file                      | :material-check:{ .green } |             -              | Stateful   |
 | Delete file                        | :material-check:{ .green } |             -              | Stateful   |
-| Retrieve file content              |  :material-close:{ .red }  |             -              | Stateful   |
+| Retrieve file content              | :material-check:{ .green } |             -              | Stateful   |
 | **Images**                         |
 | Create image                       |  :material-close:{ .red }  |             -              | -          |
 | Create image edit                  |  :material-close:{ .red }  |             -              | -          |

@@ -64,3 +64,15 @@ def test_delete_file(openai_mock: OpenAIMock):
     assert client.files.delete(file.id).deleted
     assert openai_mock.files.create.route.call_count == 1
     assert openai_mock.files.delete.route.call_count == 1
+
+
+@openai_responses.mock()
+def test_retrieve_file_content(openai_mock: OpenAIMock):
+    client = openai.Client(api_key="sk-fake123")
+
+    file = client.files.create(
+        file=open("examples/example.json", "rb"),
+        purpose="fine-tune",
+    )
+    res = client.files.content(file.id)
+    assert res.content == b'{\n  "foo": "bar",\n  "fizz": "buzz"\n}'

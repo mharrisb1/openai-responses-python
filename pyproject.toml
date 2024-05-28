@@ -23,6 +23,7 @@ python = ">=3.9,<4.0"
 openai = "^1.25"
 respx = "^0.20.2"
 faker-openai-api-provider = "^0.1.0"
+requests-toolbelt = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.2.0"
@@ -36,6 +37,9 @@ tox = "^4.14.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+ignore_missing_imports = true
 
 [tool.pyright]
 typeCheckingMode = "strict"
