@@ -38,6 +38,9 @@ tox = "^4.14.2"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.mypy]
+ignore_missing_imports = true
+
 [tool.pyright]
 typeCheckingMode = "strict"
 pythonVersion = "3.9"
