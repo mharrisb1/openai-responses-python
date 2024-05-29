@@ -17,7 +17,8 @@ from ..helpers.builders.messages import message_from_create_request
 from ..helpers.builders.threads import thread_from_create_request
 
 from ..stores import StateStore
-from .._types.partials.runs import PartialRun, PartialRunList
+from .._types.partials.sync_cursor_page import PartialSyncCursorPage
+from .._types.partials.runs import PartialRun
 
 from .._utils.copy import model_copy
 from .._utils.faker import faker
@@ -148,7 +149,9 @@ class ThreadCreateAndRun(StatefulRoute[Run, PartialRun]):
         return RunCreateRoute._build(partial, request)
 
 
-class RunListRoute(StatefulRoute[SyncCursorPage[Run], PartialRunList]):
+class RunListRoute(
+    StatefulRoute[SyncCursorPage[Run], PartialSyncCursorPage[PartialRun]]
+):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.get(url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)/runs"),
@@ -196,7 +199,10 @@ class RunListRoute(StatefulRoute[SyncCursorPage[Run], PartialRunList]):
         )
 
     @staticmethod
-    def _build(partial: PartialRunList, request: httpx.Request) -> SyncCursorPage[Run]:
+    def _build(
+        partial: PartialSyncCursorPage[PartialRun],
+        request: httpx.Request,
+    ) -> SyncCursorPage[Run]:
         raise NotImplementedError
 
 

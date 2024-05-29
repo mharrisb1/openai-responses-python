@@ -3,7 +3,7 @@ from typing_extensions import NotRequired
 
 from openai._utils import PropertyInfo
 
-__all__ = ["PartialRunStep", "PartialRunStepList"]
+__all__ = ["PartialRunStep"]
 
 
 class PartialLastError(TypedDict):
@@ -111,11 +111,3 @@ class PartialRunStep(TypedDict):
     thread_id: str
     type: Literal["message_creation", "tool_calls"]
     usage: NotRequired[PartialUsage]
-
-
-class PartialRunStepList(TypedDict):
-    object: NotRequired[Literal["list"]]
-    data: NotRequired[List[PartialRunStep]]
-    first_id: NotRequired[str]
-    last_id: NotRequired[str]
-    has_more: NotRequired[bool]

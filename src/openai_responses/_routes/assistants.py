@@ -12,11 +12,8 @@ from openai.types.beta.assistant_update_params import AssistantUpdateParams
 from ._base import StatefulRoute
 
 from ..stores import StateStore
-from .._types.partials.assistants import (
-    PartialAssistant,
-    PartialAssistantList,
-    PartialAssistantDeleted,
-)
+from .._types.partials.sync_cursor_page import PartialSyncCursorPage
+from .._types.partials.assistants import PartialAssistant, PartialAssistantDeleted
 
 from .._utils.faker import faker
 from .._utils.serde import json_loads, model_dict, model_parse
@@ -62,7 +59,7 @@ class AssistantCreateRoute(StatefulRoute[Assistant, PartialAssistant]):
 
 
 class AssistantListRoute(
-    StatefulRoute[SyncCursorPage[Assistant], PartialAssistantList]
+    StatefulRoute[SyncCursorPage[Assistant], PartialSyncCursorPage[PartialAssistant]]
 ):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
@@ -96,7 +93,7 @@ class AssistantListRoute(
 
     @staticmethod
     def _build(
-        partial: PartialAssistantList,
+        partial: PartialSyncCursorPage[PartialAssistant],
         request: httpx.Request,
     ) -> SyncCursorPage[Assistant]:
         raise NotImplementedError

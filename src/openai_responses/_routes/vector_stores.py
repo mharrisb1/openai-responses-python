@@ -12,9 +12,9 @@ from openai.types.beta.vector_store_deleted import VectorStoreDeleted
 from ._base import StatefulRoute
 
 from ..stores import StateStore
+from .._types.partials.sync_cursor_page import PartialSyncCursorPage
 from .._types.partials.vector_stores import (
     PartialVectorStore,
-    PartialVectorStoreList,
     PartialVectorStoreDeleted,
 )
 
@@ -68,7 +68,9 @@ class VectorStoreCreateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
 
 
 class VectorStoreListRoute(
-    StatefulRoute[SyncCursorPage[VectorStore], PartialVectorStoreList]
+    StatefulRoute[
+        SyncCursorPage[VectorStore], PartialSyncCursorPage[PartialVectorStore]
+    ]
 ):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
@@ -102,7 +104,7 @@ class VectorStoreListRoute(
 
     @staticmethod
     def _build(
-        partial: PartialVectorStoreList,
+        partial: PartialSyncCursorPage[PartialVectorStore],
         request: httpx.Request,
     ) -> SyncCursorPage[VectorStore]:
         raise NotImplementedError

@@ -12,11 +12,8 @@ from openai.types.beta.threads.message_update_params import MessageUpdateParams
 from ._base import StatefulRoute
 
 from ..stores import StateStore
-from .._types.partials.messages import (
-    PartialMessage,
-    PartialMessageList,
-    PartialMessageDeleted,
-)
+from .._types.partials.sync_cursor_page import PartialSyncCursorPage
+from .._types.partials.messages import PartialMessage, PartialMessageDeleted
 
 from .._utils.faker import faker
 from .._utils.serde import json_loads, model_dict, model_parse
@@ -100,7 +97,9 @@ class MessageCreateRoute(StatefulRoute[Message, PartialMessage]):
         return model_parse(Message, defaults | partial | content)
 
 
-class MessageListRoute(StatefulRoute[SyncCursorPage[Message], PartialMessageList]):
+class MessageListRoute(
+    StatefulRoute[SyncCursorPage[Message], PartialSyncCursorPage[PartialMessage]]
+):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.get(
@@ -153,7 +152,7 @@ class MessageListRoute(StatefulRoute[SyncCursorPage[Message], PartialMessageList
 
     @staticmethod
     def _build(
-        partial: PartialMessageList,
+        partial: PartialSyncCursorPage[PartialMessage],
         request: httpx.Request,
     ) -> SyncCursorPage[Message]:
         raise NotImplementedError

@@ -3,7 +3,7 @@ from typing_extensions import NotRequired
 
 from openai._utils import PropertyInfo
 
-__all__ = ["PartialRun", "PartialRunList"]
+__all__ = ["PartialRun"]
 
 
 class PartialIncompleteDetails(TypedDict):
@@ -131,11 +131,3 @@ class PartialRun(TypedDict):
     usage: NotRequired[PartialUsage]
     temperature: NotRequired[float]
     top_p: NotRequired[float]
-
-
-class PartialRunList(TypedDict):
-    object: NotRequired[Literal["list"]]
-    data: NotRequired[List[PartialRun]]
-    first_id: NotRequired[str]
-    last_id: NotRequired[str]
-    has_more: NotRequired[bool]
