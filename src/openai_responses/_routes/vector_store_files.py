@@ -16,7 +16,11 @@ from .._types.partials.vector_store_files import PartialVectorStoreFile
 from .._utils.serde import json_loads, model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
-__all__ = ["VectorStoreFileCreateRoute", "VectorStoreFileListRoute"]
+__all__ = [
+    "VectorStoreFileCreateRoute",
+    "VectorStoreFileListRoute",
+    "VectorStoreFileRetrieveRoute",
+]
 
 
 class VectorStoreFileCreateRoute(
@@ -129,4 +133,44 @@ class VectorStoreFileListRoute(
         partial: PartialSyncCursorPage[PartialVectorStoreFile],
         request: httpx.Request,
     ) -> SyncCursorPage[VectorStoreFile]:
+        raise NotImplementedError
+
+
+class VectorStoreFileRetrieveRoute(
+    StatefulRoute[VectorStoreFile, PartialVectorStoreFile]
+):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.get(
+                url__regex=r"/vector_stores/(?P<vector_store_id>[a-zA-Z0-9\_]+)/files/(?P<file_id>[a-zA-Z0-9\-]+)"
+            ),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+        vector_store_id = kwargs["vector_store_id"]
+        found_vector_store = self._state.beta.vector_stores.get(vector_store_id)
+        if not found_vector_store:
+            return httpx.Response(404)
+
+        file_id = kwargs["file_id"]
+        found = self._state.beta.vector_stores.files.get(file_id)
+        if not found:
+            return httpx.Response(404)
+
+        return httpx.Response(status_code=self._status_code, json=model_dict(found))
+
+    @staticmethod
+    def _build(
+        partial: PartialVectorStoreFile,
+        request: httpx.Request,
+    ) -> VectorStoreFile:
         raise NotImplementedError

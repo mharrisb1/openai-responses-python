@@ -85,7 +85,7 @@ The end-goal of this library is to eventually support all OpenAI API routes. See
 | **Vector Store Files**             |
 | Create vector store file           | :material-check:{ .green } |             -              | Stateful   |
 | List vector store files            | :material-check:{ .green } |             -              | Stateful   |
-| Retrieve vector store file         |  :material-close:{ .red }  |             -              | -          |
+| Retrieve vector store file         | :material-check:{ .green } |             -              | Stateful   |
 | Delete vector store file           |  :material-close:{ .red }  |             -              | -          |
 | **Vector Store File Batches**      |
 | Create vector store file batch     |  :material-close:{ .red }  |             -              | -          |
