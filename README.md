@@ -15,6 +15,7 @@ Pytest plugin for automatically mocking OpenAI requests. Powered by [RESPX](http
 - [Messages](https://platform.openai.com/docs/api-reference/messages)
 - [Runs](https://platform.openai.com/docs/api-reference/runs)
 - [Run Steps](https://platform.openai.com/docs/api-reference/run-steps)
+- [Vector Stores](https://platform.openai.com/docs/api-reference/vector-stores)
 
 View full support coverage [here](https://mharrisb1.github.io/openai-responses-python/coverage).
 
