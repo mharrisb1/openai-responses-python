@@ -77,11 +77,11 @@ The end-goal of this library is to eventually support all OpenAI API routes. See
 | List run steps                     | :material-check:{ .green } |             -              | Stateful   |
 | Retrieve run step                  | :material-check:{ .green } |             -              | Stateful   |
 | **Vector Stores**                  |
-| Create vector store                | :material-check:{ .green } |             -              | -          |
-| List vector stores                 |  :material-close:{ .red }  |             -              | -          |
-| Retrieve vector store              |  :material-close:{ .red }  |             -              | -          |
-| Modify vector store                |  :material-close:{ .red }  |             -              | -          |
-| Delete vector store                |  :material-close:{ .red }  |             -              | -          |
+| Create vector store                | :material-check:{ .green } |             -              | Stateful   |
+| List vector stores                 | :material-check:{ .green } |             -              | Stateful   |
+| Retrieve vector store              | :material-check:{ .green } |             -              | Stateful   |
+| Modify vector store                | :material-check:{ .green } |             -              | Stateful   |
+| Delete vector store                | :material-check:{ .green } |             -              | Stateful   |
 | **Vector Store Files**             |
 | Create vector store file           |  :material-close:{ .red }  |             -              | -          |
 | List vector store files            |  :material-close:{ .red }  |             -              | -          |
