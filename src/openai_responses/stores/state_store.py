@@ -1,6 +1,7 @@
-from typing import Any, Dict, Generic, List, Literal, Optional, TypeVar, Union
+from typing import Dict, Generic, List, Literal, Optional, TypeVar, Union
 
 from openai.types import FileObject, Model
+from openai.types.beta.vector_store import VectorStore
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.thread import Thread
 from openai.types.beta.threads.message import Message
@@ -13,20 +14,19 @@ from .._utils.serde import model_parse
 
 __all__ = ["StateStore"]
 
-M = TypeVar(
-    "M",
-    bound=Union[
-        FileObject,
-        Model,
-        Assistant,
-        Thread,
-        Message,
-        Run,
-        RunStep,
-    ],
-)
+AnyModel = Union[
+    FileObject,
+    Assistant,
+    Thread,
+    Message,
+    Run,
+    RunStep,
+    Model,
+    VectorStore,
+]
 
-Resource = Union[FileObject, Assistant, Thread, Message, Run, RunStep, Model, Any]
+
+M = TypeVar("M", bound=AnyModel)
 
 
 class StateStore:
@@ -35,7 +35,7 @@ class StateStore:
         self.models = ModelStore()
         self.beta = Beta()
 
-    def _blind_put(self, resource: Resource) -> None:
+    def _blind_put(self, resource: AnyModel) -> None:
         if isinstance(resource, FileObject):
             self.files.put(resource)
         elif isinstance(resource, Assistant):
@@ -58,6 +58,7 @@ class Beta:
     def __init__(self) -> None:
         self.assistants = AssistantStore()
         self.threads = ThreadStore()
+        self.vector_stores = VectorStoreStore()
 
 
 class BaseStore(Generic[M]):
@@ -242,3 +243,14 @@ class RunStepStore(BaseStore[RunStep]):
 
         objs = objs[start_ix:end_ix]
         return objs[: int(limit)]
+
+
+class VectorStoreStore(BaseStore[VectorStore]):
+    def list(
+        self,
+        limit: Optional[str] = None,
+        order: Optional[str] = None,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+    ) -> List[VectorStore]:
+        raise NotImplementedError
