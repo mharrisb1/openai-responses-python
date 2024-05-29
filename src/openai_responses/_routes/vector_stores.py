@@ -5,33 +5,36 @@ import httpx
 import respx
 
 from openai.pagination import SyncCursorPage
-from openai.types.beta.assistant import Assistant
-from openai.types.beta.assistant_deleted import AssistantDeleted
-from openai.types.beta.assistant_update_params import AssistantUpdateParams
+from openai.types.beta.vector_store import VectorStore
+from openai.types.beta.vector_store_update_params import VectorStoreUpdateParams
+from openai.types.beta.vector_store_deleted import VectorStoreDeleted
 
 from ._base import StatefulRoute
 
 from ..stores import StateStore
 from .._types.partials.sync_cursor_page import PartialSyncCursorPage
-from .._types.partials.assistants import PartialAssistant, PartialAssistantDeleted
+from .._types.partials.vector_stores import (
+    PartialVectorStore,
+    PartialVectorStoreDeleted,
+)
 
 from .._utils.faker import faker
 from .._utils.serde import json_loads, model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
 __all__ = [
-    "AssistantCreateRoute",
-    "AssistantListRoute",
-    "AssistantRetrieveRoute",
-    "AssistantUpdateRoute",
-    "AssistantDeleteRoute",
+    "VectorStoreCreateRoute",
+    "VectorStoreListRoute",
+    "VectorStoreRetrieveRoute",
+    "VectorStoreUpdateRoute",
+    "VectorStoreDeleteRoute",
 ]
 
 
-class AssistantCreateRoute(StatefulRoute[Assistant, PartialAssistant]):
+class VectorStoreCreateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.post(url__regex="/assistants"),
+            route=router.post(url__regex="/vector_stores"),
             status_code=201,
             state=state,
         )
@@ -40,30 +43,38 @@ class AssistantCreateRoute(StatefulRoute[Assistant, PartialAssistant]):
     def _handler(self, request: httpx.Request, route: respx.Route) -> httpx.Response:
         self._route = route
         model = self._build({}, request)
-        self._state.beta.assistants.put(model)
-        return httpx.Response(
-            status_code=self._status_code,
-            json=model_dict(model),
-        )
+        self._state.beta.vector_stores.put(model)
+        return httpx.Response(status_code=self._status_code, json=model_dict(model))
 
     @staticmethod
-    def _build(partial: PartialAssistant, request: httpx.Request) -> Assistant:
+    def _build(partial: PartialVectorStore, request: httpx.Request) -> VectorStore:
         content = json_loads(request.content)
-        defaults: PartialAssistant = {
-            "id": faker.beta.assistant.id(),
+        defaults: PartialVectorStore = {
+            "id": faker.beta.vector_store.id(),
             "created_at": utcnow_unix_timestamp_s(),
-            "tools": [],
-            "object": "assistant",
+            "file_counts": {
+                "cancelled": 0,
+                "completed": 0,
+                "failed": 0,
+                "in_progress": 0,
+                "total": 0,
+            },
+            "name": "",
+            "object": "vector_store",
+            "status": "completed",
+            "usage_bytes": 0,
         }
-        return model_parse(Assistant, defaults | partial | content)
+        return model_parse(VectorStore, defaults | partial | content)
 
 
-class AssistantListRoute(
-    StatefulRoute[SyncCursorPage[Assistant], PartialSyncCursorPage[PartialAssistant]]
+class VectorStoreListRoute(
+    StatefulRoute[
+        SyncCursorPage[VectorStore], PartialSyncCursorPage[PartialVectorStore]
+    ]
 ):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
-            route=router.get(url__regex="/assistants"),
+            route=router.get(url__regex="/vector_stores"),
             status_code=200,
             state=state,
         )
@@ -77,14 +88,14 @@ class AssistantListRoute(
         after = request.url.params.get("after")
         before = request.url.params.get("before")
 
-        data = self._state.beta.assistants.list(limit, order, after, before)
+        data = self._state.beta.vector_stores.list(limit, order, after, before)
         result_count = len(data)
-        total_count = len(self._state.beta.assistants.list())
+        total_count = len(self._state.beta.vector_stores.list())
         has_data = bool(result_count)
         has_more = total_count != result_count
         first_id = data[0].id if has_data else None
         last_id = data[-1].id if has_data else None
-        model = SyncCursorPage[Assistant](data=data)
+        model = SyncCursorPage[VectorStore](data=data)
         return httpx.Response(
             status_code=200,
             json=model_dict(model)
@@ -93,17 +104,17 @@ class AssistantListRoute(
 
     @staticmethod
     def _build(
-        partial: PartialSyncCursorPage[PartialAssistant],
+        partial: PartialSyncCursorPage[PartialVectorStore],
         request: httpx.Request,
-    ) -> SyncCursorPage[Assistant]:
+    ) -> SyncCursorPage[VectorStore]:
         raise NotImplementedError
 
 
-class AssistantRetrieveRoute(StatefulRoute[Assistant, PartialAssistant]):
+class VectorStoreRetrieveRoute(StatefulRoute[VectorStore, PartialVectorStore]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.get(
-                url__regex=r"/assistants/(?P<assistant_id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/vector_stores/(?P<vector_store_id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -117,23 +128,23 @@ class AssistantRetrieveRoute(StatefulRoute[Assistant, PartialAssistant]):
         **kwargs: Any,
     ) -> httpx.Response:
         self._route = route
-        assistant_id = kwargs["assistant_id"]
-        found = self._state.beta.assistants.get(assistant_id)
+        vector_store_id = kwargs["vector_store_id"]
+        found = self._state.beta.vector_stores.get(vector_store_id)
         if not found:
             return httpx.Response(404)
 
-        return httpx.Response(status_code=200, json=model_dict(found))
+        return httpx.Response(status_code=self._status_code, json=model_dict(found))
 
     @staticmethod
-    def _build(partial: PartialAssistant, request: httpx.Request) -> Assistant:
+    def _build(partial: PartialVectorStore, request: httpx.Request) -> VectorStore:
         raise NotImplementedError
 
 
-class AssistantUpdateRoute(StatefulRoute[Assistant, PartialAssistant]):
+class VectorStoreUpdateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.post(
-                url__regex=r"/assistants/(?P<assistant_id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/vector_stores/(?P<vector_store_id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -147,28 +158,28 @@ class AssistantUpdateRoute(StatefulRoute[Assistant, PartialAssistant]):
         **kwargs: Any,
     ) -> httpx.Response:
         self._route = route
-        assistant_id = kwargs["assistant_id"]
-        found = self._state.beta.assistants.get(assistant_id)
+        vector_store_id = kwargs["vector_store_id"]
+        found = self._state.beta.vector_stores.get(vector_store_id)
         if not found:
             return httpx.Response(404)
 
-        content: AssistantUpdateParams = json_loads(request.content)
+        content: VectorStoreUpdateParams = json_loads(request.content)
         deserialized = model_dict(found)
-        updated = model_parse(Assistant, deserialized | content)
-        self._state.beta.assistants.put(updated)
-
-        return httpx.Response(status_code=200, json=model_dict(updated))
+        updated = model_parse(VectorStore, deserialized | content)
+        return httpx.Response(status_code=self._status_code, json=model_dict(updated))
 
     @staticmethod
-    def _build(partial: PartialAssistant, request: httpx.Request) -> Assistant:
+    def _build(partial: PartialVectorStore, request: httpx.Request) -> VectorStore:
         raise NotImplementedError
 
 
-class AssistantDeleteRoute(StatefulRoute[AssistantDeleted, PartialAssistantDeleted]):
+class VectorStoreDeleteRoute(
+    StatefulRoute[VectorStoreDeleted, PartialVectorStoreDeleted]
+):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.delete(
-                url__regex=r"/assistants/(?P<assistant_id>[a-zA-Z0-9\_]+)"
+                url__regex=r"/vector_stores/(?P<vector_store_id>[a-zA-Z0-9\_]+)"
             ),
             status_code=200,
             state=state,
@@ -182,20 +193,22 @@ class AssistantDeleteRoute(StatefulRoute[AssistantDeleted, PartialAssistantDelet
         **kwargs: Any,
     ) -> httpx.Response:
         self._route = route
-        assistant_id = kwargs["assistant_id"]
-        deleted = self._state.beta.assistants.delete(assistant_id)
+        vector_store_id = kwargs["vector_store_id"]
+        deleted = self._state.beta.vector_stores.delete(vector_store_id)
         return httpx.Response(
             status_code=200,
             json=model_dict(
-                AssistantDeleted(
-                    id=assistant_id, deleted=deleted, object="assistant.deleted"
+                VectorStoreDeleted(
+                    id=vector_store_id,
+                    deleted=deleted,
+                    object="vector_store.deleted",
                 )
             ),
         )
 
     @staticmethod
     def _build(
-        partial: PartialAssistantDeleted,
+        partial: PartialVectorStoreDeleted,
         request: httpx.Request,
-    ) -> AssistantDeleted:
+    ) -> VectorStoreDeleted:
         raise NotImplementedError

@@ -10,12 +10,15 @@ from openai.pagination import SyncCursorPage
 from ._base import StatefulRoute
 
 from ..stores import StateStore
-from .._types.partials.models import PartialModel, PartialModelList
+from .._types.partials.models import PartialModel
+from .._types.partials.sync_cursor_page import PartialSyncCursorPage
 
 from .._utils.serde import model_dict
 
 
-class ModelListRoute(StatefulRoute[SyncCursorPage[Model], PartialModelList]):
+class ModelListRoute(
+    StatefulRoute[SyncCursorPage[Model], PartialSyncCursorPage[PartialModel]]
+):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.get(url__regex="/models"),
@@ -32,7 +35,7 @@ class ModelListRoute(StatefulRoute[SyncCursorPage[Model], PartialModelList]):
 
     @staticmethod
     def _build(
-        partial: PartialModelList,
+        partial: PartialSyncCursorPage[PartialModel],
         request: httpx.Request,
     ) -> SyncCursorPage[Model]:
         raise NotImplementedError
