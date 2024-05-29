@@ -1,5 +1,7 @@
-from typing import Dict, Literal, TypedDict
+from typing import Dict, List, Literal, TypedDict
 from typing_extensions import NotRequired
+
+__all__ = ["PartialVectorStore", "PartialVectorStoreList", "PartialVectorStoreDeleted"]
 
 
 class PartialFileCount(TypedDict):
@@ -27,3 +29,17 @@ class PartialVectorStore(TypedDict):
     usage_bytes: NotRequired[int]
     expires_after: NotRequired[PartialExpiresAfter]
     expires_at: NotRequired[int]
+
+
+class PartialVectorStoreList(TypedDict):
+    object: NotRequired[Literal["list"]]
+    data: NotRequired[List[PartialVectorStore]]
+    first_id: NotRequired[str]
+    last_id: NotRequired[str]
+    has_more: NotRequired[bool]
+
+
+class PartialVectorStoreDeleted(TypedDict):
+    id: NotRequired[str]
+    object: NotRequired[Literal["vector_store.deleted"]]
+    deleted: NotRequired[bool]

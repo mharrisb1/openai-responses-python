@@ -42,7 +42,13 @@ from .runs import (
     RunCancelRoute,
 )
 from .run_steps import RunStepListRoute, RunStepRetrieveRoute
-from .vector_stores import VectorStoreCreateRoute
+from .vector_stores import (
+    VectorStoreCreateRoute,
+    VectorStoreListRoute,
+    VectorStoreRetrieveRoute,
+    VectorStoreUpdateRoute,
+    VectorStoreDeleteRoute,
+)
 
 __all__ = [
     "BetaRoutes",
@@ -140,3 +146,7 @@ class RunStepRoutes:
 class VectorStoreRoutes:
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         self.create = VectorStoreCreateRoute(router, state)
+        self.list = VectorStoreListRoute(router, state)
+        self.retrieve = VectorStoreRetrieveRoute(router, state)
+        self.update = VectorStoreUpdateRoute(router, state)
+        self.delete = VectorStoreDeleteRoute(router, state)

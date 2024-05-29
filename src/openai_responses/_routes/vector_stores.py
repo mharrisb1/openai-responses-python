@@ -1,20 +1,34 @@
+from typing import Any
 from typing_extensions import override
 
 import httpx
 import respx
 
+from openai.pagination import SyncCursorPage
 from openai.types.beta.vector_store import VectorStore
+from openai.types.beta.vector_store_update_params import VectorStoreUpdateParams
+from openai.types.beta.vector_store_deleted import VectorStoreDeleted
 
 from ._base import StatefulRoute
 
 from ..stores import StateStore
-from .._types.partials.vector_stores import PartialVectorStore
+from .._types.partials.vector_stores import (
+    PartialVectorStore,
+    PartialVectorStoreList,
+    PartialVectorStoreDeleted,
+)
 
 from .._utils.faker import faker
 from .._utils.serde import json_loads, model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
-__all__ = ["VectorStoreCreateRoute"]
+__all__ = [
+    "VectorStoreCreateRoute",
+    "VectorStoreListRoute",
+    "VectorStoreRetrieveRoute",
+    "VectorStoreUpdateRoute",
+    "VectorStoreDeleteRoute",
+]
 
 
 class VectorStoreCreateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
@@ -51,3 +65,148 @@ class VectorStoreCreateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
             "usage_bytes": 0,
         }
         return model_parse(VectorStore, defaults | partial | content)
+
+
+class VectorStoreListRoute(
+    StatefulRoute[SyncCursorPage[VectorStore], PartialVectorStoreList]
+):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.get(url__regex="/vector_stores"),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(self, request: httpx.Request, route: respx.Route) -> httpx.Response:
+        self._route = route
+
+        limit = request.url.params.get("limit")
+        order = request.url.params.get("order")
+        after = request.url.params.get("after")
+        before = request.url.params.get("before")
+
+        data = self._state.beta.vector_stores.list(limit, order, after, before)
+        result_count = len(data)
+        total_count = len(self._state.beta.vector_stores.list())
+        has_data = bool(result_count)
+        has_more = total_count != result_count
+        first_id = data[0].id if has_data else None
+        last_id = data[-1].id if has_data else None
+        model = SyncCursorPage[VectorStore](data=data)
+        return httpx.Response(
+            status_code=200,
+            json=model_dict(model)
+            | {"first_id": first_id, "last_id": last_id, "has_more": has_more},
+        )
+
+    @staticmethod
+    def _build(
+        partial: PartialVectorStoreList,
+        request: httpx.Request,
+    ) -> SyncCursorPage[VectorStore]:
+        raise NotImplementedError
+
+
+class VectorStoreRetrieveRoute(StatefulRoute[VectorStore, PartialVectorStore]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.get(
+                url__regex=r"/vector_stores/(?P<vector_store_id>[a-zA-Z0-9\_]+)"
+            ),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+        vector_store_id = kwargs["vector_store_id"]
+        found = self._state.beta.vector_stores.get(vector_store_id)
+        if not found:
+            return httpx.Response(404)
+
+        return httpx.Response(status_code=self._status_code, json=model_dict(found))
+
+    @staticmethod
+    def _build(partial: PartialVectorStore, request: httpx.Request) -> VectorStore:
+        raise NotImplementedError
+
+
+class VectorStoreUpdateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.post(
+                url__regex=r"/vector_stores/(?P<vector_store_id>[a-zA-Z0-9\_]+)"
+            ),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+        vector_store_id = kwargs["vector_store_id"]
+        found = self._state.beta.vector_stores.get(vector_store_id)
+        if not found:
+            return httpx.Response(404)
+
+        content: VectorStoreUpdateParams = json_loads(request.content)
+        deserialized = model_dict(found)
+        updated = model_parse(VectorStore, deserialized | content)
+        return httpx.Response(status_code=self._status_code, json=model_dict(updated))
+
+    @staticmethod
+    def _build(partial: PartialVectorStore, request: httpx.Request) -> VectorStore:
+        raise NotImplementedError
+
+
+class VectorStoreDeleteRoute(
+    StatefulRoute[VectorStoreDeleted, PartialVectorStoreDeleted]
+):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.delete(
+                url__regex=r"/vector_stores/(?P<vector_store_id>[a-zA-Z0-9\_]+)"
+            ),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+        vector_store_id = kwargs["vector_store_id"]
+        deleted = self._state.beta.vector_stores.delete(vector_store_id)
+        return httpx.Response(
+            status_code=200,
+            json=model_dict(
+                VectorStoreDeleted(
+                    id=vector_store_id,
+                    deleted=deleted,
+                    object="vector_store.deleted",
+                )
+            ),
+        )
+
+    @staticmethod
+    def _build(
+        partial: PartialVectorStoreDeleted,
+        request: httpx.Request,
+    ) -> VectorStoreDeleted:
+        raise NotImplementedError

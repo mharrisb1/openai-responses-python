@@ -253,4 +253,21 @@ class VectorStoreStore(BaseStore[VectorStore]):
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> List[VectorStore]:
-        raise NotImplementedError
+        limit = limit or "20"
+        objs = list(self._data.values())
+        objs = list(reversed(objs)) if (order or "desc") == "desc" else objs
+
+        start_ix = 0
+        if after:
+            obj = self._data.get(after)
+            if obj:
+                start_ix = objs.index(obj) + 1
+
+        end_ix = None
+        if before:
+            obj = self._data.get(before)
+            if obj:
+                end_ix = objs.index(obj)
+
+        objs = objs[start_ix:end_ix]
+        return objs[: int(limit)]
