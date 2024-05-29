@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 from typing_extensions import override
 
 import httpx
@@ -6,10 +6,14 @@ import respx
 
 from openai.pagination import SyncCursorPage
 from openai.types.beta.vector_stores.vector_store_file import VectorStoreFile
+from openai.types.beta.vector_stores.vector_store_file_deleted import (
+    VectorStoreFileDeleted,
+)
 
 from ._base import StatefulRoute
 
 from ..stores import StateStore
+from .._types.partials.deleted import PartialResourceDeleted
 from .._types.partials.sync_cursor_page import PartialSyncCursorPage
 from .._types.partials.vector_store_files import PartialVectorStoreFile
 
@@ -20,6 +24,7 @@ __all__ = [
     "VectorStoreFileCreateRoute",
     "VectorStoreFileListRoute",
     "VectorStoreFileRetrieveRoute",
+    "VectorStoreFileDeleteRoute",
 ]
 
 
@@ -173,4 +178,58 @@ class VectorStoreFileRetrieveRoute(
         partial: PartialVectorStoreFile,
         request: httpx.Request,
     ) -> VectorStoreFile:
+        raise NotImplementedError
+
+
+class VectorStoreFileDeleteRoute(
+    StatefulRoute[
+        VectorStoreFileDeleted,
+        PartialResourceDeleted[Literal["vector_store.file.deleted"]],
+    ]
+):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.delete(
+                url__regex=r"/vector_stores/(?P<vector_store_id>[a-zA-Z0-9\_]+)/files/(?P<file_id>[a-zA-Z0-9\-]+)"
+            ),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+        vector_store_id = kwargs["vector_store_id"]
+        found_vector_store = self._state.beta.vector_stores.get(vector_store_id)
+        if not found_vector_store:
+            return httpx.Response(404)
+
+        file_id = kwargs["file_id"]
+        found = self._state.beta.vector_stores.files.get(file_id)
+        if not found:
+            return httpx.Response(404)
+
+        deleted = self._state.beta.vector_stores.files.delete(file_id)
+
+        return httpx.Response(
+            status_code=200,
+            json=model_dict(
+                VectorStoreFileDeleted(
+                    id=file_id,
+                    deleted=deleted,
+                    object="vector_store.file.deleted",
+                )
+            ),
+        )
+
+    @staticmethod
+    def _build(
+        partial: PartialResourceDeleted[Literal["vector_store.file.deleted"]],
+        request: httpx.Request,
+    ) -> VectorStoreFileDeleted:
         raise NotImplementedError

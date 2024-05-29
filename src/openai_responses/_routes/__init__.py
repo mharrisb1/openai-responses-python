@@ -53,6 +53,7 @@ from .vector_store_files import (
     VectorStoreFileCreateRoute,
     VectorStoreFileListRoute,
     VectorStoreFileRetrieveRoute,
+    VectorStoreFileDeleteRoute,
 )
 
 __all__ = [
@@ -164,3 +165,4 @@ class VectorStoreFileRoutes:
         self.create = VectorStoreFileCreateRoute(router, state)
         self.list = VectorStoreFileListRoute(router, state)
         self.retrieve = VectorStoreFileRetrieveRoute(router, state)
+        self.delete = VectorStoreFileDeleteRoute(router, state)
