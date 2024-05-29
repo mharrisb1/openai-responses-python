@@ -1,5 +1,5 @@
-from typing import Generic, TypedDict, TypeVar
-from typing_extensions import NotRequired
+from typing import Generic, TypeVar
+from typing_extensions import NotRequired, TypedDict
 
 S = TypeVar("S")
 
