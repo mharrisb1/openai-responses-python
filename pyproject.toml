@@ -20,10 +20,11 @@ openai_responses = "openai_responses.plugin"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
+faker = ">=24.2.0,<25.0.0"
+faker-openai-api-provider = "0.2.0"
 openai = "^1.25"
-respx = "^0.20.2"
-faker-openai-api-provider = "^0.1.0"
 requests-toolbelt = "^1.0.0"
+respx = "^0.20.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.2.0"
