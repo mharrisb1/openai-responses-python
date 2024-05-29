@@ -1,12 +1,15 @@
-from typing import Dict, Generic, List, Literal, Optional, TypeVar, Union
+from typing import Any, Dict, Generic, List, Literal, Optional, TypeVar, Union
 
 from openai.types import FileObject, Model
-from openai.types.beta.vector_store import VectorStore
+
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.thread import Thread
 from openai.types.beta.threads.message import Message
 from openai.types.beta.threads.run import Run
 from openai.types.beta.threads.runs.run_step import RunStep
+
+from openai.types.beta.vector_store import VectorStore
+from openai.types.beta.vector_stores.vector_store_file import VectorStoreFile
 
 from .content_store import ContentStore
 from .._constants import SYSTEM_MODELS
@@ -23,6 +26,7 @@ AnyModel = Union[
     RunStep,
     Model,
     VectorStore,
+    VectorStoreFile,
 ]
 
 
@@ -35,7 +39,7 @@ class StateStore:
         self.models = ModelStore()
         self.beta = Beta()
 
-    def _blind_put(self, resource: AnyModel) -> None:
+    def _blind_put(self, resource: Union[AnyModel, Any]) -> None:
         if isinstance(resource, FileObject):
             self.files.put(resource)
         elif isinstance(resource, Assistant):
@@ -50,6 +54,10 @@ class StateStore:
             self.beta.threads.runs.steps.put(resource)
         elif isinstance(resource, Model):
             self.models.put(resource)
+        elif isinstance(resource, VectorStore):
+            self.beta.vector_stores.put(resource)
+        elif isinstance(resource, VectorStoreFile):
+            self.beta.vector_stores.files.put(resource)
         else:
             raise TypeError(f"Cannot put object of type {type(resource)} in store")
 
@@ -246,6 +254,10 @@ class RunStepStore(BaseStore[RunStep]):
 
 
 class VectorStoreStore(BaseStore[VectorStore]):
+    def __init__(self) -> None:
+        super().__init__()
+        self.files = VectorStoreFileStore()
+
     def list(
         self,
         limit: Optional[str] = None,
@@ -255,6 +267,42 @@ class VectorStoreStore(BaseStore[VectorStore]):
     ) -> List[VectorStore]:
         limit = limit or "20"
         objs = list(self._data.values())
+        objs = list(reversed(objs)) if (order or "desc") == "desc" else objs
+
+        start_ix = 0
+        if after:
+            obj = self._data.get(after)
+            if obj:
+                start_ix = objs.index(obj) + 1
+
+        end_ix = None
+        if before:
+            obj = self._data.get(before)
+            if obj:
+                end_ix = objs.index(obj)
+
+        objs = objs[start_ix:end_ix]
+        return objs[: int(limit)]
+
+
+class VectorStoreFileStore(BaseStore[VectorStoreFile]):
+    def list(
+        self,
+        vector_store_id: str,
+        limit: Optional[str] = None,
+        order: Optional[str] = None,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+        filter: Optional[
+            Literal["in_progress", "completed", "failed", "cancelled"]
+        ] = None,
+    ) -> List[VectorStoreFile]:
+        limit = limit or "20"
+        objs = [
+            m for m in list(self._data.values()) if m.vector_store_id == vector_store_id
+        ]
+        if filter:
+            objs = [obj for obj in objs if obj.status == filter]
         objs = list(reversed(objs)) if (order or "desc") == "desc" else objs
 
         start_ix = 0

@@ -49,6 +49,7 @@ from .vector_stores import (
     VectorStoreUpdateRoute,
     VectorStoreDeleteRoute,
 )
+from .vector_store_files import VectorStoreFileCreateRoute
 
 __all__ = [
     "BetaRoutes",
@@ -150,3 +151,10 @@ class VectorStoreRoutes:
         self.retrieve = VectorStoreRetrieveRoute(router, state)
         self.update = VectorStoreUpdateRoute(router, state)
         self.delete = VectorStoreDeleteRoute(router, state)
+
+        self.files = VectorStoreFileRoutes(router, state)
+
+
+class VectorStoreFileRoutes:
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        self.create = VectorStoreFileCreateRoute(router, state)
