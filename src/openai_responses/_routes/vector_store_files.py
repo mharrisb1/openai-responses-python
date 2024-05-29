@@ -10,12 +10,13 @@ from openai.types.beta.vector_stores.vector_store_file import VectorStoreFile
 from ._base import StatefulRoute
 
 from ..stores import StateStore
+from .._types.partials.sync_cursor_page import PartialSyncCursorPage
 from .._types.partials.vector_store_files import PartialVectorStoreFile
 
 from .._utils.serde import json_loads, model_dict, model_parse
 from .._utils.time import utcnow_unix_timestamp_s
 
-__all__ = ["VectorStoreFileCreateRoute"]
+__all__ = ["VectorStoreFileCreateRoute", "VectorStoreFileListRoute"]
 
 
 class VectorStoreFileCreateRoute(
@@ -66,3 +67,66 @@ class VectorStoreFileCreateRoute(
             "usage_bytes": 0,
         }
         return model_parse(VectorStoreFile, defaults | partial)
+
+
+class VectorStoreFileListRoute(
+    StatefulRoute[
+        SyncCursorPage[VectorStoreFile], PartialSyncCursorPage[PartialVectorStoreFile]
+    ]
+):
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        super().__init__(
+            route=router.get(
+                url__regex=r"/vector_stores/(?P<vector_store_id>[a-zA-Z0-9\_]+)/files"
+            ),
+            status_code=200,
+            state=state,
+        )
+
+    @override
+    def _handler(
+        self,
+        request: httpx.Request,
+        route: respx.Route,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        self._route = route
+
+        vector_store_id = kwargs["vector_store_id"]
+        found_vector_store = self._state.beta.vector_stores.get(vector_store_id)
+        if not found_vector_store:
+            return httpx.Response(404)
+
+        limit = request.url.params.get("limit")
+        order = request.url.params.get("order")
+        after = request.url.params.get("after")
+        before = request.url.params.get("before")
+        filter = request.url.params.get("filter")
+
+        data = self._state.beta.vector_stores.files.list(
+            vector_store_id,
+            limit,
+            order,
+            after,
+            before,
+            filter,
+        )
+        result_count = len(data)
+        total_count = len(self._state.beta.vector_stores.files.list(vector_store_id))
+        has_data = bool(result_count)
+        has_more = total_count != result_count
+        first_id = data[0].id if has_data else None
+        last_id = data[-1].id if has_data else None
+        model = SyncCursorPage[VectorStoreFile](data=data)
+        return httpx.Response(
+            status_code=200,
+            json=model_dict(model)
+            | {"first_id": first_id, "last_id": last_id, "has_more": has_more},
+        )
+
+    @staticmethod
+    def _build(
+        partial: PartialSyncCursorPage[PartialVectorStoreFile],
+        request: httpx.Request,
+    ) -> SyncCursorPage[VectorStoreFile]:
+        raise NotImplementedError
