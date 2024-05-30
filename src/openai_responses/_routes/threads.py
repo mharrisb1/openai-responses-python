@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, List, Literal
 from typing_extensions import override
 
 import httpx
@@ -13,9 +13,13 @@ from openai.types.beta.thread_deleted import ThreadDeleted
 from ._base import StatefulRoute
 
 from ..helpers.builders.messages import message_from_create_request
+from ..helpers.builders.vector_stores import vector_store_from_create_request
+from ..helpers.builders.vector_store_files import vector_store_file_from_create_request
+from ..helpers.mergers.threads import merge_thread_with_partial
 
 from ..stores import StateStore
-from .._types.partials.threads import PartialThread, PartialThreadDeleted
+from .._types.partials.deleted import PartialResourceDeleted
+from .._types.partials.threads import PartialThread
 
 from .._utils.faker import faker
 from .._utils.serde import json_loads, model_dict, model_parse
@@ -51,6 +55,42 @@ class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
             create_message_req = httpx.Request(method="", url="", content=encoded)
             message = message_from_create_request(model.id, create_message_req)
             self._state.beta.threads.messages.put(message)
+
+        tool_resources = content.get("tool_resources")
+        if tool_resources:
+            file_search = tool_resources.get("file_search")
+            if file_search:
+                vector_stores = file_search.get("vector_stores")
+                if vector_stores:
+                    vector_store_ids: List[str] = []
+                    for vector_store_create_params in vector_stores:
+                        encoded = json.dumps(vector_store_create_params)
+                        create_req = httpx.Request("", "", content=encoded)
+                        vector_store = vector_store_from_create_request(create_req)
+                        vector_store_ids.append(vector_store.id)
+                        self._state.beta.vector_stores.put(vector_store)
+                        for file_id in vector_store_create_params.get("file_ids", []):
+                            found_file = self._state.files.get(file_id)
+                            if not found_file:
+                                return httpx.Response(404)
+                            encoded = json.dumps({"file_id": found_file.id})
+                            create_file_req = httpx.Request("", "", content=encoded)
+                            vector_store_file = vector_store_file_from_create_request(
+                                create_file_req,
+                                extra={"vector_store_id": vector_store.id},
+                            )
+                            self._state.beta.vector_stores.files.put(vector_store_file)
+
+                    model = merge_thread_with_partial(
+                        model,
+                        {
+                            "tool_resources": {
+                                "file_search": {
+                                    "vector_store_ids": vector_store_ids,
+                                }
+                            }
+                        },
+                    )
 
         return httpx.Response(
             status_code=self._status_code,
@@ -135,7 +175,9 @@ class ThreadUpdateRoute(StatefulRoute[Thread, PartialThread]):
         raise NotImplementedError
 
 
-class ThreadDeleteRoute(StatefulRoute[ThreadDeleted, PartialThreadDeleted]):
+class ThreadDeleteRoute(
+    StatefulRoute[ThreadDeleted, PartialResourceDeleted[Literal["thread.deleted"]]]
+):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.delete(url__regex=r"/threads/(?P<thread_id>[a-zA-Z0-9\_]+)"),
@@ -161,5 +203,8 @@ class ThreadDeleteRoute(StatefulRoute[ThreadDeleted, PartialThreadDeleted]):
         )
 
     @staticmethod
-    def _build(partial: PartialThreadDeleted, request: httpx.Request) -> ThreadDeleted:
+    def _build(
+        partial: PartialResourceDeleted[Literal["thread.deleted"]],
+        request: httpx.Request,
+    ) -> ThreadDeleted:
         raise NotImplementedError

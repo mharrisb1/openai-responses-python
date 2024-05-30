@@ -1,4 +1,5 @@
-from typing import Any
+import json
+from typing import Any, List, Literal
 from typing_extensions import override
 
 import httpx
@@ -7,13 +8,20 @@ import respx
 from openai.pagination import SyncCursorPage
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.assistant_deleted import AssistantDeleted
+from openai.types.beta.assistant_create_params import AssistantCreateParams
 from openai.types.beta.assistant_update_params import AssistantUpdateParams
 
 from ._base import StatefulRoute
 
+from ..helpers.builders.vector_stores import vector_store_from_create_request
+from ..helpers.builders.vector_store_files import vector_store_file_from_create_request
+from ..helpers.mergers.assistants import merge_assistant_with_partial
+
 from ..stores import StateStore
+
+from .._types.partials.deleted import PartialResourceDeleted
 from .._types.partials.sync_cursor_page import PartialSyncCursorPage
-from .._types.partials.assistants import PartialAssistant, PartialAssistantDeleted
+from .._types.partials.assistants import PartialAssistant
 
 from .._utils.faker import faker
 from .._utils.serde import json_loads, model_dict, model_parse
@@ -40,6 +48,44 @@ class AssistantCreateRoute(StatefulRoute[Assistant, PartialAssistant]):
     def _handler(self, request: httpx.Request, route: respx.Route) -> httpx.Response:
         self._route = route
         model = self._build({}, request)
+        content: AssistantCreateParams = json_loads(request.content)
+
+        tool_resources = content.get("tool_resources")
+        if tool_resources:
+            file_search = tool_resources.get("file_search")
+            if file_search:
+                vector_stores = file_search.get("vector_stores")
+                if vector_stores:
+                    vector_store_ids: List[str] = []
+                    for vector_store_create_params in vector_stores:
+                        encoded = json.dumps(vector_store_create_params)
+                        create_req = httpx.Request("", "", content=encoded)
+                        vector_store = vector_store_from_create_request(create_req)
+                        vector_store_ids.append(vector_store.id)
+                        self._state.beta.vector_stores.put(vector_store)
+                        for file_id in vector_store_create_params.get("file_ids", []):
+                            found_file = self._state.files.get(file_id)
+                            if not found_file:
+                                return httpx.Response(404)
+                            encoded = json.dumps({"file_id": found_file.id})
+                            create_file_req = httpx.Request("", "", content=encoded)
+                            vector_store_file = vector_store_file_from_create_request(
+                                create_file_req,
+                                extra={"vector_store_id": vector_store.id},
+                            )
+                            self._state.beta.vector_stores.files.put(vector_store_file)
+
+                    model = merge_assistant_with_partial(
+                        model,
+                        {
+                            "tool_resources": {
+                                "file_search": {
+                                    "vector_store_ids": vector_store_ids,
+                                }
+                            }
+                        },
+                    )
+
         self._state.beta.assistants.put(model)
         return httpx.Response(
             status_code=self._status_code,
@@ -164,7 +210,11 @@ class AssistantUpdateRoute(StatefulRoute[Assistant, PartialAssistant]):
         raise NotImplementedError
 
 
-class AssistantDeleteRoute(StatefulRoute[AssistantDeleted, PartialAssistantDeleted]):
+class AssistantDeleteRoute(
+    StatefulRoute[
+        AssistantDeleted, PartialResourceDeleted[Literal["assistant.deleted"]]
+    ]
+):
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         super().__init__(
             route=router.delete(
@@ -195,7 +245,7 @@ class AssistantDeleteRoute(StatefulRoute[AssistantDeleted, PartialAssistantDelet
 
     @staticmethod
     def _build(
-        partial: PartialAssistantDeleted,
+        partial: PartialResourceDeleted[Literal["assistant.deleted"]],
         request: httpx.Request,
     ) -> AssistantDeleted:
         raise NotImplementedError

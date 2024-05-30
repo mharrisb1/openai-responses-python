@@ -3,7 +3,7 @@ from typing_extensions import NotRequired
 
 from openai._utils._transform import PropertyInfo
 
-__all__ = ["PartialAssistant", "PartialAssistantDeleted"]
+__all__ = ["PartialAssistant"]
 
 
 class PartialAssistantResponseFormat(TypedDict):
@@ -69,9 +69,3 @@ class PartialAssistant(TypedDict):
     temperature: NotRequired[float]
     tool_resources: NotRequired[PartialToolResources]
     top_p: NotRequired[float]
-
-
-class PartialAssistantDeleted(TypedDict):
-    id: NotRequired[str]
-    object: NotRequired[Literal["assistant.deleted"]]
-    deleted: NotRequired[bool]
