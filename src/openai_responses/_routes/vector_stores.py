@@ -1,3 +1,4 @@
+import json
 from typing import Any
 from typing_extensions import override
 
@@ -6,10 +7,13 @@ import respx
 
 from openai.pagination import SyncCursorPage
 from openai.types.beta.vector_store import VectorStore
+from openai.types.beta.vector_store_create_params import VectorStoreCreateParams
 from openai.types.beta.vector_store_update_params import VectorStoreUpdateParams
 from openai.types.beta.vector_store_deleted import VectorStoreDeleted
 
 from ._base import StatefulRoute
+
+from ..helpers.builders.vector_store_files import vector_store_file_from_create_request
 
 from ..stores import StateStore
 from .._types.partials.sync_cursor_page import PartialSyncCursorPage
@@ -44,6 +48,20 @@ class VectorStoreCreateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
         self._route = route
         model = self._build({}, request)
         self._state.beta.vector_stores.put(model)
+        content: VectorStoreCreateParams = json_loads(request.content)
+        file_ids = content.get("file_ids", [])
+        for file_id in file_ids:
+            found_file = self._state.files.get(file_id)
+            if not found_file:
+                return httpx.Response(404)
+            encoded = json.dumps({"file_id": found_file.id})
+            create_file_req = httpx.Request(method="", url="", content=encoded)
+            vector_store_file = vector_store_file_from_create_request(
+                create_file_req,
+                extra={"vector_store_id": model.id},
+            )
+            self._state.beta.vector_stores.files.put(vector_store_file)
+
         return httpx.Response(status_code=self._status_code, json=model_dict(model))
 
     @staticmethod
@@ -54,7 +72,7 @@ class VectorStoreCreateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
             "created_at": utcnow_unix_timestamp_s(),
             "file_counts": {
                 "cancelled": 0,
-                "completed": 0,
+                "completed": len(content.get("file_ids", [])),
                 "failed": 0,
                 "in_progress": 0,
                 "total": 0,
@@ -64,6 +82,8 @@ class VectorStoreCreateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
             "status": "completed",
             "usage_bytes": 0,
         }
+        if content.get("file_ids"):
+            del content["file_ids"]
         return model_parse(VectorStore, defaults | partial | content)
 
 
