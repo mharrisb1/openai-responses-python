@@ -2,6 +2,16 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.6.0
+
+Adds vector store responses
+
+Closed:
+
+- [#24: feat: support vector store endpoints](https://github.com/mharrisb1/openai-responses-python/issues/24)
+- [#47: feat: support vector store file batch endpoint](https://github.com/mharrisb1/openai-responses-python/issues/47)
+- [#49: feat: create vector store from assistant and thread create](https://github.com/mharrisb1/openai-responses-python/issues/49)
+
 ## 0.5.0
 
 Adds routes for models and retrieving file content.
