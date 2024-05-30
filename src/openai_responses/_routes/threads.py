@@ -64,7 +64,7 @@ class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
                 if vector_stores:
                     vector_store_ids: List[str] = []
                     for vector_store_create_params in vector_stores:
-                        encoded = json.dumps(vector_store_create_params)
+                        encoded = json.dumps(vector_store_create_params)  # type: ignore
                         create_req = httpx.Request("", "", content=encoded)
                         vector_store = vector_store_from_create_request(create_req)
                         vector_store_ids.append(vector_store.id)
@@ -73,7 +73,7 @@ class ThreadCreateRoute(StatefulRoute[Thread, PartialThread]):
                             found_file = self._state.files.get(file_id)
                             if not found_file:
                                 return httpx.Response(404)
-                            encoded = json.dumps({"file_id": found_file.id})
+                            encoded = json.dumps({"file_id": found_file.id})  # type: ignore
                             create_file_req = httpx.Request("", "", content=encoded)
                             vector_store_file = vector_store_file_from_create_request(
                                 create_file_req,
