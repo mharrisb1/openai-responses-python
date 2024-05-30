@@ -55,6 +55,12 @@ from .vector_store_files import (
     VectorStoreFileRetrieveRoute,
     VectorStoreFileDeleteRoute,
 )
+from .vector_store_file_batches import (
+    VectorStoreFileBatchCreateRoute,
+    VectorStoreFileBatchRetrieveRoute,
+    VectorStoreFileBatchCancelRoute,
+    VectorStoreFileBatchListFilesRoute,
+)
 
 __all__ = [
     "BetaRoutes",
@@ -158,6 +164,7 @@ class VectorStoreRoutes:
         self.delete = VectorStoreDeleteRoute(router, state)
 
         self.files = VectorStoreFileRoutes(router, state)
+        self.file_batches = VectorStoreFileBatchRoutes(router, state)
 
 
 class VectorStoreFileRoutes:
@@ -166,3 +173,11 @@ class VectorStoreFileRoutes:
         self.list = VectorStoreFileListRoute(router, state)
         self.retrieve = VectorStoreFileRetrieveRoute(router, state)
         self.delete = VectorStoreFileDeleteRoute(router, state)
+
+
+class VectorStoreFileBatchRoutes:
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        self.create = VectorStoreFileBatchCreateRoute(router, state)
+        self.retrieve = VectorStoreFileBatchRetrieveRoute(router, state)
+        self.cancel = VectorStoreFileBatchCancelRoute(router, state)
+        self.list_files = VectorStoreFileBatchListFilesRoute(router, state)
