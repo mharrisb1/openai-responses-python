@@ -1,9 +1,5 @@
 # Coverage
 
-??? warning "File attatchments"
-
-    There is currently no support for actually attaching files to assistant resources. Subscribe to [#5: feat: add support for attached files for all assistants APIs](https://github.com/mharrisb1/openai-responses-python/issues/5) to be notified when it is added.
-
 ??? note "Legacy endpoints"
 
     [Legacy endpoints](https://platform.openai.com/docs/api-reference/completions) are not supported and are not on the roadmap.
@@ -88,7 +84,7 @@ The end-goal of this library is to eventually support all OpenAI API routes. See
 | Retrieve vector store file         | :material-check:{ .green } |             -              | Stateful   |
 | Delete vector store file           | :material-check:{ .green } |             -              | Stateful   |
 | **Vector Store File Batches**      |
-| Create vector store file batch     |  :material-close:{ .red }  |             -              | -          |
-| Retrieve vector store file batch   |  :material-close:{ .red }  |             -              | -          |
-| Cancel vector store file batch     |  :material-close:{ .red }  |             -              | -          |
-| List vector store files in a batch |  :material-close:{ .red }  |             -              | -          |
+| Create vector store file batch     | :material-check:{ .green } |             -              | Stateful   |
+| Retrieve vector store file batch   | :material-check:{ .green } |             -              | Stateful   |
+| Cancel vector store file batch     | :material-check:{ .green } |             -              | Stateful   |
+| List vector store files in a batch | :material-check:{ .green } |             -              | Stateful   |

@@ -3,9 +3,9 @@ from typing import Optional
 import httpx
 
 from openai.types.chat.chat_completion import ChatCompletion
-from ..._routes.chat import ChatCompletionsCreateRoute
 
 from ._base import _generic_builder
+from ..._routes.chat import ChatCompletionsCreateRoute
 from ..._types.partials.chat import PartialChatCompletion
 
 __all__ = ["chat_completion_from_create_request"]

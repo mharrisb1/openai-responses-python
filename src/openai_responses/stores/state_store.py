@@ -10,6 +10,7 @@ from openai.types.beta.threads.runs.run_step import RunStep
 
 from openai.types.beta.vector_store import VectorStore
 from openai.types.beta.vector_stores.vector_store_file import VectorStoreFile
+from openai.types.beta.vector_stores.vector_store_file_batch import VectorStoreFileBatch
 
 from .content_store import ContentStore
 from .._constants import SYSTEM_MODELS
@@ -27,6 +28,7 @@ AnyModel = Union[
     Model,
     VectorStore,
     VectorStoreFile,
+    VectorStoreFileBatch,
 ]
 
 
@@ -58,6 +60,8 @@ class StateStore:
             self.beta.vector_stores.put(resource)
         elif isinstance(resource, VectorStoreFile):
             self.beta.vector_stores.files.put(resource)
+        elif isinstance(resource, VectorStoreFileBatch):
+            self.beta.vector_stores.file_batches.put(resource)
         else:
             raise TypeError(f"Cannot put object of type {type(resource)} in store")
 
@@ -257,6 +261,7 @@ class VectorStoreStore(BaseStore[VectorStore]):
     def __init__(self) -> None:
         super().__init__()
         self.files = VectorStoreFileStore()
+        self.file_batches = VectorStoreFileBatchStore()
 
     def list(
         self,
@@ -278,6 +283,43 @@ class VectorStoreStore(BaseStore[VectorStore]):
         end_ix = None
         if before:
             obj = self._data.get(before)
+            if obj:
+                end_ix = objs.index(obj)
+
+        objs = objs[start_ix:end_ix]
+        return objs[: int(limit)]
+
+    def list_files_for_batch(
+        self,
+        vector_store_id: str,
+        batch_id: str,
+        limit: Optional[str] = None,
+        order: Optional[str] = None,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+        filter: Optional[
+            Literal["in_progress", "completed", "failed", "cancelled"]
+        ] = None,
+    ) -> List[VectorStoreFile]:
+        limit = limit or "20"
+        file_ids = self.file_batches.get_related_files(batch_id)
+        objs = [
+            m
+            for m in self.files.list(vector_store_id, filter=filter)
+            if m.vector_store_id == vector_store_id
+        ]
+        objs = [obj for obj in objs if obj.id in file_ids]
+        objs = list(reversed(objs)) if (order or "desc") == "desc" else objs
+
+        start_ix = 0
+        if after:
+            obj = self.files.get(after)
+            if obj:
+                start_ix = objs.index(obj) + 1
+
+        end_ix = None
+        if before:
+            obj = self.files.get(before)
             if obj:
                 end_ix = objs.index(obj)
 
@@ -319,3 +361,17 @@ class VectorStoreFileStore(BaseStore[VectorStoreFile]):
 
         objs = objs[start_ix:end_ix]
         return objs[: int(limit)]
+
+
+class VectorStoreFileBatchStore(BaseStore[VectorStoreFileBatch]):
+    def __init__(self) -> None:
+        super().__init__()
+        self._related_files: Dict[str, List[str]] = {}
+
+    def get_related_files(self, batch_id: str) -> List[str]:
+        return self._related_files.get(batch_id, [])
+
+    def add_related_file(self, batch_id: str, file_id: str) -> None:
+        if not self._related_files.get(batch_id):
+            self._related_files[batch_id] = []
+        self._related_files[batch_id].append(file_id)
