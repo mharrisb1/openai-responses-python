@@ -2,6 +2,10 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.6.1
+
+Pins OpenAI SDK version to `>=1.25,<1.32`
+
 ## 0.6.0
 
 Adds vector store responses
