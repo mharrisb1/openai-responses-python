@@ -90,6 +90,7 @@ class RunCreateRoute(StatefulRoute[Run, PartialRun]):
             "created_at": utcnow_unix_timestamp_s(),
             "instructions": "",
             "object": "thread.run",
+            "parallel_tool_calls": True,
             "status": "queued",
         }
         return model_parse(Run, defaults | partial | content)

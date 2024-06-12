@@ -94,6 +94,7 @@ class PartialRun(TypedDict):
     metadata: NotRequired[Dict[str, str]]
     model: NotRequired[str]
     object: NotRequired[Literal["thread.run"]]
+    parallel_tool_calls: NotRequired[bool]
     required_action: NotRequired[PartialRequiredAction]
     response_format: NotRequired[
         Union[Literal["none", "auto"], PartialAssistantResponseFormat]
