@@ -24,7 +24,7 @@ Pytest plugin for automatically mocking OpenAI requests. Powered by [RESPX](http
 
 View full support coverage [here](https://mharrisb1.github.io/openai-responses-python/coverage).
 
-> [!NOTE]
+> [!TIP]
 > ✨ Support for creating [streaming responses](https://mharrisb1.github.io/openai-responses-python/user_guide/streaming/) added in v0.4
 
 ## Usage
