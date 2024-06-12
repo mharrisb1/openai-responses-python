@@ -2,7 +2,10 @@
 
 Pytest plugin for automatically mocking OpenAI requests. Powered by [RESPX](https://github.com/lundberg/respx).
 
-[![sdk support](https://img.shields.io/badge/SDK_Support-v1.25+-white?logo=openai&logoColor=black&labelColor=white)](https://github.com/openai/openai-python)
+[![sdk support](https://img.shields.io/badge/SDK_Support-v1.32+-white?logo=openai&logoColor=black&labelColor=white)](https://github.com/openai/openai-python)
+
+> [!NOTE]
+> For working with OpenAI Python SDK versions `>=1.25,<1.32` please use version `0.6` or earlier for this library
 
 ## Supported Endpoints
 
