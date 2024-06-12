@@ -2,6 +2,10 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.7.0
+
+Pulls in breaking changes fromr from OpenAI Python SDK v1.32+ and pins version support to `>=1.32,<1.35`
+
 ## 0.6.1
 
 Pins OpenAI SDK version to `>=1.25,<1.32`
