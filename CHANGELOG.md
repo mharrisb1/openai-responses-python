@@ -2,6 +2,16 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.8.0
+
+Breaking change that removes the event method on the event stream classes and forces the user to explicitly define and construct the generated events.
+
+This will help cut down on feature drift overtime since this is relying on OpenAI's types instead of relying on custom code that tried to make this easier for the user.
+
+Closed:
+
+- [#54: feat: change Event class generator for EventDelta](https://github.com/mharrisb1/openai-responses-python/issues/54)
+
 ## 0.7.0
 
 Pulls in breaking changes fromr from OpenAI Python SDK v1.32+ and pins version support to `>=1.32,<1.35`
