@@ -3,13 +3,19 @@ from typing_extensions import override
 
 import openai
 from openai import AssistantEventHandler
-from openai.types.beta import AssistantStreamEvent
 from openai.types.beta.threads import Run
+from openai.types.beta.assistant_stream_event import (
+    AssistantStreamEvent,
+    ThreadMessageCreated,
+    ThreadRunCompleted,
+    ThreadRunCreated,
+    ThreadRunInProgress,
+)
 
 import openai_responses
 from openai_responses import OpenAIMock
 from openai_responses.stores import StateStore
-from openai_responses.streaming import EventStream, Event
+from openai_responses.streaming import EventStream
 from openai_responses.helpers.builders.runs import run_from_create_request
 from openai_responses.helpers.builders.messages import build_message
 from openai_responses.ext.httpx import Request, Response
@@ -30,19 +36,19 @@ class EventHandler(AssistantEventHandler):
             event_count += 1
 
 
-class CreateRunEventStream(EventStream):
+class CreateRunEventStream(EventStream[AssistantStreamEvent]):
     def __init__(self, created_run: Run, state_store: StateStore) -> None:
         self.created_run = created_run
         self.state_store = state_store
 
     @override
-    def generate(self) -> Generator[Event, None, None]:
+    def generate(self) -> Generator[AssistantStreamEvent, None, None]:
         self.state_store.beta.threads.runs.put(self.created_run)
-        yield self.event("thread.run.created", self.created_run)
+        yield ThreadRunCreated(event="thread.run.created", data=self.created_run)
 
         self.created_run.status = "in_progress"
         self.state_store.beta.threads.runs.put(self.created_run)
-        yield self.event("thread.run.in_progress", self.created_run)
+        yield ThreadRunInProgress(event="thread.run.in_progress", data=self.created_run)
 
         assistant_message = build_message(
             {
@@ -60,11 +66,13 @@ class CreateRunEventStream(EventStream):
             }
         )
         self.state_store.beta.threads.messages.put(assistant_message)
-        yield self.event("thread.message.created", assistant_message)
+        yield ThreadMessageCreated(
+            event="thread.message.created", data=assistant_message
+        )
 
         self.created_run.status = "completed"
         self.state_store.beta.threads.runs.put(self.created_run)
-        yield self.event("thread.run.completed", self.created_run)
+        yield ThreadRunCompleted(event="thread.run.completed", data=self.created_run)
 
 
 def create_run_stream_response(

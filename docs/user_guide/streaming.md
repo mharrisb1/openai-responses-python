@@ -27,11 +27,15 @@ These classes are meant to be inherited and built on top of. The main part that 
 
 The stream object can be passed in to an HTTPX response as an argument for `content`. To do this, you'll need to also make use of [function responses](responses.md#function).
 
+!!! info
+
+    The classes are generic so you *must* provide the type of the event
+
 ## Example
 
 Here's an example using chat completions API.
 
-```python linenums="1" hl_lines="13 15 33 70 71"
+```python linenums="1" hl_lines="13 15 16 72 73"
 from typing import Generator
 from typing_extensions import override
 
@@ -40,14 +44,14 @@ from openai.types.chat import ChatCompletionChunk
 
 import openai_responses
 from openai_responses import OpenAIMock
-from openai_responses.streaming import Event, EventStream
+from openai_responses.streaming import EventStream
 from openai_responses.ext.httpx import Request, Response
 
 
-class CreateChatCompletionEventStream(EventStream):  # (1)
+class CreateChatCompletionEventStream(EventStream[ChatCompletionChunk]): # (1)
     @override
-    def generate(self) -> Generator[Event, None, None]:  # (2)
-        chunk = ChatCompletionChunk.model_validate(
+    def generate(self) -> Generator[ChatCompletionChunk, None, None]: # (2)
+        yield ChatCompletionChunk.model_validate( # (3)
             {
                 "id": "chatcmpl-123",
                 "object": "chat.completion.chunk",
@@ -64,9 +68,8 @@ class CreateChatCompletionEventStream(EventStream):  # (1)
                 ],
             }
         )
-        yield self.event(None, chunk)  # (3)
 
-        chunk = ChatCompletionChunk.model_validate(
+        yield ChatCompletionChunk.model_validate(
             {
                 "id": "chatcmpl-123",
                 "object": "chat.completion.chunk",
@@ -83,9 +86,8 @@ class CreateChatCompletionEventStream(EventStream):  # (1)
                 ],
             }
         )
-        yield self.event(None, chunk)
 
-        chunk = ChatCompletionChunk.model_validate(
+        yield ChatCompletionChunk.model_validate(
             {
                 "id": "chatcmpl-123",
                 "object": "chat.completion.chunk",
@@ -93,16 +95,20 @@ class CreateChatCompletionEventStream(EventStream):  # (1)
                 "model": "gpt-4o",
                 "system_fingerprint": "fp_44709d6fcb",
                 "choices": [
-                    {"index": 0, "delta": {}, "logprobs": None, "finish_reason": "stop"}
+                    {
+                        "index": 0,
+                        "delta": {},
+                        "logprobs": None,
+                        "finish_reason": "stop",
+                    }
                 ],
             }
         )
-        yield self.event(None, chunk)
 
 
 def create_chat_completion_response(request: Request) -> Response:
-    stream = CreateChatCompletionEventStream()  # (4)
-    return Response(201, content=stream)  # (5)
+    stream = CreateChatCompletionEventStream() # (4)
+    return Response(201, content=stream, request=request) # (5)
 
 
 @openai_responses.mock()
@@ -128,9 +134,9 @@ def test_create_chat_completion_stream(openai_mock: OpenAIMock):
     assert received_chunks == 3
 ```
 
-1. Your stream class must inherit from either `EventStream` or `AsyncEventStream`
+1. Your stream class must inherit from either `EventStream` or `AsyncEventStream` and you must provide the event type
 2. Override the `generate` method
-3. Yield an event. You can include an `event.event` name.
+3. Yield an event. This event type must match the type provided.
 4. Construct the stream object
 5. Pass the stream as `content` on the response object
 
