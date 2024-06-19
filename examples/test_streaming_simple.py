@@ -6,74 +6,65 @@ from openai.types.chat import ChatCompletionChunk
 
 import openai_responses
 from openai_responses import OpenAIMock
-from openai_responses.streaming import Event, EventStream
+from openai_responses.streaming import EventStream
 from openai_responses.ext.httpx import Request, Response
 
 
-class CreateChatCompletionEventStream(EventStream):
+class CreateChatCompletionEventStream(EventStream[ChatCompletionChunk]):
     @override
-    def generate(self) -> Generator[Event, None, None]:
-        yield self.event(
-            None,
-            ChatCompletionChunk.model_validate(
-                {
-                    "id": "chatcmpl-123",
-                    "object": "chat.completion.chunk",
-                    "created": 1694268190,
-                    "model": "gpt-4o",
-                    "system_fingerprint": "fp_44709d6fcb",
-                    "choices": [
-                        {
-                            "index": 0,
-                            "delta": {"role": "assistant", "content": ""},
-                            "logprobs": None,
-                            "finish_reason": None,
-                        }
-                    ],
-                }
-            ),
+    def generate(self) -> Generator[ChatCompletionChunk, None, None]:
+        yield ChatCompletionChunk.model_validate(
+            {
+                "id": "chatcmpl-123",
+                "object": "chat.completion.chunk",
+                "created": 1694268190,
+                "model": "gpt-4o",
+                "system_fingerprint": "fp_44709d6fcb",
+                "choices": [
+                    {
+                        "index": 0,
+                        "delta": {"role": "assistant", "content": ""},
+                        "logprobs": None,
+                        "finish_reason": None,
+                    }
+                ],
+            }
         )
 
-        yield self.event(
-            None,
-            ChatCompletionChunk.model_validate(
-                {
-                    "id": "chatcmpl-123",
-                    "object": "chat.completion.chunk",
-                    "created": 1694268190,
-                    "model": "gpt-4o",
-                    "system_fingerprint": "fp_44709d6fcb",
-                    "choices": [
-                        {
-                            "index": 0,
-                            "delta": {"content": "Hello"},
-                            "logprobs": None,
-                            "finish_reason": None,
-                        }
-                    ],
-                }
-            ),
+        yield ChatCompletionChunk.model_validate(
+            {
+                "id": "chatcmpl-123",
+                "object": "chat.completion.chunk",
+                "created": 1694268190,
+                "model": "gpt-4o",
+                "system_fingerprint": "fp_44709d6fcb",
+                "choices": [
+                    {
+                        "index": 0,
+                        "delta": {"content": "Hello"},
+                        "logprobs": None,
+                        "finish_reason": None,
+                    }
+                ],
+            }
         )
 
-        yield self.event(
-            None,
-            ChatCompletionChunk.model_validate(
-                {
-                    "id": "chatcmpl-123",
-                    "object": "chat.completion.chunk",
-                    "created": 1694268190,
-                    "model": "gpt-4o",
-                    "system_fingerprint": "fp_44709d6fcb",
-                    "choices": [
-                        {
-                            "index": 0,
-                            "delta": {},
-                            "logprobs": None,
-                            "finish_reason": "stop",
-                        }
-                    ],
-                }
-            ),
+        yield ChatCompletionChunk.model_validate(
+            {
+                "id": "chatcmpl-123",
+                "object": "chat.completion.chunk",
+                "created": 1694268190,
+                "model": "gpt-4o",
+                "system_fingerprint": "fp_44709d6fcb",
+                "choices": [
+                    {
+                        "index": 0,
+                        "delta": {},
+                        "logprobs": None,
+                        "finish_reason": "stop",
+                    }
+                ],
+            }
         )
 
 
