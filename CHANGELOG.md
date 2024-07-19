@@ -2,6 +2,10 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.8.1
+
+Bumps support range to include OpenAI Python SDK v1.35.
+
 ## 0.8.0
 
 Breaking change that removes the event method on the event stream classes and forces the user to explicitly define and construct the generated events.
