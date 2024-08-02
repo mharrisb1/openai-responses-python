@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openai-responses"
-version = "0.8.3"
+version = "0.8.4"
 description = "🧪🤖 Pytest plugin for automatically mocking OpenAI requests"
 authors = ["Michael Harris <mharris@definite.app>"]
 license = "MIT"
