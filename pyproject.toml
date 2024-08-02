@@ -20,18 +20,15 @@ openai_responses = "openai_responses.plugin"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-faker = ">=24.2.0,<25.0.0"
-faker-openai-api-provider = "0.2.0"
-openai = ">=1.32,<1.38"
-requests-toolbelt = "^1.0.0"
-respx = "^0.20.2"
+openai = ">=1.32,<1.39"
+requests-toolbelt = "^1"
+respx = "^0.20"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.2.0"
 mypy = "^1.9.0"
 pytest = "^8.1.1"
 pytest-asyncio = "^0.23.6"
-types-decorator = "^5.1.8.20240310"
 mkdocs-material = "^9.5.18"
 tox = "^4.14.2"
 
