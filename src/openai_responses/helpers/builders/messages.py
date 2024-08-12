@@ -5,7 +5,7 @@ import httpx
 from openai.types.beta.threads.message import Message
 
 from ._base import _generic_builder
-from ..._routes.messages import MessageCreateRoute
+from ..._routes.beta.messages import MessageCreateRoute
 from ..._types.partials.messages import PartialMessage
 
 from ..._utils.faker import faker

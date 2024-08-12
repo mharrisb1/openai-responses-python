@@ -11,20 +11,20 @@ from openai.types.beta.vector_store_create_params import VectorStoreCreateParams
 from openai.types.beta.vector_store_update_params import VectorStoreUpdateParams
 from openai.types.beta.vector_store_deleted import VectorStoreDeleted
 
-from ._base import StatefulRoute
+from .._base import StatefulRoute
 
-from ..helpers.builders.vector_store_files import vector_store_file_from_create_request
+from ...helpers.builders.vector_store_files import vector_store_file_from_create_request
 
-from ..stores import StateStore
-from .._types.partials.sync_cursor_page import PartialSyncCursorPage
-from .._types.partials.vector_stores import (
+from ...stores import StateStore
+from ..._types.partials.sync_cursor_page import PartialSyncCursorPage
+from ..._types.partials.vector_stores import (
     PartialVectorStore,
     PartialVectorStoreDeleted,
 )
 
-from .._utils.faker import faker
-from .._utils.serde import json_loads, model_dict, model_parse
-from .._utils.time import utcnow_unix_timestamp_s
+from ..._utils.faker import faker
+from ..._utils.serde import json_loads, model_dict, model_parse
+from ..._utils.time import utcnow_unix_timestamp_s
 
 __all__ = [
     "VectorStoreCreateRoute",

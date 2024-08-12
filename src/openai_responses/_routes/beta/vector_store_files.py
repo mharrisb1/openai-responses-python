@@ -10,15 +10,15 @@ from openai.types.beta.vector_stores.vector_store_file_deleted import (
     VectorStoreFileDeleted,
 )
 
-from ._base import StatefulRoute
+from .._base import StatefulRoute
 
-from ..stores import StateStore
-from .._types.partials.deleted import PartialResourceDeleted
-from .._types.partials.sync_cursor_page import PartialSyncCursorPage
-from .._types.partials.vector_store_files import PartialVectorStoreFile
+from ...stores import StateStore
+from ..._types.partials.deleted import PartialResourceDeleted
+from ..._types.partials.sync_cursor_page import PartialSyncCursorPage
+from ..._types.partials.vector_store_files import PartialVectorStoreFile
 
-from .._utils.serde import json_loads, model_dict, model_parse
-from .._utils.time import utcnow_unix_timestamp_s
+from ..._utils.serde import json_loads, model_dict, model_parse
+from ..._utils.time import utcnow_unix_timestamp_s
 
 __all__ = [
     "VectorStoreFileCreateRoute",
