@@ -70,17 +70,8 @@ class PartialChatCompletion(TypedDict):
     usage: NotRequired[PartialCompletionUsage]
 
 
-class PartialParsedFunction(TypedDict):
-    parsed_argument: NotRequired[Dict[str, Any]]
-
-
-class PartialParsedFunctionToolCall(PartialToolCall):
-    function: PartialParsedFunction  # type: ignore
-
-
 class PartialParsedChatCompletionMessage(PartialChatCompletionMessage):
     parsed: NotRequired[Dict[str, Any]]
-    tool_calls: NotRequired[List[PartialParsedFunctionToolCall]]  # type: ignore
 
 
 class PartialParsedChoice(PartialChoice):
