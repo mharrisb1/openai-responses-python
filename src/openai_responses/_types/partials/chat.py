@@ -1,7 +1,7 @@
-from typing import List, Literal, TypedDict
+from typing import Any, Dict, List, Literal, TypedDict
 from typing_extensions import NotRequired
 
-__all__ = ["PartialChatCompletion"]
+__all__ = ["PartialChatCompletion", "PartialParsedChatCompletion"]
 
 
 class PartialFunctionCall(TypedDict):
@@ -15,8 +15,9 @@ class PartialToolCall(TypedDict):
     type: Literal["function"]
 
 
-class PartialMessage(TypedDict):
+class PartialChatCompletionMessage(TypedDict):
     content: NotRequired[str]
+    refusal: NotRequired[str]
     role: Literal["assistant"]
     function_call: NotRequired[PartialFunctionCall]
     tool_calls: NotRequired[List[PartialToolCall]]
@@ -49,7 +50,7 @@ class PartialChoice(TypedDict):
     ]
     index: int
     logprops: NotRequired[PartialChatCompletionTokenLogprob]
-    message: PartialMessage
+    message: PartialChatCompletionMessage
 
 
 class PartialCompletionUsage(TypedDict):
@@ -64,5 +65,18 @@ class PartialChatCompletion(TypedDict):
     created: NotRequired[int]
     model: NotRequired[str]
     object: NotRequired[Literal["chat.completion"]]
+    service_tier: NotRequired[Literal["scale", "default"]]
     system_fingerprint: NotRequired[str]
     usage: NotRequired[PartialCompletionUsage]
+
+
+class PartialParsedChatCompletionMessage(PartialChatCompletionMessage):
+    parsed: NotRequired[Dict[str, Any]]
+
+
+class PartialParsedChoice(PartialChoice):
+    message: PartialParsedChatCompletionMessage  # type: ignore
+
+
+class PartialParsedChatCompletion(PartialChatCompletion):
+    choices: NotRequired[List[PartialParsedChoice]]  # type: ignore

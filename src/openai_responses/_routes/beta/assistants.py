@@ -11,21 +11,21 @@ from openai.types.beta.assistant_deleted import AssistantDeleted
 from openai.types.beta.assistant_create_params import AssistantCreateParams
 from openai.types.beta.assistant_update_params import AssistantUpdateParams
 
-from ._base import StatefulRoute
+from .._base import StatefulRoute
 
-from ..helpers.builders.vector_stores import vector_store_from_create_request
-from ..helpers.builders.vector_store_files import vector_store_file_from_create_request
-from ..helpers.mergers.assistants import merge_assistant_with_partial
+from ...helpers.builders.vector_stores import vector_store_from_create_request
+from ...helpers.builders.vector_store_files import vector_store_file_from_create_request
+from ...helpers.mergers.assistants import merge_assistant_with_partial
 
-from ..stores import StateStore
+from ...stores import StateStore
 
-from .._types.partials.deleted import PartialResourceDeleted
-from .._types.partials.sync_cursor_page import PartialSyncCursorPage
-from .._types.partials.assistants import PartialAssistant
+from ..._types.partials.deleted import PartialResourceDeleted
+from ..._types.partials.sync_cursor_page import PartialSyncCursorPage
+from ..._types.partials.assistants import PartialAssistant
 
-from .._utils.faker import faker
-from .._utils.serde import json_loads, model_dict, model_parse
-from .._utils.time import utcnow_unix_timestamp_s
+from ..._utils.faker import faker
+from ..._utils.serde import json_loads, model_dict, model_parse
+from ..._utils.time import utcnow_unix_timestamp_s
 
 __all__ = [
     "AssistantCreateRoute",

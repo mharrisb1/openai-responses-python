@@ -1,7 +1,7 @@
-from typing import Annotated, Any, Dict, List, Literal, TypedDict, Union
+from typing import Any, Dict, List, Literal, TypedDict, Union
 from typing_extensions import NotRequired
 
-from openai._utils import PropertyInfo
+from .assistants import PartialAssistantResponseFormat, PartialAssistantTool
 
 __all__ = ["PartialRun"]
 
@@ -33,10 +33,6 @@ class PartialRequiredActionSubmitToolOutputs(TypedDict):
 class PartialRequiredAction(TypedDict):
     submit_tool_outputs: PartialRequiredActionSubmitToolOutputs
     type: Literal["submit_tool_outputs"]
-
-
-class PartialAssistantResponseFormat(TypedDict):
-    type: NotRequired[Literal["text", "json_object"]]
 
 
 class PartialAssistantToolChoiceFunction(TypedDict):
@@ -96,9 +92,7 @@ class PartialRun(TypedDict):
     object: NotRequired[Literal["thread.run"]]
     parallel_tool_calls: NotRequired[bool]
     required_action: NotRequired[PartialRequiredAction]
-    response_format: NotRequired[
-        Union[Literal["none", "auto"], PartialAssistantResponseFormat]
-    ]
+    response_format: NotRequired[PartialAssistantResponseFormat]
     started_at: NotRequired[int]
     status: NotRequired[
         Literal[
@@ -116,18 +110,7 @@ class PartialRun(TypedDict):
     tool_choice: NotRequired[
         Union[Literal["none", "auto", "required"], PartialAssistantToolChoice]
     ]
-    tools: NotRequired[
-        List[
-            Annotated[
-                Union[
-                    PartialCodeInterpreterTool,
-                    PartialFileSearchTool,
-                    PartialFunctionTool,
-                ],
-                PropertyInfo(discriminator="type"),
-            ]
-        ]
-    ]
+    tools: NotRequired[List[PartialAssistantTool]]
     truncation_strategy: NotRequired[PartialTruncationStrategy]
     usage: NotRequired[PartialUsage]
     temperature: NotRequired[float]
