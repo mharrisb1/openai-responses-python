@@ -15,8 +15,9 @@ class PartialToolCall(TypedDict):
     type: Literal["function"]
 
 
-class PartialMessage(TypedDict):
+class PartialChatCompletionMessage(TypedDict):
     content: NotRequired[str]
+    refusal: NotRequired[str]
     role: Literal["assistant"]
     function_call: NotRequired[PartialFunctionCall]
     tool_calls: NotRequired[List[PartialToolCall]]
@@ -49,7 +50,7 @@ class PartialChoice(TypedDict):
     ]
     index: int
     logprops: NotRequired[PartialChatCompletionTokenLogprob]
-    message: PartialMessage
+    message: PartialChatCompletionMessage
 
 
 class PartialCompletionUsage(TypedDict):
@@ -64,5 +65,6 @@ class PartialChatCompletion(TypedDict):
     created: NotRequired[int]
     model: NotRequired[str]
     object: NotRequired[Literal["chat.completion"]]
+    service_tier: NotRequired[Literal["scale", "default"]]
     system_fingerprint: NotRequired[str]
     usage: NotRequired[PartialCompletionUsage]
