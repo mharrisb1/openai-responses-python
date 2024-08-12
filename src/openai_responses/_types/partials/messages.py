@@ -28,6 +28,16 @@ class PartialImageFileContentBlock(TypedDict):
     image_file: PartialImageFile
 
 
+class PartialImageURL(TypedDict):
+    url: str
+    detail: NotRequired[Literal["auto", "low", "high"]]
+
+
+class PartialImageURLContentBlock(TypedDict):
+    type: Literal["image_url"]
+    image_url: PartialImageURL
+
+
 class PartialFileCitation(TypedDict):
     file_id: str
     quote: str
@@ -66,6 +76,22 @@ class PartialText(TypedDict):
 class PartialTextContentBlock(TypedDict):
     type: Literal["text"]
     text: PartialText
+
+
+class PartialRefusalContentBlock(TypedDict):
+    type: Literal["refusal"]
+    refusal: str
+
+
+PartialMessageContent = Annotated[
+    Union[
+        PartialImageFileContentBlock,
+        PartialImageURLContentBlock,
+        PartialTextContentBlock,
+        PartialRefusalContentBlock,
+    ],
+    PropertyInfo(discriminator="type"),
+]
 
 
 class PartialMessage(TypedDict):
