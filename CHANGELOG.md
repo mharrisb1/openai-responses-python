@@ -2,6 +2,14 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.9.0
+
+Adds support for [structured outputs](https://openai.com/index/introducing-structured-outputs-in-the-api/) and the `beta.chat.completions` route.
+
+Misc:
+
+- Adds a working example of how to use this library to test `langchain-openai` (asked about in [#58: Would `openai-responses-python` work with langchain_openai?](https://github.com/mharrisb1/openai-responses-python/issues/58))
+
 ## 0.8.5
 
 Bumps support range to include OpenAI Python SDK v1.40.
