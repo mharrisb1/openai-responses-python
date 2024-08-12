@@ -53,6 +53,8 @@ from .vector_store_file_batches import (
     VectorStoreFileBatchListFilesRoute,
 )
 
+from .chat import ParsedChatCompletionsCreateRoute
+
 
 __all__ = ["BetaRoutes"]
 
@@ -62,6 +64,8 @@ class BetaRoutes:
         self.assistants = AssistantsRoutes(router, state)
         self.threads = ThreadRoutes(router, state)
         self.vector_stores = VectorStoreRoutes(router, state)
+
+        self.chat = ChatRoutes(router)
 
 
 class AssistantsRoutes:
@@ -138,3 +142,13 @@ class VectorStoreFileBatchRoutes:
         self.retrieve = VectorStoreFileBatchRetrieveRoute(router, state)
         self.cancel = VectorStoreFileBatchCancelRoute(router, state)
         self.list_files = VectorStoreFileBatchListFilesRoute(router, state)
+
+
+class ChatRoutes:
+    def __init__(self, router: respx.MockRouter) -> None:
+        self.completions = ParsedChatCompletionRoutes(router)
+
+
+class ParsedChatCompletionRoutes:
+    def __init__(self, router: respx.MockRouter) -> None:
+        self.create = ParsedChatCompletionsCreateRoute(router)
