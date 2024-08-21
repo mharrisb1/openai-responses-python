@@ -2,6 +2,10 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.9.1
+
+Bumps support range to include OpenAI Python SDK v1.42. Also adds env for testing Pydantic V1 and V2 in tox.
+
 ## 0.9.0
 
 Adds support for [structured outputs](https://openai.com/index/introducing-structured-outputs-in-the-api/) and the `beta.chat.completions` route.
