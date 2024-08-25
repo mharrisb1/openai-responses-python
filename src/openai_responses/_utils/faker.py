@@ -99,10 +99,16 @@ class VectorStoreProvider:
             return gen_id("vsfb")
 
 
+class ModerationProvider:
+    def id(self) -> str:
+        return gen_id(prefix="modr", sep="-")
+
+
 class Faker:
     def __init__(self) -> None:
         self.chat = ChatProvider()
         self.file = FileProvider()
+        self.moderation = ModerationProvider()
         self.beta = Faker.BetaProviders()
 
     class BetaProviders:

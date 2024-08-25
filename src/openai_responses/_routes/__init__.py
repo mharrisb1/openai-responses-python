@@ -12,10 +12,18 @@ from .files import (
     FileRetrieveContentRoute,
 )
 from .models import ModelListRoute, ModelRetrieveRoute
+from .moderation import ModerationCreateRoute
 
 from .beta import BetaRoutes
 
-__all__ = ["BetaRoutes", "ChatRoutes", "EmbeddingsRoutes", "FileRoutes", "ModelRoutes"]
+__all__ = [
+    "BetaRoutes",
+    "ChatRoutes",
+    "EmbeddingsRoutes",
+    "FileRoutes",
+    "ModelRoutes",
+    "ModerationsRoutes",
+]
 
 
 class ChatRoutes:
@@ -46,3 +54,8 @@ class ModelRoutes:
     def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
         self.list = ModelListRoute(router, state)
         self.retrieve = ModelRetrieveRoute(router, state)
+
+
+class ModerationsRoutes:
+    def __init__(self, router: respx.MockRouter) -> None:
+        self.create = ModerationCreateRoute(router)

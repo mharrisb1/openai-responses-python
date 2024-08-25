@@ -4,7 +4,14 @@ from typing import Any, Callable, Optional
 
 import respx
 
-from ._routes import BetaRoutes, ChatRoutes, EmbeddingsRoutes, FileRoutes, ModelRoutes
+from ._routes import (
+    BetaRoutes,
+    ChatRoutes,
+    EmbeddingsRoutes,
+    FileRoutes,
+    ModelRoutes,
+    ModerationsRoutes,
+)
 from .stores import StateStore
 
 
@@ -14,6 +21,7 @@ class OpenAIMock:
     embeddings: EmbeddingsRoutes
     files: FileRoutes
     models: ModelRoutes
+    moderations: ModerationsRoutes
 
     def __init__(
         self,
@@ -50,6 +58,7 @@ class OpenAIMock:
         self.embeddings = EmbeddingsRoutes(self._router)
         self.files = FileRoutes(self._router, self._state)
         self.models = ModelRoutes(self._router, self._state)
+        self.moderations = ModerationsRoutes(self._router)
 
         # NOTE: need to sort routes to avoid match conflicts
         self._router.routes._routes.sort(key=lambda r: len(repr(r._pattern)), reverse=True)  # type: ignore
