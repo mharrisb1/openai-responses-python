@@ -43,7 +43,7 @@ The end-goal of this library is to eventually support all OpenAI API routes. See
 | Retrieve model                     | :material-check:{ .green } |             -              | Stateful   |
 | Delete a fine-tuned model          |  :material-close:{ .red }  |             -              | -          |
 | **Moderations**                    |
-| Create moderation                  |  :material-close:{ .red }  |             -              | -          |
+| Create moderation                  | :material-check:{ .green } |             -              | Stateless  |
 | **Assistants**                     |
 | Create assistant                   | :material-check:{ .green } |             -              | Stateful   |
 | List assistants                    | :material-check:{ .green } |             -              | Stateful   |
