@@ -70,7 +70,7 @@ class Route(ABC, Generic[M, P]):
                 assert not callable(self._response)
                 return httpx.Response(
                     status_code=self._status_code,
-                    json=model_dict(self._build(self._response, request)),
+                    json=model_dict(self._build(self._response, request), by_alias=True),
                 )
 
         return _handler
