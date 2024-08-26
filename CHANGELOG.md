@@ -2,6 +2,18 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.10.0
+
+Adds support for [moderations endpoint](https://platform.openai.com/docs/api-reference/moderations/create).
+
+Issues:
+
+- [#23: feat: add support for moderation endpoint](https://github.com/mharrisb1/openai-responses-python/issues/23)
+
+Pull requests:
+
+- [#61: feat(routes): add moderation route support](https://github.com/mharrisb1/openai-responses-python/issues/61)
+
 ## 0.9.1
 
 Bumps support range to include OpenAI Python SDK v1.42. Also adds env for testing Pydantic V1 and V2 in tox.
