@@ -3,7 +3,8 @@ name: Tox
 on:
   pull_request:
     paths:
-      - "src/**"
+      - .github/**
+      - src/**
       - pyproject.toml
 
 jobs:
