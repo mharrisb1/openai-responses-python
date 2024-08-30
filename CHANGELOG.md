@@ -2,6 +2,10 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.10.1
+
+Bumps support range to include OpenAI Python SDK v1.43.
+
 ## 0.10.0
 
 Adds support for [moderations endpoint](https://platform.openai.com/docs/api-reference/moderations/create).
