@@ -20,7 +20,7 @@ openai_responses = "openai_responses.plugin"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-openai = ">=1.32,<1.44"
+openai = ">=1.32,<1.46"
 requests-toolbelt = "^1"
 respx = "^0.20"
 
