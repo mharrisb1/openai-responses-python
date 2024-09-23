@@ -2,6 +2,10 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## 0.10.3
+
+Bumps support range to include OpenAI Python SDK v1.47.
+
 ## 0.10.2
 
 Bumps support range to include OpenAI Python SDK v1.45 and includes o1 family of models in fetch models response.
