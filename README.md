@@ -6,19 +6,19 @@ Pytest plugin for automatically mocking OpenAI requests. Powered by [RESPX](http
 
 ## Supported Endpoints
 
-- [Chat](https://platform.openai.com/docs/api-reference/chat)
-- [Embeddings](https://platform.openai.com/docs/api-reference/embeddings)
-- [Files](https://platform.openai.com/docs/api-reference/files)
-- [Models](https://platform.openai.com/docs/api-reference/models)
-- [Moderations](https://platform.openai.com/docs/api-reference/moderations)
-- [Assistants](https://platform.openai.com/docs/api-reference/assistants)
-- [Threads](https://platform.openai.com/docs/api-reference/threads)
-- [Messages](https://platform.openai.com/docs/api-reference/messages)
-- [Runs](https://platform.openai.com/docs/api-reference/runs)
-- [Run Steps](https://platform.openai.com/docs/api-reference/run-steps)
-- [Vector Stores](https://platform.openai.com/docs/api-reference/vector-stores)
-- [Vector Store Files](https://platform.openai.com/docs/api-reference/vector-stores-files)
-- [Vector Store File Batches](https://platform.openai.com/docs/api-reference/vector-stores-file-batches)
+- [Chat](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_chat_completion.py)
+- [Embeddings](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_embeddings.py)
+- [Files](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_files.py)
+- [Models](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_models.py)
+- [Moderations](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_moderations.py)
+- [Assistants](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_assistants.py)
+- [Threads](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_threads.py)
+- [Messages](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_messages.py)
+- [Runs](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_runs.py)
+- [Run Steps](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_run_steps.py)
+- [Vector Stores](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_vector_stores.py)
+- [Vector Store Files](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_vector_store_files.py)
+- [Vector Store File Batches](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_vector_store_file_batches.py)
 
 View full support coverage [here](https://mharrisb1.github.io/openai-responses-python/coverage).
 
