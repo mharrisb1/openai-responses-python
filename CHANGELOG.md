@@ -2,6 +2,14 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## v0.11.1
+
+Bumps support range to include OpenAI Python SDK v1.51.
+
+## v0.11.0
+
+OpenAI Python SDK minimum version is now v1.50.
+
 ## 0.10.3
 
 Bumps support range to include OpenAI Python SDK v1.47.
