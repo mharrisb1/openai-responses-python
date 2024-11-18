@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openai-responses"
-version = "0.11.1"
+version = "0.11.2"
 description = "🧪🤖 Pytest plugin for automatically mocking OpenAI requests"
 authors = ["Michael Harris <mharris@definite.app>"]
 license = "MIT"
@@ -20,7 +20,7 @@ openai_responses = "openai_responses.plugin"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-openai = ">=1.50,<1.52"
+openai = ">=1.50,<1.55"
 requests-toolbelt = "^1"
 respx = "^0.20"
 

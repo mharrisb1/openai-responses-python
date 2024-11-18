@@ -2,6 +2,10 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## v0.11.2
+
+Bumps support range to include OpenAI Python SDK v1.54.
+
 ## v0.11.1
 
 Bumps support range to include OpenAI Python SDK v1.51.
