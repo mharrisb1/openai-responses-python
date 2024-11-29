@@ -20,18 +20,18 @@ openai_responses = "openai_responses.plugin"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-openai = ">=1.50,<1.55"
+openai = ">=1.50,<1.56"
 requests-toolbelt = "^1"
-respx = "^0.20"
+respx = { git = "https://github.com/ndhansen/respx" }
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.2.0"
+langchain-openai = "^0.1.20"
 mypy = "^1.9.0"
 pytest = "^8.1.1"
 pytest-asyncio = "^0.23.6"
 mkdocs-material = "^9.5.18"
 tox = "^4.14.2"
-langchain-openai = "^0.1.20"
 
 [build-system]
 requires = ["poetry-core"]
