@@ -22,7 +22,7 @@ openai_responses = "openai_responses.plugin"
 python = ">=3.9,<4.0"
 openai = ">=1.50,<1.56"
 requests-toolbelt = "^1"
-respx = { git = "https://github.com/ndhansen/respx" }
+respx = "^0.22.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.2.0"
