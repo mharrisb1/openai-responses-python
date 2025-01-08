@@ -2,6 +2,10 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## v0.11.4
+
+Bumps support range to include OpenAI Python SDK v1.59.
+
 ## v0.11.3
 
 Pins minimum RESPX version to v0.22.0 with support for HTTPX v0.28. Closes [#67: Add support for OpenAI 1.55](https://github.com/mharrisb1/openai-responses-python/issues/67)
