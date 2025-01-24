@@ -2,6 +2,10 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## v0.11.6
+
+Relaxes strict support range for OpenAI Python SDK in hopes that schemas/models are matured and won't have breaking changes. See [#69: openai-responses 0.11.4 requires openai<1.60,>=1.50](https://github.com/mharrisb1/openai-responses-python/issues/69) for conversation.
+
 ## v0.11.5
 
 Bumps support range to include OpenAI Python SDK v1.60.
