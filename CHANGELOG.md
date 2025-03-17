@@ -2,6 +2,22 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## v0.12.0
+
+> [!IMPORTANT]
+> Breaking change
+
+Promotes vector store routes from beta. This is a breaking change and now the minimum supported SDK version is v1.66. Also adds Python 3.13 to test matrix.
+
+Issues:
+
+- [#70: OpenAI v1.66.0 Compatibility: openai.types.beta.vector_store Missing](https://github.com/mharrisb1/openai-responses-python/issues/70)
+
+Pull Requests:
+
+- [#71: fix(routes): promote vector stores from beta](https://github.com/mharrisb1/openai-responses-python/issues/71)
+- [#72: chore(ci): add Python 3.13 to test matrix](https://github.com/mharrisb1/openai-responses-python/issues/72)
+
 ## v0.11.6
 
 Relaxes strict support range for OpenAI Python SDK in hopes that schemas/models are matured and won't have breaking changes. See [#69: openai-responses 0.11.4 requires openai<1.60,>=1.50](https://github.com/mharrisb1/openai-responses-python/issues/69) for conversation.
