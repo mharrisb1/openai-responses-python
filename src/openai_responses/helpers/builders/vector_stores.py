@@ -1,7 +1,7 @@
 from typing import Optional
 
 import httpx
-from openai.types.beta.vector_store import VectorStore
+from openai.types.vector_store import VectorStore
 
 from ._base import _generic_builder
 from ..._routes.beta.vector_stores import VectorStoreCreateRoute

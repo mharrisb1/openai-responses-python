@@ -16,6 +16,27 @@ from .moderation import ModerationCreateRoute
 
 from .beta import BetaRoutes
 
+from .beta.vector_stores import (
+    VectorStoreCreateRoute,
+    VectorStoreListRoute,
+    VectorStoreRetrieveRoute,
+    VectorStoreUpdateRoute,
+    VectorStoreDeleteRoute,
+)
+from .beta.vector_store_files import (
+    VectorStoreFileCreateRoute,
+    VectorStoreFileListRoute,
+    VectorStoreFileRetrieveRoute,
+    VectorStoreFileDeleteRoute,
+)
+from .beta.vector_store_file_batches import (
+    VectorStoreFileBatchCreateRoute,
+    VectorStoreFileBatchRetrieveRoute,
+    VectorStoreFileBatchCancelRoute,
+    VectorStoreFileBatchListFilesRoute,
+)
+
+
 __all__ = [
     "BetaRoutes",
     "ChatRoutes",
@@ -23,6 +44,7 @@ __all__ = [
     "FileRoutes",
     "ModelRoutes",
     "ModerationsRoutes",
+    "VectorStoreRoutes",
 ]
 
 
@@ -59,3 +81,31 @@ class ModelRoutes:
 class ModerationsRoutes:
     def __init__(self, router: respx.MockRouter) -> None:
         self.create = ModerationCreateRoute(router)
+
+
+class VectorStoreRoutes:
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        self.create = VectorStoreCreateRoute(router, state)
+        self.list = VectorStoreListRoute(router, state)
+        self.retrieve = VectorStoreRetrieveRoute(router, state)
+        self.update = VectorStoreUpdateRoute(router, state)
+        self.delete = VectorStoreDeleteRoute(router, state)
+
+        self.files = VectorStoreFileRoutes(router, state)
+        self.file_batches = VectorStoreFileBatchRoutes(router, state)
+
+
+class VectorStoreFileRoutes:
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        self.create = VectorStoreFileCreateRoute(router, state)
+        self.list = VectorStoreFileListRoute(router, state)
+        self.retrieve = VectorStoreFileRetrieveRoute(router, state)
+        self.delete = VectorStoreFileDeleteRoute(router, state)
+
+
+class VectorStoreFileBatchRoutes:
+    def __init__(self, router: respx.MockRouter, state: StateStore) -> None:
+        self.create = VectorStoreFileBatchCreateRoute(router, state)
+        self.retrieve = VectorStoreFileBatchRetrieveRoute(router, state)
+        self.cancel = VectorStoreFileBatchCancelRoute(router, state)
+        self.list_files = VectorStoreFileBatchListFilesRoute(router, state)

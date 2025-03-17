@@ -6,10 +6,10 @@ import httpx
 import respx
 
 from openai.pagination import SyncCursorPage
-from openai.types.beta.vector_store import VectorStore
-from openai.types.beta.vector_store_create_params import VectorStoreCreateParams
-from openai.types.beta.vector_store_update_params import VectorStoreUpdateParams
-from openai.types.beta.vector_store_deleted import VectorStoreDeleted
+from openai.types.vector_store import VectorStore
+from openai.types.vector_store_create_params import VectorStoreCreateParams
+from openai.types.vector_store_update_params import VectorStoreUpdateParams
+from openai.types.vector_store_deleted import VectorStoreDeleted
 
 from .._base import StatefulRoute
 
@@ -47,7 +47,7 @@ class VectorStoreCreateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
     def _handler(self, request: httpx.Request, route: respx.Route) -> httpx.Response:
         self._route = route
         model = self._build({}, request)
-        self._state.beta.vector_stores.put(model)
+        self._state.vector_stores.put(model)
         content: VectorStoreCreateParams = json_loads(request.content)
         file_ids = content.get("file_ids", [])
         for file_id in file_ids:
@@ -60,7 +60,7 @@ class VectorStoreCreateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
                 create_file_req,
                 extra={"vector_store_id": model.id},
             )
-            self._state.beta.vector_stores.files.put(vector_store_file)
+            self._state.vector_stores.files.put(vector_store_file)
 
         return httpx.Response(status_code=self._status_code, json=model_dict(model))
 
@@ -108,9 +108,9 @@ class VectorStoreListRoute(
         after = request.url.params.get("after")
         before = request.url.params.get("before")
 
-        data = self._state.beta.vector_stores.list(limit, order, after, before)
+        data = self._state.vector_stores.list(limit, order, after, before)
         result_count = len(data)
-        total_count = len(self._state.beta.vector_stores.list())
+        total_count = len(self._state.vector_stores.list())
         has_data = bool(result_count)
         has_more = total_count != result_count
         first_id = data[0].id if has_data else None
@@ -149,7 +149,7 @@ class VectorStoreRetrieveRoute(StatefulRoute[VectorStore, PartialVectorStore]):
     ) -> httpx.Response:
         self._route = route
         vector_store_id = kwargs["vector_store_id"]
-        found = self._state.beta.vector_stores.get(vector_store_id)
+        found = self._state.vector_stores.get(vector_store_id)
         if not found:
             return httpx.Response(404)
 
@@ -179,7 +179,7 @@ class VectorStoreUpdateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
     ) -> httpx.Response:
         self._route = route
         vector_store_id = kwargs["vector_store_id"]
-        found = self._state.beta.vector_stores.get(vector_store_id)
+        found = self._state.vector_stores.get(vector_store_id)
         if not found:
             return httpx.Response(404)
 
@@ -214,7 +214,7 @@ class VectorStoreDeleteRoute(
     ) -> httpx.Response:
         self._route = route
         vector_store_id = kwargs["vector_store_id"]
-        deleted = self._state.beta.vector_stores.delete(vector_store_id)
+        deleted = self._state.vector_stores.delete(vector_store_id)
         return httpx.Response(
             status_code=200,
             json=model_dict(

@@ -8,9 +8,9 @@ from openai.types.beta.threads.message import Message
 from openai.types.beta.threads.run import Run
 from openai.types.beta.threads.runs.run_step import RunStep
 
-from openai.types.beta.vector_store import VectorStore
-from openai.types.beta.vector_stores.vector_store_file import VectorStoreFile
-from openai.types.beta.vector_stores.vector_store_file_batch import VectorStoreFileBatch
+from openai.types.vector_store import VectorStore
+from openai.types.vector_stores.vector_store_file import VectorStoreFile
+from openai.types.vector_stores.vector_store_file_batch import VectorStoreFileBatch
 
 from .content_store import ContentStore
 from .._constants import SYSTEM_MODELS
@@ -39,6 +39,7 @@ class StateStore:
     def __init__(self) -> None:
         self.files = FileStore()
         self.models = ModelStore()
+        self.vector_stores = VectorStoreStore()
         self.beta = Beta()
 
     def _blind_put(self, resource: Union[AnyModel, Any]) -> None:
@@ -57,11 +58,11 @@ class StateStore:
         elif isinstance(resource, Model):
             self.models.put(resource)
         elif isinstance(resource, VectorStore):
-            self.beta.vector_stores.put(resource)
+            self.vector_stores.put(resource)
         elif isinstance(resource, VectorStoreFile):
-            self.beta.vector_stores.files.put(resource)
+            self.vector_stores.files.put(resource)
         elif isinstance(resource, VectorStoreFileBatch):
-            self.beta.vector_stores.file_batches.put(resource)
+            self.vector_stores.file_batches.put(resource)
         else:
             raise TypeError(f"Cannot put object of type {type(resource)} in store")
 
@@ -70,7 +71,6 @@ class Beta:
     def __init__(self) -> None:
         self.assistants = AssistantStore()
         self.threads = ThreadStore()
-        self.vector_stores = VectorStoreStore()
 
 
 class BaseStore(Generic[M]):
