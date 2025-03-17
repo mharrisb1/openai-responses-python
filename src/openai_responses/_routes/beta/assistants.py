@@ -62,7 +62,7 @@ class AssistantCreateRoute(StatefulRoute[Assistant, PartialAssistant]):
                         create_req = httpx.Request("", "", content=encoded)
                         vector_store = vector_store_from_create_request(create_req)
                         vector_store_ids.append(vector_store.id)
-                        self._state.beta.vector_stores.put(vector_store)
+                        self._state.vector_stores.put(vector_store)
                         for file_id in vector_store_create_params.get("file_ids", []):
                             found_file = self._state.files.get(file_id)
                             if not found_file:
@@ -73,7 +73,7 @@ class AssistantCreateRoute(StatefulRoute[Assistant, PartialAssistant]):
                                 create_file_req,
                                 extra={"vector_store_id": vector_store.id},
                             )
-                            self._state.beta.vector_stores.files.put(vector_store_file)
+                            self._state.vector_stores.files.put(vector_store_file)
 
                     model = merge_assistant_with_partial(
                         model,

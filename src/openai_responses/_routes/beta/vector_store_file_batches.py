@@ -6,9 +6,9 @@ import httpx
 import respx
 
 from openai.pagination import SyncCursorPage
-from openai.types.beta.vector_stores.vector_store_file import VectorStoreFile
-from openai.types.beta.vector_stores.vector_store_file_batch import VectorStoreFileBatch
-from openai.types.beta.vector_stores.file_batch_create_params import (
+from openai.types.vector_stores.vector_store_file import VectorStoreFile
+from openai.types.vector_stores.vector_store_file_batch import VectorStoreFileBatch
+from openai.types.vector_stores.file_batch_create_params import (
     FileBatchCreateParams,
 )
 
@@ -56,7 +56,7 @@ class VectorStoreFileBatchCreateRoute(
         self._route = route
 
         vector_store_id = kwargs["vector_store_id"]
-        found_vector_store = self._state.beta.vector_stores.get(vector_store_id)
+        found_vector_store = self._state.vector_stores.get(vector_store_id)
         if not found_vector_store:
             return httpx.Response(404)
 
@@ -72,13 +72,13 @@ class VectorStoreFileBatchCreateRoute(
                 create_file_req,
                 extra={"vector_store_id": vector_store_id},
             )
-            self._state.beta.vector_stores.files.put(vector_store_file)
-            self._state.beta.vector_stores.file_batches.add_related_file(
+            self._state.vector_stores.files.put(vector_store_file)
+            self._state.vector_stores.file_batches.add_related_file(
                 model.id,
                 vector_store_file.id,
             )
 
-        self._state.beta.vector_stores.file_batches.put(model)
+        self._state.vector_stores.file_batches.put(model)
         return httpx.Response(status_code=self._status_code, json=model_dict(model))
 
     @staticmethod
@@ -125,12 +125,12 @@ class VectorStoreFileBatchRetrieveRoute(
         self._route = route
 
         vector_store_id = kwargs["vector_store_id"]
-        found_vector_store = self._state.beta.vector_stores.get(vector_store_id)
+        found_vector_store = self._state.vector_stores.get(vector_store_id)
         if not found_vector_store:
             return httpx.Response(404)
 
         batch_id = kwargs["batch_id"]
-        found = self._state.beta.vector_stores.file_batches.get(batch_id)
+        found = self._state.vector_stores.file_batches.get(batch_id)
         if not found:
             return httpx.Response(404)
 
@@ -166,17 +166,17 @@ class VectorStoreFileBatchCancelRoute(
         self._route = route
 
         vector_store_id = kwargs["vector_store_id"]
-        found_vector_store = self._state.beta.vector_stores.get(vector_store_id)
+        found_vector_store = self._state.vector_stores.get(vector_store_id)
         if not found_vector_store:
             return httpx.Response(404)
 
         batch_id = kwargs["batch_id"]
-        found = self._state.beta.vector_stores.file_batches.get(batch_id)
+        found = self._state.vector_stores.file_batches.get(batch_id)
         if not found:
             return httpx.Response(404)
 
         found.status = "cancelled"
-        self._state.beta.vector_stores.file_batches.put(found)
+        self._state.vector_stores.file_batches.put(found)
 
         return httpx.Response(status_code=self._status_code, json=model_dict(found))
 
@@ -212,12 +212,12 @@ class VectorStoreFileBatchListFilesRoute(
         self._route = route
 
         vector_store_id = kwargs["vector_store_id"]
-        found_vector_store = self._state.beta.vector_stores.get(vector_store_id)
+        found_vector_store = self._state.vector_stores.get(vector_store_id)
         if not found_vector_store:
             return httpx.Response(404)
 
         batch_id = kwargs["batch_id"]
-        found = self._state.beta.vector_stores.file_batches.get(batch_id)
+        found = self._state.vector_stores.file_batches.get(batch_id)
         if not found:
             return httpx.Response(404)
 
@@ -227,7 +227,7 @@ class VectorStoreFileBatchListFilesRoute(
         before = request.url.params.get("before")
         filter = request.url.params.get("filter")
 
-        data = self._state.beta.vector_stores.list_files_for_batch(
+        data = self._state.vector_stores.list_files_for_batch(
             vector_store_id,
             batch_id,
             limit,
@@ -238,7 +238,7 @@ class VectorStoreFileBatchListFilesRoute(
         )
         result_count = len(data)
         total_count = len(
-            self._state.beta.vector_stores.list_files_for_batch(
+            self._state.vector_stores.list_files_for_batch(
                 vector_store_id,
                 batch_id,
             )

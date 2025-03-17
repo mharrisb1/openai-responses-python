@@ -11,6 +11,7 @@ from ._routes import (
     FileRoutes,
     ModelRoutes,
     ModerationsRoutes,
+    VectorStoreRoutes,
 )
 from .stores import StateStore
 
@@ -59,9 +60,13 @@ class OpenAIMock:
         self.files = FileRoutes(self._router, self._state)
         self.models = ModelRoutes(self._router, self._state)
         self.moderations = ModerationsRoutes(self._router)
+        self.vector_stores = VectorStoreRoutes(self._router, self._state)
 
         # NOTE: need to sort routes to avoid match conflicts
-        self._router.routes._routes.sort(key=lambda r: len(repr(r._pattern)), reverse=True)  # type: ignore
+        self._router.routes._routes.sort(
+            key=lambda r: len(repr(r._pattern)),  # type: ignore
+            reverse=True,
+        )
 
     def _start_mock(self):
         def wrapper(fn: Callable[..., Any]):

@@ -5,8 +5,8 @@ import httpx
 import respx
 
 from openai.pagination import SyncCursorPage
-from openai.types.beta.vector_stores.vector_store_file import VectorStoreFile
-from openai.types.beta.vector_stores.vector_store_file_deleted import (
+from openai.types.vector_stores.vector_store_file import VectorStoreFile
+from openai.types.vector_stores.vector_store_file_deleted import (
     VectorStoreFileDeleted,
 )
 
@@ -50,7 +50,7 @@ class VectorStoreFileCreateRoute(
         self._route = route
 
         vector_store_id = kwargs["vector_store_id"]
-        found_vector_store = self._state.beta.vector_stores.get(vector_store_id)
+        found_vector_store = self._state.vector_stores.get(vector_store_id)
         if not found_vector_store:
             return httpx.Response(404)
 
@@ -59,7 +59,7 @@ class VectorStoreFileCreateRoute(
         if not found_file:
             return httpx.Response(404)
 
-        self._state.beta.vector_stores.files.put(model)
+        self._state.vector_stores.files.put(model)
         return httpx.Response(status_code=self._status_code, json=model_dict(model))
 
     @staticmethod
@@ -102,7 +102,7 @@ class VectorStoreFileListRoute(
         self._route = route
 
         vector_store_id = kwargs["vector_store_id"]
-        found_vector_store = self._state.beta.vector_stores.get(vector_store_id)
+        found_vector_store = self._state.vector_stores.get(vector_store_id)
         if not found_vector_store:
             return httpx.Response(404)
 
@@ -112,7 +112,7 @@ class VectorStoreFileListRoute(
         before = request.url.params.get("before")
         filter = request.url.params.get("filter")
 
-        data = self._state.beta.vector_stores.files.list(
+        data = self._state.vector_stores.files.list(
             vector_store_id,
             limit,
             order,
@@ -121,7 +121,7 @@ class VectorStoreFileListRoute(
             filter,
         )
         result_count = len(data)
-        total_count = len(self._state.beta.vector_stores.files.list(vector_store_id))
+        total_count = len(self._state.vector_stores.files.list(vector_store_id))
         has_data = bool(result_count)
         has_more = total_count != result_count
         first_id = data[0].id if has_data else None
@@ -162,12 +162,12 @@ class VectorStoreFileRetrieveRoute(
     ) -> httpx.Response:
         self._route = route
         vector_store_id = kwargs["vector_store_id"]
-        found_vector_store = self._state.beta.vector_stores.get(vector_store_id)
+        found_vector_store = self._state.vector_stores.get(vector_store_id)
         if not found_vector_store:
             return httpx.Response(404)
 
         file_id = kwargs["file_id"]
-        found = self._state.beta.vector_stores.files.get(file_id)
+        found = self._state.vector_stores.files.get(file_id)
         if not found:
             return httpx.Response(404)
 
@@ -205,16 +205,16 @@ class VectorStoreFileDeleteRoute(
     ) -> httpx.Response:
         self._route = route
         vector_store_id = kwargs["vector_store_id"]
-        found_vector_store = self._state.beta.vector_stores.get(vector_store_id)
+        found_vector_store = self._state.vector_stores.get(vector_store_id)
         if not found_vector_store:
             return httpx.Response(404)
 
         file_id = kwargs["file_id"]
-        found = self._state.beta.vector_stores.files.get(file_id)
+        found = self._state.vector_stores.files.get(file_id)
         if not found:
             return httpx.Response(404)
 
-        deleted = self._state.beta.vector_stores.files.delete(file_id)
+        deleted = self._state.vector_stores.files.delete(file_id)
 
         return httpx.Response(
             status_code=200,
