@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import AsyncGenerator, Generator
 from typing_extensions import override
 
 import pytest
@@ -44,7 +44,7 @@ class CreateRunEventStream(AsyncEventStream[AssistantStreamEvent]):
         self.state_store = state_store
 
     @override
-    def generate(self) -> Generator[AssistantStreamEvent, None, None]:
+    async def agenerate(self) -> AsyncGenerator[AssistantStreamEvent, None]:
         self.state_store.beta.threads.runs.put(self.created_run)
         yield ThreadRunCreated(event="thread.run.created", data=self.created_run)
 
