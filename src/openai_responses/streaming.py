@@ -1,5 +1,13 @@
 import json
-from typing import AsyncIterator, AsyncGenerator, Generator, Generic, Optional, TypeVar, Union
+from typing import (
+    AsyncIterator,
+    AsyncGenerator,
+    Generator,
+    Generic,
+    Optional,
+    TypeVar,
+    Union,
+)
 
 from openai.types.beta import AssistantStreamEvent
 from openai.types.chat import ChatCompletionChunk
@@ -43,6 +51,7 @@ class EventStream(BaseEventStream[M]):
     def generate(self) -> Generator[M, None, None]:
         raise NotImplementedError
 
+
 class AsyncEventStream(BaseEventStream[M]):
     """Async event stream helper for building mock OpenAI server sent event stream"""
 
@@ -56,5 +65,5 @@ class AsyncEventStream(BaseEventStream[M]):
         yield b"event: done\n"
         yield b"data: [DONE]\n\n"
 
-    async def agenerate(self) -> AsyncGenerator[M, None]:
+    def agenerate(self) -> AsyncGenerator[M, None]:
         raise NotImplementedError
