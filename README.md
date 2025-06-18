@@ -4,6 +4,13 @@ Pytest plugin for automatically mocking OpenAI requests. Powered by [RESPX](http
 
 [![sdk support](https://img.shields.io/badge/SDK_Support-v1.66+-white?logo=openai&logoColor=black&labelColor=white)](https://github.com/openai/openai-python)
 
+> [!NOTE]
+> This project is in maintenance mode unless I see an appetite for more community contributions. I built this because we at [Definite](https://definite.app) needed a way to easily and quickly test the integration between [openai-python](https://github.com/openai/openai-python) and our codebase but we have [moved on to other frameworks/SDKs](https://pydantic.dev/articles/building-data-team-with-pydanticai). With that, my need and desire to work on this library has dropped significantly.
+> 
+> I will be encouraging community contributions to fill in the gap for some of the new features released since the last major update to this library such as [evals](https://platform.openai.com/docs/api-reference/evals), [graders](https://platform.openai.com/docs/api-reference/graders), [containers](https://platform.openai.com/docs/api-reference/containers), and all of the new [administration](https://platform.openai.com/docs/api-reference/administration) endpoints.
+>
+> Absent community contributions, if the work required just for maintenance mode becomes too much (>2 hours a month) then this project will be fully deprecated and archived.
+
 ## Supported Endpoints
 
 - [Chat](https://github.com/mharrisb1/openai-responses-python/blob/main/examples/test_chat_completion.py)
