@@ -5,6 +5,7 @@ from typing_extensions import override
 import httpx
 import respx
 
+from openai._types import SequenceNotStr
 from openai.pagination import SyncCursorPage
 from openai.types.vector_store import VectorStore
 from openai.types.vector_store_create_params import VectorStoreCreateParams
@@ -49,7 +50,7 @@ class VectorStoreCreateRoute(StatefulRoute[VectorStore, PartialVectorStore]):
         model = self._build({}, request)
         self._state.vector_stores.put(model)
         content: VectorStoreCreateParams = json_loads(request.content)
-        file_ids = content.get("file_ids", [])
+        file_ids: SequenceNotStr[str] = content.get("file_ids", [])
         for file_id in file_ids:
             found_file = self._state.files.get(file_id)
             if not found_file:
