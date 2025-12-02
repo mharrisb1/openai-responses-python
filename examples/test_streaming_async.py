@@ -1,5 +1,4 @@
-from typing import AsyncGenerator, Generator
-import asyncio
+from typing import AsyncGenerator
 from typing_extensions import override
 
 import pytest
