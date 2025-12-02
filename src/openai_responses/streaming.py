@@ -12,7 +12,6 @@ from typing import (
 from openai.types.beta import AssistantStreamEvent
 from openai.types.chat import ChatCompletionChunk
 
-from ._utils.aio import make_async_generator
 from ._utils.serde import model_dict
 
 __all__ = ["EventStream", "AsyncEventStream"]

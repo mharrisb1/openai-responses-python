@@ -2,6 +2,12 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## v0.13.1
+
+Pull Requests:
+
+- [#73: feat: support mock async stream](https://github.com/mharrisb1/openai-responses-python/issues/73)
+
 ## v0.13.0
 
 > [!IMPORTANT]
