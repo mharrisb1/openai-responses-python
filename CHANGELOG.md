@@ -2,6 +2,17 @@
 
 See [releases](https://github.com/mharrisb1/openai-responses-python/releases) for more.
 
+## v0.13.0
+
+> [!IMPORTANT]
+> Breaking change
+
+Bumps support min version to OpenAI v2.0+
+
+Pull Requests:
+
+- [#76: chore(deps): bump openai support to v2+](https://github.com/mharrisb1/openai-responses-python/issues/76)
+
 ## v0.12.0
 
 > [!IMPORTANT]
