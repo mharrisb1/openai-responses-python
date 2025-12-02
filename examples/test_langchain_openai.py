@@ -1,5 +1,5 @@
 from langchain_openai import ChatOpenAI
-from pydantic.v1 import SecretStr
+from pydantic import SecretStr
 
 import openai_responses
 from openai_responses import OpenAIMock
@@ -24,7 +24,6 @@ def test_langchain_chat_openai_invoke(openai_mock: OpenAIMock):
         name="My Custom Chatbot",
         model="gpt-4o",
         temperature=0,
-        max_tokens=None,
         timeout=None,
         max_retries=2,
         api_key=SecretStr("sk-fake123"),
